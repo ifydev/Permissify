@@ -22,13 +22,44 @@
 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 * SOFTWARE.
  */
+package me.innectic.permissify.api.sql.handlers;
 
-package me.innectic.permissify.spigot;
+import me.innectic.permissify.api.permission.Permission;
+import me.innectic.permissify.api.sql.ConnectionInformation;
+import me.innectic.permissify.api.sql.DatabaseHandler;
+
+import java.util.HashMap;
+import java.util.UUID;
 
 /**
  * @author Innectic
  * @since 6/8/2017
  */
-public class PermissifyAPI {
+public class MySQLHandler extends DatabaseHandler {
 
+    @Override
+    public void initialize() {
+        // Make sure that the cache is empty
+        this.cachedPermissions = new HashMap<>();
+    }
+
+    @Override
+    public boolean connect(ConnectionInformation connectionInformation) {
+        return false;
+    }
+
+    @Override
+    public void addPermission(UUID uuid, Permission... permissions) {
+
+    }
+
+    @Override
+    public void removePermission(UUID uuid, Permission... permissions) {
+
+    }
+
+    @Override
+    public boolean hasPermission(UUID uuid, Permission permission) {
+        return false;
+    }
 }

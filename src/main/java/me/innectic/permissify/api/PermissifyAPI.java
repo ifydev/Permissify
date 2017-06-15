@@ -22,16 +22,13 @@
 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 * SOFTWARE.
  */
-package me.innectic.permissify.spigot.permission;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
+package me.innectic.permissify.api;
 
 /**
  * @author Innectic
  * @since 6/8/2017
  */
-@AllArgsConstructor
-public class Permission {
-    @Getter private String permission;
+public class PermissifyAPI {
+
 }

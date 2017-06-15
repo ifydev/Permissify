@@ -22,7 +22,7 @@
 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 * SOFTWARE.
  */
-package me.innectic.permissify.spigot.sql;
+package me.innectic.permissify.api.sql;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

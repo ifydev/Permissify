@@ -22,21 +22,16 @@
 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 * SOFTWARE.
  */
-package me.innectic.permissify.spigot.sql.handlers;
+package me.innectic.permissify.api.permission;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import me.innectic.permissify.spigot.sql.DatabaseHandler;
 
 /**
  * @author Innectic
  * @since 6/8/2017
  */
 @AllArgsConstructor
-public enum HandlerType {
-
-    MYSQL(MySQLHandler.class, "MySQL");
-
-    @Getter private Class<? extends DatabaseHandler> handler;
-    @Getter private String displayName;
+public class Permission {
+    @Getter private String permission;
 }

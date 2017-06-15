@@ -22,44 +22,21 @@
 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 * SOFTWARE.
  */
-package me.innectic.permissify.spigot.sql.handlers;
+package me.innectic.permissify.api.sql.handlers;
 
-import me.innectic.permissify.spigot.permission.Permission;
-import me.innectic.permissify.spigot.sql.ConnectionInformation;
-import me.innectic.permissify.spigot.sql.DatabaseHandler;
-
-import java.util.HashMap;
-import java.util.UUID;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import me.innectic.permissify.api.sql.DatabaseHandler;
 
 /**
  * @author Innectic
  * @since 6/8/2017
  */
-public class MySQLHandler extends DatabaseHandler {
+@AllArgsConstructor
+public enum HandlerType {
 
-    @Override
-    public void initialize() {
-        // Make sure that the cache is empty
-        this.cachedPermissions = new HashMap<>();
-    }
+    MYSQL(MySQLHandler.class, "MySQL");
 
-    @Override
-    public boolean connect(ConnectionInformation connectionInformation) {
-        return false;
-    }
-
-    @Override
-    public void addPermission(UUID uuid, Permission... permissions) {
-
-    }
-
-    @Override
-    public void removePermission(UUID uuid, Permission... permissions) {
-
-    }
-
-    @Override
-    public boolean hasPermission(UUID uuid, Permission permission) {
-        return false;
-    }
+    @Getter private Class<? extends DatabaseHandler> handler;
+    @Getter private String displayName;
 }

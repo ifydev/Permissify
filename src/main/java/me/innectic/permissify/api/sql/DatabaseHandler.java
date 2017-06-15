@@ -22,11 +22,10 @@
 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 * SOFTWARE.
  */
-package me.innectic.permissify.spigot.sql;
+package me.innectic.permissify.api.sql;
 
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import me.innectic.permissify.spigot.permission.Permission;
+import me.innectic.permissify.api.permission.Permission;
 
 import java.util.HashMap;
 import java.util.List;
