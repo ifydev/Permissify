@@ -28,6 +28,8 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import me.innectic.permissify.api.database.DatabaseHandler;
 
+import java.util.Optional;
+
 /**
  * @author Innectic
  * @since 6/8/2017
@@ -39,4 +41,17 @@ public enum HandlerType {
 
     @Getter private Class<? extends DatabaseHandler> handler;
     @Getter private String displayName;
+
+    /**
+     * Get the type of a handler from a name
+     *
+     * @param type the name of the handler to attempt to find
+     * @return the handler. Filled if found, empty otherwise.
+     */
+    public static Optional<HandlerType> findType(String type) {
+        for (HandlerType handler : values()) {
+            if (handler.getDisplayName().equalsIgnoreCase(type)) return Optional.of(handler);
+        }
+        return Optional.empty();
+    }
 }
