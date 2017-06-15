@@ -33,7 +33,7 @@ import lombok.Getter;
  */
 @AllArgsConstructor
 public class PermissionGroup {
-    @Getter private String displayName;
+    @Getter private String name;
     @Getter private String chatColor;
     @Getter private String prefix;
     @Getter private String suffix;
