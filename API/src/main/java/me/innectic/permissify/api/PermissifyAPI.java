@@ -22,8 +22,14 @@
 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 * SOFTWARE.
  */
-
 package me.innectic.permissify.api;
+
+import lombok.Getter;
+import me.innectic.permissify.api.database.ConnectionInformation;
+import me.innectic.permissify.api.database.DatabaseHandler;
+import me.innectic.permissify.api.database.handlers.HandlerType;
+import java.lang.reflect.InvocationTargetException;
+import java.util.Optional;
 
 /**
  * @author Innectic
@@ -31,4 +37,32 @@ package me.innectic.permissify.api;
  */
 public class PermissifyAPI {
 
+    private static Optional<PermissifyAPI> instance;
+
+    @Getter private Optional<DatabaseHandler> databaseHandler;
+
+    /**
+     * Initialize Permissify's API
+     */
+    public void initialize(HandlerType type, Optional<ConnectionInformation> connectionInformation) {
+        instance = Optional.of(this);
+
+        try {
+            databaseHandler = Optional.of(type.getHandler().getConstructor(ConnectionInformation.class).newInstance(connectionInformation));
+        } catch (NoSuchMethodException | InvocationTargetException | InstantiationException | IllegalAccessException e) {
+            e.printStackTrace();
+        }
+        databaseHandler.ifPresent(handler -> {
+            boolean connected = handler.connect();
+            if (connected) {
+                // Something something logger something something
+                return;
+            }
+            // Something something logger something something
+        });
+    }
+
+    public static Optional<PermissifyAPI> get() {
+        return instance;
+    }
 }

@@ -28,10 +28,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import me.innectic.permissify.api.permission.Permission;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * @author Innectic
@@ -46,7 +43,7 @@ public abstract class DatabaseHandler {
      * Cached permissions from the database.
      */
     @Getter protected Map<UUID, List<String>> cachedPermissions = new HashMap<>();
-    protected final ConnectionInformation connectionInformation;
+    protected final Optional<ConnectionInformation> connectionInformation;
 
     /**
      * Display an error to the server console, and the online ops. TODO: This should be converted to sending the message to players with a certain permission. `permissify.admin`?

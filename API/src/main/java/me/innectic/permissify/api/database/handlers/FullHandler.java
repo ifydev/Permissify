@@ -22,18 +22,20 @@
 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 * SOFTWARE.
  */
-package me.innectic.permissify.api.database;
+package me.innectic.permissify.api.database.handlers;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import me.innectic.permissify.api.database.ConnectionInformation;
+
+import java.util.Optional;
 
 /**
  * @author Innectic
  * @since 6/14/2017
  */
 @AllArgsConstructor
-public enum ConnectionError {
-    REJECTED("Connection rejected!");
-
-    @Getter private String display;
+public class FullHandler {
+    @Getter private Optional<HandlerType> handlerType;
+    @Getter private Optional<ConnectionInformation> connectionInformation;
 }
