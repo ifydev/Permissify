@@ -1,5 +1,6 @@
 package me.innectic.permissify.spigot;
 
+import me.innectic.permissify.spigot.utils.ConfigVerifier;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
@@ -10,9 +11,15 @@ import java.io.File;
  */
 public class PermissifyMain extends JavaPlugin {
 
+    private ConfigVerifier configVerifier;
+
     @Override
     public void onEnable() {
         createConfig();
+        // Verify the config
+        configVerifier = new ConfigVerifier();
+        configVerifier.verifyBasicInformation();
+        configVerifier.verifyConnectionInformation();
     }
 
     @Override

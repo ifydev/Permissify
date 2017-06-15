@@ -23,10 +23,12 @@ public class ConfigVerifier implements VerifyConfig {
     }
 
     @Override
-    public boolean verifyConnectionInformation(HandlerType type) {
+    public boolean verifyConnectionInformation() {
         PermissifyMain plugin = PermissifyMain.getInstance();
+        Optional<HandlerType> type = HandlerType.findType(plugin.getConfig().getString("storage"));
+        if  (!type.isPresent()) return false;
 
-        if (type.getHandler() == MySQLHandler.class) {
+        if (type.get().getHandler() == MySQLHandler.class) {
             if (plugin.getConfig().getString("connection.host") == null) return false;
             if (plugin.getConfig().getString("connection.username") == null) return false;
             if (plugin.getConfig().getString("connection.password") == null) return false;
