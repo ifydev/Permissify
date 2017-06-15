@@ -22,11 +22,11 @@
 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 * SOFTWARE.
  */
-package me.innectic.permissify.api.sql.handlers;
+package me.innectic.permissify.api.database.handlers;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import me.innectic.permissify.api.sql.DatabaseHandler;
+import me.innectic.permissify.api.database.DatabaseHandler;
 
 /**
  * @author Innectic

@@ -34,4 +34,5 @@ import lombok.Getter;
 @AllArgsConstructor
 public class Permission {
     @Getter private String permission;
+    @Getter private boolean granted;
 }
