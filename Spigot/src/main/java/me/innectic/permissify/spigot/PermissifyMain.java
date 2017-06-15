@@ -24,9 +24,13 @@
  */
 package me.innectic.permissify.spigot;
 
+import lombok.Getter;
 import me.innectic.permissify.api.PermissifyAPI;
 import me.innectic.permissify.api.database.handlers.FullHandler;
+import me.innectic.permissify.spigot.events.PlayerJoin;
 import me.innectic.permissify.spigot.utils.ConfigVerifier;
+import org.bukkit.Bukkit;
+import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
@@ -40,7 +44,7 @@ import java.util.logging.Level;
 public class PermissifyMain extends JavaPlugin {
 
     private ConfigVerifier configVerifier;
-    private PermissifyAPI permissifyAPI;
+    @Getter private PermissifyAPI permissifyAPI;
 
     @Override
     public void onEnable() {
@@ -54,6 +58,10 @@ public class PermissifyMain extends JavaPlugin {
         if (!handler.isPresent()) return;
         if (!handler.get().getHandlerType().isPresent()) return;
         permissifyAPI.initialize(handler.get().getHandlerType().get(), handler.get().getConnectionInformation());
+        // Register commands
+        registerCommands();
+        // Register listeners
+        registerListeners();
     }
 
     @Override
@@ -83,5 +91,14 @@ public class PermissifyMain extends JavaPlugin {
 
     public static PermissifyMain getInstance() {
         return PermissifyMain.getPlugin(PermissifyMain.class);
+    }
+
+    private void registerCommands() {
+
+    }
+
+    private void registerListeners() {
+        PluginManager pluginManager = Bukkit.getPluginManager();
+        pluginManager.registerEvents(new PlayerJoin(), this);
     }
 }

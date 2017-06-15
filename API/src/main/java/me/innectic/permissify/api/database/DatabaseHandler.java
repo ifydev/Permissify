@@ -42,7 +42,7 @@ public abstract class DatabaseHandler {
     /**
      * Cached permissions from the database.
      */
-    @Getter protected Map<UUID, List<String>> cachedPermissions = new HashMap<>();
+    @Getter protected Map<UUID, List<Permission>> cachedPermissions = new HashMap<>();
     protected final Optional<ConnectionInformation> connectionInformation;
 
     /**
@@ -97,7 +97,15 @@ public abstract class DatabaseHandler {
      *
      * @param uuid       the uuid of the player to check
      * @param permission the permission to check
-     * @return if the player has the permission
+     * @return           if the player has the permission
      */
     public abstract boolean hasPermission(UUID uuid, Permission permission);
+
+    /**
+     * Get the permissions of a uuid
+     *
+     * @param uuid the uuid to get the permissions of
+     * @return     the permissions the uuid has
+     */
+    public abstract List<Permission> getPermissions(UUID uuid);
 }

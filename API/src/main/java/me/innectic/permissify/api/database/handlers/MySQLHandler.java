@@ -38,7 +38,7 @@ import java.util.*;
  */
 public class MySQLHandler extends DatabaseHandler {
 
-    public MySQLHandler(ConnectionInformation connectionInformation) {
+    public MySQLHandler(Optional<ConnectionInformation> connectionInformation) {
         super(connectionInformation);
     }
 
@@ -48,8 +48,10 @@ public class MySQLHandler extends DatabaseHandler {
      * @return an optional connection, filled if successful.
      */
     private Optional<Connection> getConnection() {
+        if (!connectionInformation.isPresent()) return Optional.empty();
         try {
-            return Optional.ofNullable(DriverManager.getConnection(connectionInformation.getUrl(), connectionInformation.getUsername(), connectionInformation.getPassword()));
+            return Optional.ofNullable(DriverManager.getConnection(connectionInformation.get().getUrl(),
+                    connectionInformation.get().getUsername(), connectionInformation.get().getPassword()));
         } catch (SQLException e) {
             // Unable to connect, display an error.
             e.printStackTrace();
@@ -81,9 +83,10 @@ public class MySQLHandler extends DatabaseHandler {
     public void addPermission(UUID uuid, Permission... permissions) {
         for (Permission permission : permissions) {
             // Add it to the cache before anything else. Connection errors shouldn't stall everything.
-            List<String> playerPermissions = cachedPermissions.getOrDefault(uuid, new ArrayList<>());
-            if (playerPermissions.contains(permission.getPermission())) return;
-            playerPermissions.add(permission.getPermission());
+            List<Permission> playerPermissions = cachedPermissions.getOrDefault(uuid, new ArrayList<>());
+            long found = playerPermissions.stream().map(Permission::getPermission).filter(perm -> perm.equals(permission.getPermission())).count();
+            if (found > 0) return;
+            playerPermissions.add(permission);
             cachedPermissions.put(uuid, playerPermissions);
             // Now attempt to add to mysql
             Optional<Connection> connection = getConnection();
@@ -111,8 +114,8 @@ public class MySQLHandler extends DatabaseHandler {
     public void removePermission(UUID uuid, Permission... permissions) {
         for (Permission permission : permissions) {
             // Remove from cache
-            List<String> playerPermissions = cachedPermissions.getOrDefault(uuid, new ArrayList<>());
-            playerPermissions.removeIf(entry -> entry.equals(permission.getPermission()));
+            List<Permission> playerPermissions = cachedPermissions.getOrDefault(uuid, new ArrayList<>());
+            playerPermissions.removeIf(entry -> entry.getPermission().equals(permission.getPermission()));
             cachedPermissions.put(uuid, playerPermissions);
             // Attempt to remove from MySQL
             Optional<Connection> connection = getConnection();
@@ -163,5 +166,27 @@ public class MySQLHandler extends DatabaseHandler {
             displayError(ConnectionError.REJECTED, e);
         }
         return false;
+    }
+
+    @Override
+    public List<Permission> getPermissions(UUID uuid) {
+        if (cachedPermissions.containsKey(uuid)) return cachedPermissions.get(uuid);
+        Optional<Connection> connection = getConnection();
+        List<Permission> permissions = new ArrayList<>();
+
+        if (!connection.isPresent()) return permissions;
+        try {
+            PreparedStatement statement = connection.get().prepareStatement("SELECT permission,granted FROM permissions WHERE uuid=?");
+            statement.setString(1, uuid.toString());
+            ResultSet results = statement.executeQuery();
+
+            while (results.next()) {
+                permissions.add(new Permission(results.getString("permission"), results.getBoolean("granted")));
+            }
+            return permissions;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return new ArrayList<>();
     }
 }
