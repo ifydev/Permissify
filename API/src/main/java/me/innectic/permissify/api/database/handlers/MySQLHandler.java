@@ -28,6 +28,7 @@ import me.innectic.permissify.api.database.ConnectionError;
 import me.innectic.permissify.api.permission.Permission;
 import me.innectic.permissify.api.database.ConnectionInformation;
 import me.innectic.permissify.api.database.DatabaseHandler;
+import me.innectic.permissify.api.permission.PermissionGroup;
 
 import java.sql.*;
 import java.util.*;
@@ -183,10 +184,64 @@ public class MySQLHandler extends DatabaseHandler {
             while (results.next()) {
                 permissions.add(new Permission(results.getString("permission"), results.getBoolean("granted")));
             }
+            // Cleanup
+            results.close();
+            statement.close();
+            connection.get().close();
             return permissions;
         } catch (SQLException e) {
             e.printStackTrace();
         }
         return new ArrayList<>();
+    }
+
+    @Override
+    public boolean createGroup(String name, String prefix, String suffix, String chatColor) {
+        // Make sure that this group doesn't already exist
+        if (cachedGroups.stream().anyMatch(group -> group.getName().equalsIgnoreCase(name))) return false;
+        // Add the new group to the cache
+        cachedGroups.add(new PermissionGroup(name, chatColor, prefix, suffix));
+
+        Optional<Connection> connection = getConnection();
+        if (!connection.isPresent()) return false;
+
+        try {
+            PreparedStatement statement = connection.get().prepareStatement("INSERT INTO groups (name,prefix,suffix,chatcolor) VALUES (?,?,?,?)");
+            statement.setString(1, name);
+            statement.setString(2, prefix);
+            statement.setString(3, suffix);
+            statement.setString(4, chatColor);
+            // Cleanup
+            statement.execute();
+            statement.close();
+            connection.get().close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return true;
+    }
+
+    @Override
+    public void deleteGroup(String name) {
+        // Delete from the cache
+        cachedGroups.removeIf(group -> group.getName().equalsIgnoreCase(name));
+
+        Optional<Connection> connection = getConnection();
+        if (!connection.isPresent()) return;
+        try {
+            PreparedStatement statement = connection.get().prepareStatement("DELETE FROM groups WHERE name=?");
+            statement.setString(1, name);
+            statement.execute();
+            statement.close();
+            connection.get().close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public List<PermissionGroup> getGroups() {
+        return cachedGroups;
     }
 }

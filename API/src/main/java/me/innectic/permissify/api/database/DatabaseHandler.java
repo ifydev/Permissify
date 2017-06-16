@@ -24,9 +24,9 @@
  */
 package me.innectic.permissify.api.database;
 
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import me.innectic.permissify.api.permission.Permission;
+import me.innectic.permissify.api.permission.PermissionGroup;
 
 import java.util.*;
 
@@ -42,7 +42,8 @@ public abstract class DatabaseHandler {
     /**
      * Cached permissions from the database.
      */
-    @Getter protected Map<UUID, List<Permission>> cachedPermissions = new HashMap<>();
+    protected Map<UUID, List<Permission>> cachedPermissions = new HashMap<>();
+    protected List<PermissionGroup> cachedGroups = new ArrayList<>();
     protected final Optional<ConnectionInformation> connectionInformation;
 
     /**
@@ -108,4 +109,29 @@ public abstract class DatabaseHandler {
      * @return     the permissions the uuid has
      */
     public abstract List<Permission> getPermissions(UUID uuid);
+
+    /**
+     * Create a new permission group.
+     *
+     * @param name      the name of the group
+     * @param prefix    the prefix of the name
+     * @param suffix    the suffix of the name
+     * @param chatColor the color of the chat message
+     * @return          if the group was created
+     */
+    public abstract boolean createGroup(String name, String prefix, String suffix, String chatColor);
+
+    /**
+     * Delete a permission group
+     *
+     * @param name the name of the group
+     */
+    public abstract void deleteGroup(String name);
+
+    /**
+     * Get all permissions groups.
+     *
+     * @return the registered permission groups
+     */
+    public abstract List<PermissionGroup> getGroups();
 }
