@@ -244,4 +244,15 @@ public class MySQLHandler extends DatabaseHandler {
     public List<PermissionGroup> getGroups() {
         return cachedGroups;
     }
+
+    @Override
+    public void setSuperAdmin(UUID uuid) {
+        if (uuid == null) return;
+        this.superAdmin = Optional.of(uuid);
+    }
+
+    @Override
+    public Optional<UUID> getSuperAdmin() {
+        return null;
+    }
 }

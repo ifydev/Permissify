@@ -44,6 +44,7 @@ public abstract class DatabaseHandler {
      */
     protected Map<UUID, List<Permission>> cachedPermissions = new HashMap<>();
     protected List<PermissionGroup> cachedGroups = new ArrayList<>();
+    protected Optional<UUID> superAdmin = Optional.empty();
     protected final Optional<ConnectionInformation> connectionInformation;
 
     /**
@@ -134,4 +135,18 @@ public abstract class DatabaseHandler {
      * @return the registered permission groups
      */
     public abstract List<PermissionGroup> getGroups();
+
+    /**
+     * Set the super admin
+     *
+     * @param uuid the uuid of the player to be super admin
+     */
+    public abstract void setSuperAdmin(UUID uuid);
+
+    /**
+     * Get the player who's super admin
+     *
+     * @return the uuid of the player who's super admin
+     */
+    public abstract Optional<UUID> getSuperAdmin();
 }
