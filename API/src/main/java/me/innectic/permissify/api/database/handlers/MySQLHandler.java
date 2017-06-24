@@ -267,6 +267,10 @@ public class MySQLHandler extends DatabaseHandler {
         }
         try {
             PreparedStatement statement = connection.get().prepareStatement("INSERT INTO superAdmin (uuid) VALUES (?) ON DUPLICATE KEY UPDATE uuid=?");
+            statement.setString(1, uuid.toString());
+            statement.execute();
+            statement.close();
+            connection.get().close();
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -274,6 +278,22 @@ public class MySQLHandler extends DatabaseHandler {
 
     @Override
     public Optional<UUID> getSuperAdmin() {
-        return null;
+        if (superAdmin.isPresent()) return superAdmin;
+        Optional<Connection> connection = getConnection();
+        if (!connection.isPresent()) {
+            displayError(ConnectionError.REJECTED);
+            return Optional.empty();
+        }
+
+        try {
+            PreparedStatement statement = connection.get().prepareStatement("SELECT uuid FROM superAdmin");
+            ResultSet results = statement.executeQuery();
+            while (results.next()) {
+                superAdmin = Optional.of(UUID.fromString(results.getString("uuid")));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return superAdmin;
     }
 }
