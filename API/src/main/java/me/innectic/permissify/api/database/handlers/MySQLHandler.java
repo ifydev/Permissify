@@ -175,7 +175,10 @@ public class MySQLHandler extends DatabaseHandler {
         Optional<Connection> connection = getConnection();
         List<Permission> permissions = new ArrayList<>();
 
-        if (!connection.isPresent()) return permissions;
+        if (!connection.isPresent()) {
+            displayError(ConnectionError.REJECTED);
+            return permissions;
+        }
         try {
             PreparedStatement statement = connection.get().prepareStatement("SELECT permission,granted FROM permissions WHERE uuid=?");
             statement.setString(1, uuid.toString());
@@ -203,7 +206,10 @@ public class MySQLHandler extends DatabaseHandler {
         cachedGroups.add(new PermissionGroup(name, chatColor, prefix, suffix));
 
         Optional<Connection> connection = getConnection();
-        if (!connection.isPresent()) return false;
+        if (!connection.isPresent()) {
+            displayError(ConnectionError.REJECTED);
+            return false;
+        }
 
         try {
             PreparedStatement statement = connection.get().prepareStatement("INSERT INTO groups (name,prefix,suffix,chatcolor) VALUES (?,?,?,?)");
@@ -228,7 +234,10 @@ public class MySQLHandler extends DatabaseHandler {
         cachedGroups.removeIf(group -> group.getName().equalsIgnoreCase(name));
 
         Optional<Connection> connection = getConnection();
-        if (!connection.isPresent()) return;
+        if (!connection.isPresent()) {
+            displayError(ConnectionError.REJECTED);
+            return;
+        }
         try {
             PreparedStatement statement = connection.get().prepareStatement("DELETE FROM groups WHERE name=?");
             statement.setString(1, name);
@@ -248,7 +257,19 @@ public class MySQLHandler extends DatabaseHandler {
     @Override
     public void setSuperAdmin(UUID uuid) {
         if (uuid == null) return;
+        // Update the cache
         this.superAdmin = Optional.of(uuid);
+        // Update mysql
+        Optional<Connection> connection = getConnection();
+        if (!connection.isPresent()) {
+            displayError(ConnectionError.REJECTED);
+            return;
+        }
+        try {
+            PreparedStatement statement = connection.get().prepareStatement("INSERT INTO superAdmin (uuid) VALUES (?) ON DUPLICATE KEY UPDATE uuid=?");
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
