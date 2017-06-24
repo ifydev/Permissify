@@ -33,7 +33,7 @@ import lombok.Getter;
  */
 @AllArgsConstructor
 public enum ConnectionError {
-    REJECTED("Connection rejected!");
+    REJECTED("Connection rejected"), DATABASE_EXCEPTION("Encountered an exception in a database handler");
 
     @Getter private String display;
 }

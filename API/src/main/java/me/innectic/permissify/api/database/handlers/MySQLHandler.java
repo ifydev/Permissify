@@ -54,9 +54,7 @@ public class MySQLHandler extends DatabaseHandler {
             return Optional.ofNullable(DriverManager.getConnection(connectionInformation.get().getUrl(),
                     connectionInformation.get().getUsername(), connectionInformation.get().getPassword()));
         } catch (SQLException e) {
-            // Unable to connect, display an error.
-            e.printStackTrace();
-            displayError(ConnectionError.REJECTED);
+            displayError(ConnectionError.DATABASE_EXCEPTION, e);
         }
         return Optional.empty();
     }
@@ -106,7 +104,7 @@ public class MySQLHandler extends DatabaseHandler {
                 statement.close();
                 connection.get().close();
             } catch (SQLException e) {
-                displayError(ConnectionError.REJECTED, e);
+                displayError(ConnectionError.DATABASE_EXCEPTION, e);
             }
         }
     }
@@ -134,7 +132,7 @@ public class MySQLHandler extends DatabaseHandler {
                 statement.close();
                 connection.get().close();
             } catch (SQLException e) {
-                e.printStackTrace();
+                displayError(ConnectionError.DATABASE_EXCEPTION, e);
             }
         }
     }
@@ -164,7 +162,7 @@ public class MySQLHandler extends DatabaseHandler {
             connection.get().close();
             return granted;
         } catch (SQLException e) {
-            displayError(ConnectionError.REJECTED, e);
+            displayError(ConnectionError.DATABASE_EXCEPTION, e);
         }
         return false;
     }
@@ -193,7 +191,7 @@ public class MySQLHandler extends DatabaseHandler {
             connection.get().close();
             return permissions;
         } catch (SQLException e) {
-            e.printStackTrace();
+            displayError(ConnectionError.DATABASE_EXCEPTION, e);
         }
         return new ArrayList<>();
     }
@@ -222,7 +220,7 @@ public class MySQLHandler extends DatabaseHandler {
             statement.close();
             connection.get().close();
         } catch (SQLException e) {
-            e.printStackTrace();
+            displayError(ConnectionError.DATABASE_EXCEPTION, e);
         }
 
         return true;
@@ -245,7 +243,7 @@ public class MySQLHandler extends DatabaseHandler {
             statement.close();
             connection.get().close();
         } catch (SQLException e) {
-            e.printStackTrace();
+            displayError(ConnectionError.DATABASE_EXCEPTION, e);
         }
     }
 
@@ -272,7 +270,7 @@ public class MySQLHandler extends DatabaseHandler {
             statement.close();
             connection.get().close();
         } catch (SQLException e) {
-            e.printStackTrace();
+            displayError(ConnectionError.DATABASE_EXCEPTION, e);
         }
     }
 
@@ -292,7 +290,7 @@ public class MySQLHandler extends DatabaseHandler {
                 superAdmin = Optional.of(UUID.fromString(results.getString("uuid")));
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            displayError(ConnectionError.DATABASE_EXCEPTION, e);
         }
         return superAdmin;
     }
