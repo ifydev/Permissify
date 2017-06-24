@@ -24,6 +24,7 @@
  */
 package me.innectic.permissify.spigot.commands;
 
+import me.innectic.permissify.api.PermissifyConstants;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -40,21 +41,24 @@ public class PermissifyCommand implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String s, String[] args) {
         if (sender instanceof ConsoleCommandSender) {
-            // TODO: Handle setting the groups of a player to super-admin
+            if (args.length < 2 || (args.length >= 2 && !args[0].equalsIgnoreCase("superadmin"))) {
+                sender.sendMessage(PermissifyConstants.CONSOLE_INVALID_COMMAND);
+                return false;
+            }
+
             return false;
         } else if (sender instanceof Player) {
             Player player = (Player) sender;
             if (!player.hasPermission("")) {
-                player.sendMessage(ChatColor.GREEN + "" + ChatColor.BOLD + "Permissify> " + ChatColor.RED + ChatColor.BOLD + "Insufficient permission!");
+                player.sendMessage(PermissifyConstants.INSUFFICIENT_PERMISSIONS);
                 return false;
             }
             if (args.length < 2) {
                 helpMenu(sender);
                 return false;
             }
-            if (args[0].equals("group")) {
-                if (args[0].equals("create")) {
-
+            if (args[0].equalsIgnoreCase("group")) {
+                if (args[0].equalsIgnoreCase("create")) {
                     return true;
                 } else if (args[1].equalsIgnoreCase("addpermission")) {
                     return true;
@@ -72,12 +76,6 @@ public class PermissifyCommand implements CommandExecutor {
     }
 
     private void helpMenu(CommandSender sender) {
-        sender.sendMessage(ChatColor.YELLOW + "=============== " + ChatColor.GREEN + ChatColor.BOLD + "Permissify Help " + ChatColor.YELLOW + "===============");
-        sender.sendMessage(ChatColor.GREEN + "" + ChatColor.BOLD + "/permissify group create [name] [prefix] [suffix] [chat-color]");
-        sender.sendMessage(ChatColor.GREEN + "" + ChatColor.BOLD + "/permissify group addpermission [name] [permission]");
-        sender.sendMessage(ChatColor.GREEN + "" + ChatColor.BOLD + "/permissify group removepermission [name] [permission]");
-        sender.sendMessage(ChatColor.GREEN + "" + ChatColor.BOLD + "/permissify group listpermission [name]");
-        sender.sendMessage(ChatColor.GREEN + "" + ChatColor.BOLD + "/permissify group list");
-        sender.sendMessage(ChatColor.YELLOW + "" + ChatColor.BOLD + "===============================================");
+        PermissifyConstants.PERMISSIFY_HELP.forEach(sender::sendMessage);
     }
 }
