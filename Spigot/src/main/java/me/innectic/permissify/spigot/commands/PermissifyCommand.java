@@ -85,10 +85,14 @@ public class PermissifyCommand implements CommandExecutor {
                     CommandResponse response = plugin.getGroupCommand().handlePermissionRemove(sender, ArgumentUtil.getRemainingArgs(2, args));
                     sender.sendMessage(response.getResponse());
                     return response.isSucceeded();
-                } else if (args[1].equalsIgnoreCase("listpermission")) {
-                    return true;
                 } else if (args[1].equalsIgnoreCase("list")) {
-                    return true;
+                    CommandResponse response = plugin.getGroupCommand().handleListGroups(sender, ArgumentUtil.getRemainingArgs(2, args));
+                    sender.sendMessage(response.getResponse());
+                    return response.isSucceeded();
+                } else if (args[1].equalsIgnoreCase("listpermissions")) {
+                    CommandResponse response = plugin.getGroupCommand().handleListPermissions(sender, ArgumentUtil.getRemainingArgs(2, args));
+                    sender.sendMessage(response.getResponse());
+                    return response.isSucceeded();
                 }
                 PermissifyConstants.PERMISSIFY_HELP.forEach(sender::sendMessage);
             }

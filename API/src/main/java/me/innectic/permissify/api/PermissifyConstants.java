@@ -37,34 +37,45 @@ import java.util.List;
 public class PermissifyConstants {
     // TODO: Create a language formatter to allow for translating.
 
+    // Chat messages
+    private static final String PERMISSIFY_PREFIX = "&a&lPermissify> ";
+
     // Permissions
     public static final String PERMISSIFY_BASIC = "permissify.basic";
     public static final String PERMISSIFY_GROUP_CREATE = "permissify.group.create";
     public static final String PERMISSIFY_GROUP_REMOVE = "permissify.group.create";
+    public static final String PERMISSIFY_GROUP_LIST = "permissify.group.list";
     public static final String PERMISSIFY_GROUP_PERMISSION_REMOVE = "permissify.group.permission.remove";
     public static final String PERMISSIFY_GROUP_PERMISSION_ADD = "permissify.group.permission.add";
     public static final String PERMISSIFY_GROUP_PERMISSION_LIST = "permissify.group.permission.list";
 
-    // Chat messages
-    private static final String PERMISSIFY_PREFIX = "&a&lPermissify> ";
-
     public static final String INSUFFICIENT_PERMISSIONS = PERMISSIFY_PREFIX + "&c&lInsufficient permissions!";
+
     public static final String GROUP_CREATED = PERMISSIFY_PREFIX + "&c&lGroup <GROUP> has been created!";
     public static final String GROUP_REMOVED = PERMISSIFY_PREFIX + "&c&lGroup <GROUP> has been removed!";
     public static final String GROUP_EDITED = PERMISSIFY_PREFIX + "&c&lGroup <GROUP> has been edited!";
+    public static final String GROUP_PERMISSIONS = PERMISSIFY_PREFIX + "&c&lPermissions for <GROUP>: <PERMISSIONS>";
+    public static final String GROUP_LIST = PERMISSIFY_PREFIX + "&c&lRegistered groups: <GROUPS>";
+
     public static final String PERMISSION_ADDED_GROUP = PERMISSIFY_PREFIX + "&c&lPermission <PERMISSION> has been added to <GROUP>!";
     public static final String PERMISSION_REMOVED_GROUP = PERMISSIFY_PREFIX + "&c&lPermission <PERMISSION> has been removed from <GROUP>!";
     public static final String PERMISSION_ADDED_PLAYER = PERMISSIFY_PREFIX + "&c&lPermission <PERMISSION> has been added to <PLAYER>!";
     public static final String PERMISSION_REMOVED_PLAYER = PERMISSIFY_PREFIX + "&c&lPermission <PERMISSION> has been removed from <PLAYER>!";
-    public static final String CONSOLE_INVALID_COMMAND = PERMISSIFY_PREFIX + "&c&lOnly one console command available: /permissify superadmin [username]";
+
     public static final String NOT_ENOUGH_ARGUMENTS_GROUP_ADD = PERMISSIFY_PREFIX + "&c&lNot enough arguments! &e&l/permissify group create [name] [prefix] [suffix] [chat-color]";
     public static final String NOT_ENOUGH_ARGUMENTS_GROUP_REMOVE = PERMISSIFY_PREFIX + "&c&lNot enough arguments! &e&l/permissify group remove [name]";
     public static final String NOT_ENOUGH_ARGUMENTS_GROUP_PERMISSION_ADD = PERMISSIFY_PREFIX + "&c&lNot enough arguments! &e&l/permissify group addpermission [name] [permission]";
     public static final String NOT_ENOUGH_ARGUMENTS_GROUP_PERMISSION_REMOVE = PERMISSIFY_PREFIX + "&c&lNot enough arguments! &e&l/permissify group removepermission [name] [permission]";
+    public static final String NOT_ENOUGH_ARGUMENTS_GROUP_PERMISSION_LIST = PERMISSIFY_PREFIX + "&c&lNot enough arguments! &e&l/permissiy group listpermissions [group]";
+
     public static final String INVALID_CHATCOLOR = PERMISSIFY_PREFIX + "&c&lInvalid chat color <COLOR>";
+    public static final String INVALID_GROUP = PERMISSIFY_PREFIX + "&c&lInvalid group!";
+    public static final String CONSOLE_INVALID_COMMAND = PERMISSIFY_PREFIX + "&c&lOnly one console command available: /permissify superadmin [username]";
+
     public static final String UNABLE_TO_CREATE = PERMISSIFY_PREFIX + "&c&lUnable to create <TYPE>: <REASON>";
     public static final String UNABLE_TO_REMOVE = PERMISSIFY_PREFIX + "&c&lUnable to remove <TYPE>: <REASON>";
     public static final String UNABLE_TO_ADD = PERMISSIFY_PREFIX + "&c&lUnable to add: <REASON>";
+    public static final String UNABLE_TO_LIST = PERMISSIFY_PREFIX + "&c&lUnable to list: <REASON>";
 
     // Help response
     public static final List<String> PERMISSIFY_HELP = new ArrayList<>(Arrays.asList(
