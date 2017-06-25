@@ -320,10 +320,10 @@ public class MySQLHandler extends DatabaseHandler {
     }
 
     @Override
-    public void setSuperAdmin(UUID uuid) {
+    public void addSuperAdmin(UUID uuid) {
         if (uuid == null) return;
         // Update the cache
-        this.superAdmin = Optional.of(uuid);
+        superAdmins.add(uuid);
         // Update mysql
         Optional<Connection> connection = getConnection();
         if (!connection.isPresent()) {
@@ -342,23 +342,23 @@ public class MySQLHandler extends DatabaseHandler {
     }
 
     @Override
-    public Optional<UUID> getSuperAdmin() {
-        if (superAdmin.isPresent()) return superAdmin;
+    public boolean isSuperAdmin(UUID uuid) {
+        if (superAdmins.contains(uuid)) return true;
         Optional<Connection> connection = getConnection();
         if (!connection.isPresent()) {
             displayError(ConnectionError.REJECTED);
-            return Optional.empty();
+            return false;
         }
 
         try {
             PreparedStatement statement = connection.get().prepareStatement("SELECT uuid FROM superAdmin");
             ResultSet results = statement.executeQuery();
             while (results.next()) {
-                superAdmin = Optional.of(UUID.fromString(results.getString("uuid")));
+                if (results.getString("uuid").equals(uuid.toString())) return true;
             }
         } catch (SQLException e) {
             displayError(ConnectionError.DATABASE_EXCEPTION, e);
         }
-        return superAdmin;
+        return false;
     }
 }

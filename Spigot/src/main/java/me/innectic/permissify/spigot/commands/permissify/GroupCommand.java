@@ -32,6 +32,7 @@ import me.innectic.permissify.spigot.PermissifyMain;
 import me.innectic.permissify.spigot.commands.CommandResponse;
 import me.innectic.permissify.spigot.utils.ColorUtil;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 
 import java.util.List;
 import java.util.Optional;
@@ -51,15 +52,14 @@ public class GroupCommand {
      * @return the response, and if it was successful
      */
     public CommandResponse handleAddGroup(CommandSender sender, String[] args) {
-        // Check permissions and arguments
-        if (!sender.hasPermission(PermissifyConstants.PERMISSIFY_GROUP_CREATE))
-            return new CommandResponse(PermissifyConstants.INSUFFICIENT_PERMISSIONS, false);
-        if (args.length < 4) return new CommandResponse(PermissifyConstants.NOT_ENOUGH_ARGUMENTS_GROUP_ADD, false);
-        if (!ColorUtil.isValidChatColor(args[3])) return new CommandResponse(PermissifyConstants.INVALID_CHATCOLOR.replace("<COLOR>", args[3]), true);
-        // Check if there's even a database handler that can be used
         PermissifyMain plugin = PermissifyMain.getInstance();
         if (!plugin.getPermissifyAPI().getDatabaseHandler().isPresent())
             return new CommandResponse(PermissifyConstants.UNABLE_TO_CREATE.replace("<TYPE>", "group").replace("<REASON>", "No database handler."), false);
+        // Check permissions and arguments
+        if (!sender.hasPermission(PermissifyConstants.PERMISSIFY_GROUP_CREATE) && !plugin.getPermissifyAPI().getDatabaseHandler().get().isSuperAdmin(((Player) sender).getUniqueId()))
+            return new CommandResponse(PermissifyConstants.INSUFFICIENT_PERMISSIONS, false);
+        if (args.length < 4) return new CommandResponse(PermissifyConstants.NOT_ENOUGH_ARGUMENTS_GROUP_ADD, false);
+        if (!ColorUtil.isValidChatColor(args[3])) return new CommandResponse(PermissifyConstants.INVALID_CHATCOLOR.replace("<COLOR>", args[3]), true);
         // Create the new group
         boolean created = plugin.getPermissifyAPI().getDatabaseHandler().get().createGroup(args[0], args[1], args[2], args[3]);
         if (created) return new CommandResponse(PermissifyConstants.GROUP_CREATED.replace("<GROUP>", args[0]), true);
@@ -74,26 +74,28 @@ public class GroupCommand {
      * @return the response, and if it was successful
      */
     public CommandResponse handleDeleteGroup(CommandSender sender, String[] args) {
-        // Check permissions and arguments
-        if (!sender.hasPermission(PermissifyConstants.PERMISSIFY_GROUP_REMOVE))
-            return new CommandResponse(PermissifyConstants.INSUFFICIENT_PERMISSIONS, false);
-        if (args.length < 1) return new CommandResponse(PermissifyConstants.NOT_ENOUGH_ARGUMENTS_GROUP_REMOVE, false);
-        // Check if there's even a database handler that can be used
         PermissifyMain plugin = PermissifyMain.getInstance();
         if (!plugin.getPermissifyAPI().getDatabaseHandler().isPresent())
             return new CommandResponse(PermissifyConstants.UNABLE_TO_REMOVE.replace("<TYPE>", "group").replace("<REASON>", "No database handler"), false);
+        // Check permissions and arguments
+        if (!sender.hasPermission(PermissifyConstants.PERMISSIFY_GROUP_REMOVE) && !plugin.getPermissifyAPI().getDatabaseHandler().get().isSuperAdmin(((Player) sender).getUniqueId())) {
+            return new CommandResponse(PermissifyConstants.INSUFFICIENT_PERMISSIONS, false);
+        }
+        if (args.length < 1) return new CommandResponse(PermissifyConstants.NOT_ENOUGH_ARGUMENTS_GROUP_REMOVE, false);
         boolean removed = plugin.getPermissifyAPI().getDatabaseHandler().get().deleteGroup(args[0]);
         if (removed) return new CommandResponse(PermissifyConstants.GROUP_REMOVED.replace("<GROUP>", args[0]), false);
         return new CommandResponse(PermissifyConstants.UNABLE_TO_REMOVE.replace("<TYPE>", "group").replace("<REASON>", "Unable to connect to database"), false);
     }
 
     public CommandResponse handlePermissionAdd(CommandSender sender, String[] args) {
-        if (!sender.hasPermission(PermissifyConstants.PERMISSIFY_GROUP_PERMISSION_ADD))
-            return new CommandResponse(PermissifyConstants.INSUFFICIENT_PERMISSIONS, false);
-        if (args.length < 2) return new CommandResponse(PermissifyConstants.NOT_ENOUGH_ARGUMENTS_GROUP_PERMISSION_ADD, false);
         PermissifyMain plugin = PermissifyMain.getInstance();
-        if (!plugin.getPermissifyAPI().getDatabaseHandler().isPresent())
+        if (!plugin.getPermissifyAPI().getDatabaseHandler().isPresent()) {
             return new CommandResponse(PermissifyConstants.UNABLE_TO_CREATE.replace("<TYPE>", "group").replace("<REASON>", "No database handler."), false);
+        }
+        if (!sender.hasPermission(PermissifyConstants.PERMISSIFY_GROUP_PERMISSION_ADD) && !plugin.getPermissifyAPI().getDatabaseHandler().get().isSuperAdmin(((Player) sender).getUniqueId())) {
+            return new CommandResponse(PermissifyConstants.INSUFFICIENT_PERMISSIONS, false);
+        }
+        if (args.length < 2) return new CommandResponse(PermissifyConstants.NOT_ENOUGH_ARGUMENTS_GROUP_PERMISSION_ADD, false);
         boolean added = plugin.getPermissifyAPI().getDatabaseHandler().get().addGroupPermission(args[0], ArgumentUtil.getRemainingArgs(1, args));
         if (added) return new CommandResponse(PermissifyConstants.PERMISSION_ADDED_GROUP.replace("<PERMISSION>",
                 String.join(", ", ArgumentUtil.getRemainingArgs(1, args)).replace("<GROUP>", args[0])), true);
@@ -101,12 +103,13 @@ public class GroupCommand {
     }
 
     public CommandResponse handlePermissionRemove(CommandSender sender, String[] args) {
-        if (!sender.hasPermission(PermissifyConstants.PERMISSIFY_GROUP_PERMISSION_REMOVE))
-            return new CommandResponse(PermissifyConstants.INSUFFICIENT_PERMISSIONS, false);
-        if (args.length < 2) return new CommandResponse(PermissifyConstants.NOT_ENOUGH_ARGUMENTS_GROUP_PERMISSION_REMOVE, false);
         PermissifyMain plugin = PermissifyMain.getInstance();
         if (!plugin.getPermissifyAPI().getDatabaseHandler().isPresent())
             return new CommandResponse(PermissifyConstants.UNABLE_TO_CREATE.replace("<TYPE>", "group").replace("<REASON>", "No database handler."), false);
+        if (!sender.hasPermission(PermissifyConstants.PERMISSIFY_GROUP_PERMISSION_REMOVE) && !plugin.getPermissifyAPI().getDatabaseHandler().get().isSuperAdmin(((Player) sender).getUniqueId())) {
+            return new CommandResponse(PermissifyConstants.INSUFFICIENT_PERMISSIONS, false);
+        }
+        if (args.length < 2) return new CommandResponse(PermissifyConstants.NOT_ENOUGH_ARGUMENTS_GROUP_PERMISSION_REMOVE, false);
         boolean added = plugin.getPermissifyAPI().getDatabaseHandler().get().removeGroupPermission(args[0], ArgumentUtil.getRemainingArgs(1, args));
         if (added) return new CommandResponse(PermissifyConstants.PERMISSION_REMOVED_GROUP.replace("<PERMISSION>",
                 String.join(", ", ArgumentUtil.getRemainingArgs(1, args)).replace("<GROUP>", args[0])), true);
@@ -114,12 +117,13 @@ public class GroupCommand {
     }
 
     public CommandResponse handleListPermissions(CommandSender sender, String[] args) {
-        if (!sender.hasPermission(PermissifyConstants.PERMISSIFY_GROUP_PERMISSION_LIST))
-            return new CommandResponse(PermissifyConstants.INSUFFICIENT_PERMISSIONS, false);
-        if (args.length < 1) return new CommandResponse(PermissifyConstants.NOT_ENOUGH_ARGUMENTS_GROUP_PERMISSION_LIST, false);
         PermissifyMain plugin = PermissifyMain.getInstance();
         if (!plugin.getPermissifyAPI().getDatabaseHandler().isPresent())
             return new CommandResponse(PermissifyConstants.UNABLE_TO_LIST.replace("<REASON>", "No database handler"), false);
+        if (!sender.hasPermission(PermissifyConstants.PERMISSIFY_GROUP_PERMISSION_LIST) && !plugin.getPermissifyAPI().getDatabaseHandler().get().isSuperAdmin(((Player) sender).getUniqueId())) {
+            return new CommandResponse(PermissifyConstants.INSUFFICIENT_PERMISSIONS, false);
+        }
+        if (args.length < 1) return new CommandResponse(PermissifyConstants.NOT_ENOUGH_ARGUMENTS_GROUP_PERMISSION_LIST, false);
         Optional<PermissionGroup> group = plugin.getPermissifyAPI().getDatabaseHandler().get().getGroups().stream()
                 .filter(permissionGroup -> permissionGroup.getName().equals(args[0])).findFirst();
         if (!group.isPresent()) return new CommandResponse(PermissifyConstants.INVALID_GROUP, false);
@@ -129,11 +133,12 @@ public class GroupCommand {
     }
 
     public CommandResponse handleListGroups(CommandSender sender, String[] args) {
-        if (!sender.hasPermission(PermissifyConstants.PERMISSIFY_GROUP_LIST))
-            return new CommandResponse(PermissifyConstants.INSUFFICIENT_PERMISSIONS, false);
         PermissifyMain plugin = PermissifyMain.getInstance();
         if (!plugin.getPermissifyAPI().getDatabaseHandler().isPresent())
             return new CommandResponse(PermissifyConstants.UNABLE_TO_LIST.replace("<REASON>", "No database handler"), false);
+        if (!sender.hasPermission(PermissifyConstants.PERMISSIFY_GROUP_LIST) && !plugin.getPermissifyAPI().getDatabaseHandler().get().isSuperAdmin(((Player) sender).getUniqueId())) {
+            return new CommandResponse(PermissifyConstants.INSUFFICIENT_PERMISSIONS, false);
+        }
         List<PermissionGroup> groups = plugin.getPermissifyAPI().getDatabaseHandler().get().getGroups();
         List<String> groupNames = groups.stream().map(PermissionGroup::getName).collect(Collectors.toList());
         return new CommandResponse(PermissifyConstants.GROUP_LIST.replace("<GROUPS>", String.join(", ", groupNames)), true);

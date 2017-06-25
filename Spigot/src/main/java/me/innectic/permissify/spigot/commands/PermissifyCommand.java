@@ -53,7 +53,7 @@ public class PermissifyCommand implements CommandExecutor {
             if (!plugin.getPermissifyAPI().getDatabaseHandler().isPresent()) return false;
             Player player = Bukkit.getPlayer(args[1]);
             if (player == null) return false;
-            plugin.getPermissifyAPI().getDatabaseHandler().get().setSuperAdmin(player.getUniqueId());
+            plugin.getPermissifyAPI().getDatabaseHandler().get().addSuperAdmin(player.getUniqueId());
             sender.sendMessage("DOne: " + player.getName());
 
             return false;

@@ -42,7 +42,7 @@ public abstract class DatabaseHandler {
      */
     protected Map<UUID, List<Permission>> cachedPermissions = new HashMap<>();
     protected List<PermissionGroup> cachedGroups = new ArrayList<>();
-    protected Optional<UUID> superAdmin = Optional.empty();
+    protected List<UUID> superAdmins = new ArrayList<>();
     protected final Optional<ConnectionInformation> connectionInformation;
 
     public DatabaseHandler(ConnectionInformation connectionInformation) {
@@ -171,12 +171,12 @@ public abstract class DatabaseHandler {
      *
      * @param uuid the uuid of the player to be super admin
      */
-    public abstract void setSuperAdmin(UUID uuid);
+    public abstract void addSuperAdmin(UUID uuid);
 
     /**
      * Get the player who's super admin
      *
-     * @return the uuid of the player who's super admin
+     * @return if the uuid is a super admin
      */
-    public abstract Optional<UUID> getSuperAdmin();
+    public abstract boolean isSuperAdmin(UUID uuid);
 }
