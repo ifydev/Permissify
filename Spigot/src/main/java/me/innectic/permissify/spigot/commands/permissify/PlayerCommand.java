@@ -36,7 +36,7 @@ public class PlayerCommand {
         PermissifyMain plugin = PermissifyMain.getInstance();
         if (!plugin.getPermissifyAPI().getDatabaseHandler().isPresent())
             return new CommandResponse(PermissifyConstants.UNABLE_TO_REMOVE.replace("<REASON>", "No database handler."), false);
-        plugin.getPermissifyAPI().getDatabaseHandler().get().addPermission(player.getUniqueId(), permission);
+        plugin.getPermissifyAPI().getDatabaseHandler().get().removePermission(player.getUniqueId(), permission);
         return null;
     }
 }

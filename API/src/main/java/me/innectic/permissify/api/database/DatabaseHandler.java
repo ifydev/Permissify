@@ -40,7 +40,7 @@ public abstract class DatabaseHandler {
     /**
      * Cached permissions from the database.
      */
-    protected Map<UUID, List<Permission>> cachedPermissions = new HashMap<>();
+    protected Map<UUID, Map<String, Boolean>> cachedPermissions = new HashMap<>();
     protected List<PermissionGroup> cachedGroups = new ArrayList<>();
     protected List<UUID> superAdmins = new ArrayList<>();
     protected final Optional<ConnectionInformation> connectionInformation;
@@ -87,7 +87,7 @@ public abstract class DatabaseHandler {
      * @param uuid        the UUID of the player to add the permissions to
      * @param permissions the permissions to add to a player
      */
-    public abstract void addPermission(UUID uuid, Permission... permissions);
+    public abstract void addPermission(UUID uuid, String... permissions);
 
     /**
      * Remove permissions from a player
@@ -95,7 +95,7 @@ public abstract class DatabaseHandler {
      * @param uuid        the uuid of the player to remove the permissions from
      * @param permissions the permissions to remove
      */
-    public abstract void removePermission(UUID uuid, Permission... permissions);
+    public abstract void removePermission(UUID uuid, String... permissions);
 
     /**
      * Does a player have a permission?
@@ -104,7 +104,7 @@ public abstract class DatabaseHandler {
      * @param permission the permission to check
      * @return           if the player has the permission
      */
-    public abstract boolean hasPermission(UUID uuid, Permission permission);
+    public abstract boolean hasPermission(UUID uuid, String permission);
 
     /**
      * Get the permissions of a uuid

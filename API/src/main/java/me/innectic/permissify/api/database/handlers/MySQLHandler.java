@@ -32,6 +32,7 @@ import me.innectic.permissify.api.permission.PermissionGroup;
 
 import java.sql.*;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author Innectic
@@ -79,24 +80,22 @@ public class MySQLHandler extends DatabaseHandler {
     }
 
     @Override
-    public void addPermission(UUID uuid, Permission... permissions) {
+    public void addPermission(UUID uuid, String... permissions) {
         // Put the permissions into the cache
-        List<Permission> playerPermissions = cachedPermissions.getOrDefault(uuid, new ArrayList<>());
-        playerPermissions.addAll(Arrays.asList(permissions));
-        cachedPermissions.put(uuid, playerPermissions);
+        Map<String, Boolean> playerPermissions = cachedPermissions.getOrDefault(uuid, new HashMap<>());
 
-        for (Permission permission : permissions) {
+        for (String permission : permissions) {
+            playerPermissions.put(permission, true);
             Optional<Connection> connection = getConnection();
             if (!connection.isPresent()) {
                 displayError(ConnectionError.REJECTED);
                 return;
             }
-
             try {
                 PreparedStatement statement = connection.get().prepareStatement("INSERT INTO playerPermissions (uuid,permission,granted) VALUES (?,?,?)");
                 statement.setString(1, uuid.toString());
-                statement.setString(2, permission.getPermission());
-                statement.setBoolean(3, permission.isGranted());
+                statement.setString(2, permission);
+                statement.setBoolean(3, true);
                 statement.execute();
                 statement.close();
                 connection.get().close();
@@ -105,14 +104,15 @@ public class MySQLHandler extends DatabaseHandler {
                 return;
             }
         }
+        cachedPermissions.put(uuid, playerPermissions);
     }
 
     @Override
-    public void removePermission(UUID uuid, Permission... permissions) {
-        for (Permission permission : permissions) {
+    public void removePermission(UUID uuid, String... permissions) {
+        for (String permission : permissions) {
             // Remove from cache
-            List<Permission> playerPermissions = cachedPermissions.getOrDefault(uuid, new ArrayList<>());
-            playerPermissions.removeIf(entry -> entry.getPermission().equals(permission.getPermission()));
+            Map<String, Boolean> playerPermissions = cachedPermissions.getOrDefault(uuid, new HashMap<>());
+            playerPermissions.remove(permission);
             cachedPermissions.put(uuid, playerPermissions);
             // Attempt to remove from MySQL
             Optional<Connection> connection = getConnection();
@@ -124,7 +124,7 @@ public class MySQLHandler extends DatabaseHandler {
             try {
                 PreparedStatement statement = connection.get().prepareStatement("DELETE FROM permissions WHERE uuid=? AND permission=?");
                 statement.setString(1, uuid.toString());
-                statement.setString(2, permission.getPermission());
+                statement.setString(2, permission);
                 statement.execute();
                 // Cleanup
                 statement.close();
@@ -136,9 +136,12 @@ public class MySQLHandler extends DatabaseHandler {
     }
 
     @Override
-    public boolean hasPermission(UUID uuid, Permission permission) {
+    public boolean hasPermission(UUID uuid, String permission) {
         // Check the cache first
-        if (cachedPermissions.containsKey(uuid)) return cachedPermissions.get(uuid).contains(permission.getPermission());
+        if (cachedPermissions.containsKey(uuid))
+            return cachedPermissions.get(uuid).entrySet().stream()
+                    .filter(entry -> entry.getKey().equals(permission))
+                    .allMatch(entry -> entry.getValue().equals(true));
         // Cache didn't have it, see if the database does.
         Optional<Connection> connection = getConnection();
         if (!connection.isPresent()) {
@@ -149,7 +152,7 @@ public class MySQLHandler extends DatabaseHandler {
         try {
             PreparedStatement statement = connection.get().prepareStatement("SELECT granted FROM permissions WHERE uuid=? AND permission=?");
             statement.setString(1, uuid.toString());
-            statement.setString(2, permission.getPermission());
+            statement.setString(2, permission);
             // Does the player have the permission for this?
             ResultSet results = statement.executeQuery();
             boolean granted = false;
@@ -167,7 +170,9 @@ public class MySQLHandler extends DatabaseHandler {
 
     @Override
     public List<Permission> getPermissions(UUID uuid) {
-        if (cachedPermissions.containsKey(uuid)) return cachedPermissions.get(uuid);
+        if (cachedPermissions.containsKey(uuid))
+            return cachedPermissions.get(uuid).entrySet().stream()
+                    .map(entry -> new Permission(entry.getKey(), entry.getValue())).collect(Collectors.toList());
         Optional<Connection> connection = getConnection();
         List<Permission> permissions = new ArrayList<>();
 
