@@ -24,6 +24,10 @@
  */
 package me.innectic.permissify.spigot.commands.permissify;
 
+import me.innectic.permissify.api.PermissifyConstants;
+import me.innectic.permissify.spigot.PermissifyMain;
+import me.innectic.permissify.spigot.commands.CommandResponse;
+import me.innectic.permissify.spigot.utils.ColorUtil;
 import org.bukkit.command.CommandSender;
 
 /**
@@ -37,10 +41,40 @@ public class GroupCommand {
      *
      * @param sender the sender of the command
      * @param args   the extra arguments of the command
+     * @return the response, and if it was successful
      */
-    public boolean handleAddPermission(CommandSender sender, String[] args) {
+    public CommandResponse handleAddPermission(CommandSender sender, String[] args) {
+        // Check permissions and arguments
+        if (!sender.hasPermission(PermissifyConstants.PERMISSIFY_GROUP_CREATE)) return new CommandResponse(PermissifyConstants.INSUFFICIENT_PERMISSIONS, false);
+        if (args.length < 4) return new CommandResponse(PermissifyConstants.NOT_ENOUGH_ARGUMENTS_GROUP_ADD, false);
+        if (!ColorUtil.isValidChatColor(args[3])) return new CommandResponse(PermissifyConstants.INVALID_CHATCOLOR.replace("<COLOR>", args[3]), true);
+        // Check if there's even a database handler that can be used
+        PermissifyMain plugin = PermissifyMain.getInstance();
+        if (!plugin.getPermissifyAPI().getDatabaseHandler().isPresent())
+            return new CommandResponse(PermissifyConstants.UNABLE_TO_CREATE.replace("<TYPE>", "group").replace("<REASON>", "No database handler."), false);
+        // Create the new group
+        boolean created = plugin.getPermissifyAPI().getDatabaseHandler().get().createGroup(args[0], args[1], args[2], args[3]);
+        if (created) return new CommandResponse(PermissifyConstants.GROUP_CREATED.replace("<GROUP>", args[0]), true);
+        return new CommandResponse(PermissifyConstants.UNABLE_TO_CREATE.replace("<TYPE>", "group").replace("<REASON>", "Unable to connect to database."), false);
+    }
 
-
-        return true;
+    /**
+     * Handle the remove permission subcommand.
+     *
+     * @param sender the sender of the command
+     * @param args the arguments of the command
+     * @return the response, and if it was successful
+     */
+    public CommandResponse handleRemovePermission(CommandSender sender, String[] args) {
+        // Check permissions and arguments
+        if (!sender.hasPermission(PermissifyConstants.PERMISSIFY_GROUP_REMOVE)) return new CommandResponse(PermissifyConstants.INSUFFICIENT_PERMISSIONS, false);
+        if (args.length < 1) return new CommandResponse(PermissifyConstants.NOT_ENOUGH_ARGUMENTS_GROUP_REMOVE, false);
+        // Check if there's even a database handler that can be used
+        PermissifyMain plugin = PermissifyMain.getInstance();
+        if (!plugin.getPermissifyAPI().getDatabaseHandler().isPresent())
+            return new CommandResponse(PermissifyConstants.UNABLE_TO_REMOVE.replace("<TYPE>", "group").replace("<REASON>", "No database handler"), false);
+        boolean removed = plugin.getPermissifyAPI().getDatabaseHandler().get().deleteGroup(args[0]);
+        if (removed) return new CommandResponse(PermissifyConstants.GROUP_REMOVED.replace("<GROUP>", args[0]), false);
+        return new CommandResponse(PermissifyConstants.UNABLE_TO_REMOVE.replace("<TYPE>", "group").replace("<REASON>", "Unable to connect to database"), false);
     }
 }

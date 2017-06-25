@@ -59,9 +59,20 @@ public class PermissifyMain extends JavaPlugin {
         Optional<FullHandler> handler = configVerifier.verifyConnectionInformation();
         // Initialize the API
         permissifyAPI = new PermissifyAPI();
-        if (!handler.isPresent()) return;
-        if (!handler.get().getHandlerType().isPresent()) return;
-        permissifyAPI.initialize(handler.get().getHandlerType().get(), handler.get().getConnectionInformation());
+        if (!handler.isPresent()) {
+            System.out.println("No handler");
+            return;
+        }
+        if (!handler.get().getHandlerType().isPresent()) {
+            System.out.println("No handler type");
+            return;
+        }
+        try {
+            permissifyAPI.initialize(handler.get().getHandlerType().get(), handler.get().getConnectionInformation());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        groupCommand = new GroupCommand();
         // Register commands
         registerCommands();
         // Register listeners

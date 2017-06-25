@@ -36,8 +36,8 @@ import lombok.Getter;
 @AllArgsConstructor
 public class ConnectionInformation {
     @Getter private String url;
+    @Getter private String database;
     @Getter private int port;
-    @Getter private String table;
     @Getter private String username;
     @Getter private String password;
 }

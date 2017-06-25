@@ -24,7 +24,6 @@
  */
 package me.innectic.permissify.api.database;
 
-import lombok.RequiredArgsConstructor;
 import me.innectic.permissify.api.permission.Permission;
 import me.innectic.permissify.api.permission.PermissionGroup;
 
@@ -36,7 +35,6 @@ import java.util.*;
  *
  * The base database type.
  */
-@RequiredArgsConstructor
 public abstract class DatabaseHandler {
 
     /**
@@ -47,13 +45,17 @@ public abstract class DatabaseHandler {
     protected Optional<UUID> superAdmin = Optional.empty();
     protected final Optional<ConnectionInformation> connectionInformation;
 
+    public DatabaseHandler(ConnectionInformation connectionInformation) {
+        this.connectionInformation = Optional.ofNullable(connectionInformation);
+    }
+
     /**
      * Display an error to the server console, and the online ops. TODO: This should be converted to sending the message to players with a certain permission. `permissify.admin`?
      *
      * @param error the type of error
      */
     protected void displayError(ConnectionError error) {
-        // TODO: Do something with loggers here
+        System.out.println(error.getDisplay());
     }
 
     /**
@@ -63,7 +65,8 @@ public abstract class DatabaseHandler {
      * @param e     the exception that happened
      */
     protected void displayError(ConnectionError error, Exception e) {
-        // TODO: Do something with loggers here
+        System.out.println(error.getDisplay());
+        e.printStackTrace();
     }
 
     /**
@@ -127,7 +130,7 @@ public abstract class DatabaseHandler {
      *
      * @param name the name of the group
      */
-    public abstract void deleteGroup(String name);
+    public abstract boolean deleteGroup(String name);
 
     /**
      * Get all permissions groups.

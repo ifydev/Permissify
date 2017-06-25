@@ -57,12 +57,15 @@ public class ConfigVerifier implements VerifyConfig {
         Optional<ConnectionInformation> connectionInformation = Optional.empty();
         if (type.get().getHandler() == MySQLHandler.class) {
             if (plugin.getConfig().getString("connection.host") == null) return Optional.empty();
+            if (plugin.getConfig().getString("connection.database") == null) return Optional.empty();
+            if (plugin.getConfig().getString("connection.port") == null) return Optional.empty();
             if (plugin.getConfig().getString("connection.username") == null) return Optional.empty();
             if (plugin.getConfig().getString("connection.password") == null) return Optional.empty();
-            if (plugin.getConfig().getString("connection.table") == null) return Optional.empty();
-            connectionInformation = Optional.of(new ConnectionInformation(plugin.getConfig().getString("connection.host"),
+
+            connectionInformation = Optional.of(new ConnectionInformation(
+                    plugin.getConfig().getString("connection.host"),
+                    plugin.getConfig().getString("connection.database"),
                     plugin.getConfig().getInt("connection.port"),
-                    plugin.getConfig().getString("connection.table"),
                     plugin.getConfig().getString("connection.username"),
                     plugin.getConfig().getString("connection.password")));
         }

@@ -39,7 +39,7 @@ import java.util.*;
  */
 public class MySQLHandler extends DatabaseHandler {
 
-    public MySQLHandler(Optional<ConnectionInformation> connectionInformation) {
+    public MySQLHandler(ConnectionInformation connectionInformation) {
         super(connectionInformation);
     }
 
@@ -51,8 +51,8 @@ public class MySQLHandler extends DatabaseHandler {
     private Optional<Connection> getConnection() {
         if (!connectionInformation.isPresent()) return Optional.empty();
         try {
-            return Optional.ofNullable(DriverManager.getConnection(connectionInformation.get().getUrl(),
-                    connectionInformation.get().getUsername(), connectionInformation.get().getPassword()));
+            String connectionURL = "jdbc:mysql://" + connectionInformation.get().getUrl() + ":" + connectionInformation.get().getPort() + "/" + connectionInformation.get().getDatabase();
+            return Optional.ofNullable(DriverManager.getConnection(connectionURL, connectionInformation.get().getUsername(), connectionInformation.get().getPassword()));
         } catch (SQLException e) {
             displayError(ConnectionError.DATABASE_EXCEPTION, e);
         }
@@ -227,14 +227,15 @@ public class MySQLHandler extends DatabaseHandler {
     }
 
     @Override
-    public void deleteGroup(String name) {
+    public boolean deleteGroup(String name) {
+        if (getGroups().stream().noneMatch(group -> group.getName().equalsIgnoreCase(name))) return false;
         // Delete from the cache
         cachedGroups.removeIf(group -> group.getName().equalsIgnoreCase(name));
 
         Optional<Connection> connection = getConnection();
         if (!connection.isPresent()) {
             displayError(ConnectionError.REJECTED);
-            return;
+            return false;
         }
         try {
             PreparedStatement statement = connection.get().prepareStatement("DELETE FROM groups WHERE name=?");
@@ -244,7 +245,9 @@ public class MySQLHandler extends DatabaseHandler {
             connection.get().close();
         } catch (SQLException e) {
             displayError(ConnectionError.DATABASE_EXCEPTION, e);
+            return false;
         }
+        return true;
     }
 
     @Override
@@ -264,7 +267,7 @@ public class MySQLHandler extends DatabaseHandler {
             return;
         }
         try {
-            PreparedStatement statement = connection.get().prepareStatement("INSERT INTO superAdmin (uuid) VALUES (?) ON DUPLICATE KEY UPDATE uuid=?");
+            PreparedStatement statement = connection.get().prepareStatement("INSERT INTO superAdmin (uuid) VALUES (?)");
             statement.setString(1, uuid.toString());
             statement.execute();
             statement.close();

@@ -44,22 +44,18 @@ public class PermissifyAPI {
     /**
      * Initialize Permissify's API
      */
-    public void initialize(HandlerType type, Optional<ConnectionInformation> connectionInformation) {
+    public void initialize(HandlerType type, Optional<ConnectionInformation> connectionInformation) throws Exception {
         instance = Optional.of(this);
 
         try {
-            databaseHandler = Optional.of(type.getHandler().getConstructor(ConnectionInformation.class).newInstance(connectionInformation));
+            databaseHandler = Optional.of(type.getHandler().getConstructor(ConnectionInformation.class).newInstance(connectionInformation.orElse(null)));
         } catch (NoSuchMethodException | InvocationTargetException | InstantiationException | IllegalAccessException e) {
             e.printStackTrace();
         }
-        databaseHandler.ifPresent(handler -> {
-            boolean connected = handler.connect();
-            if (connected) {
-                // Something something logger something something
-                return;
-            }
-            // Something something logger something something
-        });
+        if (!databaseHandler.isPresent()) throw new Exception("No data handler present.");
+        boolean connected = databaseHandler.get().connect();
+        if (connected) System.out.println("Connected to the database.");
+        else System.out.println("Unable to connect to the database.");
     }
 
     public static Optional<PermissifyAPI> get() {
