@@ -76,6 +76,7 @@ public class PermissifyConstants {
     public static final String UNABLE_TO_REMOVE = PERMISSIFY_PREFIX + "&c&lUnable to remove <TYPE>: <REASON>";
     public static final String UNABLE_TO_ADD = PERMISSIFY_PREFIX + "&c&lUnable to add: <REASON>";
     public static final String UNABLE_TO_LIST = PERMISSIFY_PREFIX + "&c&lUnable to list: <REASON>";
+    public static final String UNABLE_OTHER = PERMISSIFY_PREFIX + "&c&lUnable to continue: <REASON>";
 
     // Help response
     public static final List<String> PERMISSIFY_HELP = new ArrayList<>(Arrays.asList(

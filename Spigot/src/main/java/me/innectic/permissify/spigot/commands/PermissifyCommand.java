@@ -48,7 +48,7 @@ public class PermissifyCommand implements CommandExecutor {
     public boolean onCommand(CommandSender sender, Command command, String s, String[] args) {
         PermissifyMain plugin = PermissifyMain.getInstance();
         if (!plugin.getPermissifyAPI().getDatabaseHandler().isPresent()) {
-            // TODO: Error message
+            sender.sendMessage(PermissifyConstants.UNABLE_OTHER.replace("<REASON>", "No database handler"));
             return false;
         }
         if (sender instanceof ConsoleCommandSender) {
