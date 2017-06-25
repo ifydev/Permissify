@@ -36,6 +36,8 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
 
+import java.util.Arrays;
+
 /**
  * @author Innectic
  * @since 6/15/2017
@@ -96,7 +98,7 @@ public class PermissifyCommand implements CommandExecutor {
                     sender.sendMessage(makeReadable(response.getResponse()));
                     return response.isSucceeded();
                 }
-                PermissifyConstants.PERMISSIFY_HELP.forEach(sender::sendMessage);
+                PermissifyConstants.PERMISSIFY_HELP.forEach(message -> sender.sendMessage(makeReadable(message)));
             }
         }
         return false;

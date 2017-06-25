@@ -43,6 +43,6 @@ public class ArgumentUtil {
      */
     public static String[] getRemainingArgs(int starting, String[] arguments) {
         List<String> args = new ArrayList<>(Arrays.asList(arguments));
-        return (String[]) args.subList(starting, args.size()-1).toArray();
+        return args.subList(starting, args.size()).toArray(new String[]{});
     }
 }

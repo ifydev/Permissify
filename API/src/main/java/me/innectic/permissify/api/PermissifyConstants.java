@@ -66,7 +66,7 @@ public class PermissifyConstants {
     public static final String NOT_ENOUGH_ARGUMENTS_GROUP_REMOVE = PERMISSIFY_PREFIX + "&c&lNot enough arguments! &e&l/permissify group remove [name]";
     public static final String NOT_ENOUGH_ARGUMENTS_GROUP_PERMISSION_ADD = PERMISSIFY_PREFIX + "&c&lNot enough arguments! &e&l/permissify group addpermission [name] [permission]";
     public static final String NOT_ENOUGH_ARGUMENTS_GROUP_PERMISSION_REMOVE = PERMISSIFY_PREFIX + "&c&lNot enough arguments! &e&l/permissify group removepermission [name] [permission]";
-    public static final String NOT_ENOUGH_ARGUMENTS_GROUP_PERMISSION_LIST = PERMISSIFY_PREFIX + "&c&lNot enough arguments! &e&l/permissiy group listpermissions [group]";
+    public static final String NOT_ENOUGH_ARGUMENTS_GROUP_PERMISSION_LIST = PERMISSIFY_PREFIX + "&c&lNot enough arguments! &e&l/permissify group listpermissions [group]";
 
     public static final String INVALID_CHATCOLOR = PERMISSIFY_PREFIX + "&c&lInvalid chat color <COLOR>";
     public static final String INVALID_GROUP = PERMISSIFY_PREFIX + "&c&lInvalid group!";
@@ -83,7 +83,7 @@ public class PermissifyConstants {
             "&a&l/permissify group create [name] [prefix] [suffix] [chat-color]",
             "&a&l/permissify group addpermission [name] [permission]",
             "&a&l/permissify group removepermission [name] [permission]",
-            "&a&l/permissify group listpermission [name]",
+            "&a&l/permissify group listpermissions [name]",
             "&a&l/permissify group list",
             "&e====================================================="
     ));
