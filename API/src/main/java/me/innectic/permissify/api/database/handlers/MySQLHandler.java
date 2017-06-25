@@ -256,6 +256,70 @@ public class MySQLHandler extends DatabaseHandler {
     }
 
     @Override
+    public boolean addGroupPermission(String group, String... permissions) {
+        // Make sure this is a valid group
+        Optional<PermissionGroup> permissionGroup = getGroups().stream().filter(permission -> permission.getName().equalsIgnoreCase(group)).findFirst();
+        if (!permissionGroup.isPresent()) return false;
+        // Update the cache
+        for (String permission : permissions) {
+            Optional<Connection> connection = getConnection();
+            if (!connection.isPresent()) {
+                displayError(ConnectionError.REJECTED);
+                return false;
+            }
+            try {
+                if (permissionGroup.get().hasPermission(permission)) return false;
+                PreparedStatement statement = connection.get().prepareStatement("INSERT INTO groupPermissions (groupName,permission) VALUES (?,?)");
+                statement.setString(1, group);
+                statement.setString(2, permission);
+                statement.execute();
+                statement.close();
+                connection.get().close();
+
+                permissionGroup.get().addPermission(permission);
+            } catch (SQLException e) {
+                displayError(ConnectionError.DATABASE_EXCEPTION, e);
+                return false;
+            }
+        }
+        return true;
+    }
+
+    @Override
+    public boolean removeGroupPermission(String group, String... permissions) {
+        Optional<PermissionGroup> permissionGroup = getGroups().stream().filter(permission -> permission.getName().equalsIgnoreCase(group)).findFirst();
+        if (!permissionGroup.isPresent()) return false;
+
+        for (String permission : permissions) {
+            if (!permissionGroup.get().hasPermission(permission)) return false;
+            permissionGroup.get().removePermission(permission);
+            Optional<Connection> connection = getConnection();
+            if (!connection.isPresent()) {
+                displayError(ConnectionError.REJECTED);
+                return false;
+            }
+            try {
+                PreparedStatement statement = connection.get().prepareStatement("DELETE FROM groupPermissions WHERE groupName=? AND permission=?");
+                statement.setString(1, group);
+                statement.setString(2, permission);
+                statement.execute();
+                statement.close();
+                connection.get().close();
+            } catch (SQLException e) {
+                displayError(ConnectionError.DATABASE_EXCEPTION, e);
+                return false;
+            }
+        }
+        return true;
+    }
+
+    @Override
+    public boolean hasGroupPermission(String group, String permission) {
+        Optional<PermissionGroup> permissionGroup = getGroups().stream().filter(perm -> perm.getName().equalsIgnoreCase(group)).findFirst();
+        return permissionGroup.map(groupPermission -> groupPermission.hasPermission(permission)).orElse(false);
+    }
+
+    @Override
     public void setSuperAdmin(UUID uuid) {
         if (uuid == null) return;
         // Update the cache

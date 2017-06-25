@@ -140,6 +140,33 @@ public abstract class DatabaseHandler {
     public abstract List<PermissionGroup> getGroups();
 
     /**
+     * Add a set of permissions to the group.
+     *
+     * @param group the group to add to
+     * @param permissions the permissions to add
+     * @return if it was added or not
+     */
+    public abstract boolean addGroupPermission(String group, String... permissions);
+
+    /**
+     * Remove a set of permission from a group
+     *
+     * @param group the group to remove from
+     * @param permissions the permissions to remove
+     * @return if the permissions were removed
+     */
+    public abstract boolean removeGroupPermission(String group, String... permissions);
+
+    /**
+     * Check if a group has a permission.
+     *
+     * @param group the group to check
+     * @param permission the permission to check
+     * @return if the group has the permission
+     */
+    public abstract boolean hasGroupPermission(String group, String permission);
+
+    /**
      * Set the super admin
      *
      * @param uuid the uuid of the player to be super admin

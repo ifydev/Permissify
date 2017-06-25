@@ -70,17 +70,21 @@ public class PermissifyCommand implements CommandExecutor {
             PermissifyMain plugin = PermissifyMain.getInstance();
             if (args[0].equalsIgnoreCase("group")) {
                 if (args[1].equalsIgnoreCase("create")) {
-                    CommandResponse response = plugin.getGroupCommand().handleAddPermission(sender, ArgumentUtil.getRemainingArgs(1, args));
+                    CommandResponse response = plugin.getGroupCommand().handleAddGroup(sender, ArgumentUtil.getRemainingArgs(2, args));
                     sender.sendMessage(response.getResponse());
                     return response.isSucceeded();
                 } else if (args[1].equalsIgnoreCase("remove")) {
-                    CommandResponse response = plugin.getGroupCommand().handleRemovePermission(sender, ArgumentUtil.getRemainingArgs(1, args));
+                    CommandResponse response = plugin.getGroupCommand().handleDeleteGroup(sender, ArgumentUtil.getRemainingArgs(2, args));
                     sender.sendMessage(response.getResponse());
                     return response.isSucceeded();
                 } else if (args[1].equalsIgnoreCase("addpermission")) {
-                    return true;
+                    CommandResponse response = plugin.getGroupCommand().handlePermissionAdd(sender, ArgumentUtil.getRemainingArgs(2, args));
+                    sender.sendMessage(response.getResponse());
+                    return response.isSucceeded();
                 } else if (args[1].equalsIgnoreCase("removepermission")) {
-                    return true;
+                    CommandResponse response = plugin.getGroupCommand().handlePermissionRemove(sender, ArgumentUtil.getRemainingArgs(2, args));
+                    sender.sendMessage(response.getResponse());
+                    return response.isSucceeded();
                 } else if (args[1].equalsIgnoreCase("listpermission")) {
                     return true;
                 } else if (args[1].equalsIgnoreCase("list")) {

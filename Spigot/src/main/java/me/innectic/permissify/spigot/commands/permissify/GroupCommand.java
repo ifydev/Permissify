@@ -24,7 +24,9 @@
  */
 package me.innectic.permissify.spigot.commands.permissify;
 
+import com.google.common.base.Strings;
 import me.innectic.permissify.api.PermissifyConstants;
+import me.innectic.permissify.api.util.ArgumentUtil;
 import me.innectic.permissify.spigot.PermissifyMain;
 import me.innectic.permissify.spigot.commands.CommandResponse;
 import me.innectic.permissify.spigot.utils.ColorUtil;
@@ -37,13 +39,13 @@ import org.bukkit.command.CommandSender;
 public class GroupCommand {
 
     /**
-     * Handle the add permission subcommand
+     * Handle the group create
      *
      * @param sender the sender of the command
      * @param args   the extra arguments of the command
      * @return the response, and if it was successful
      */
-    public CommandResponse handleAddPermission(CommandSender sender, String[] args) {
+    public CommandResponse handleAddGroup(CommandSender sender, String[] args) {
         // Check permissions and arguments
         if (!sender.hasPermission(PermissifyConstants.PERMISSIFY_GROUP_CREATE)) return new CommandResponse(PermissifyConstants.INSUFFICIENT_PERMISSIONS, false);
         if (args.length < 4) return new CommandResponse(PermissifyConstants.NOT_ENOUGH_ARGUMENTS_GROUP_ADD, false);
@@ -59,13 +61,13 @@ public class GroupCommand {
     }
 
     /**
-     * Handle the remove permission subcommand.
+     * Handle the group remove
      *
      * @param sender the sender of the command
      * @param args the arguments of the command
      * @return the response, and if it was successful
      */
-    public CommandResponse handleRemovePermission(CommandSender sender, String[] args) {
+    public CommandResponse handleDeleteGroup(CommandSender sender, String[] args) {
         // Check permissions and arguments
         if (!sender.hasPermission(PermissifyConstants.PERMISSIFY_GROUP_REMOVE)) return new CommandResponse(PermissifyConstants.INSUFFICIENT_PERMISSIONS, false);
         if (args.length < 1) return new CommandResponse(PermissifyConstants.NOT_ENOUGH_ARGUMENTS_GROUP_REMOVE, false);
@@ -76,5 +78,29 @@ public class GroupCommand {
         boolean removed = plugin.getPermissifyAPI().getDatabaseHandler().get().deleteGroup(args[0]);
         if (removed) return new CommandResponse(PermissifyConstants.GROUP_REMOVED.replace("<GROUP>", args[0]), false);
         return new CommandResponse(PermissifyConstants.UNABLE_TO_REMOVE.replace("<TYPE>", "group").replace("<REASON>", "Unable to connect to database"), false);
+    }
+
+    public CommandResponse handlePermissionAdd(CommandSender sender, String[] args) {
+        if (!sender.hasPermission(PermissifyConstants.PERMISSIFY_GROUP_PERMISSION_ADD)) return new CommandResponse(PermissifyConstants.INSUFFICIENT_PERMISSIONS, false);
+        if (args.length < 2) return new CommandResponse(PermissifyConstants.NOT_ENOUGH_ARGUMENTS_GROUP_PERMISSION_ADD, false);
+        PermissifyMain plugin = PermissifyMain.getInstance();
+        if (!plugin.getPermissifyAPI().getDatabaseHandler().isPresent())
+            return new CommandResponse(PermissifyConstants.UNABLE_TO_CREATE.replace("<TYPE>", "group").replace("<REASON>", "No database handler."), false);
+        boolean added = plugin.getPermissifyAPI().getDatabaseHandler().get().addGroupPermission(args[0], ArgumentUtil.getRemainingArgs(1, args));
+        if (added) return new CommandResponse(PermissifyConstants.PERMISSION_ADDED_GROUP.replace("<PERMISSION>",
+                String.join(", ", ArgumentUtil.getRemainingArgs(1, args)).replace("<GROUP>", args[0])), true);
+        return new CommandResponse(PermissifyConstants.UNABLE_TO_ADD.replace("<REASON>", "Permission is already on group!"), false);
+    }
+
+    public CommandResponse handlePermissionRemove(CommandSender sender, String[] args) {
+        if (!sender.hasPermission(PermissifyConstants.PERMISSIFY_GROUP_PERMISSION_REMOVE)) return new CommandResponse(PermissifyConstants.INSUFFICIENT_PERMISSIONS, false);
+        if (args.length < 2) return new CommandResponse(PermissifyConstants.NOT_ENOUGH_ARGUMENTS_GROUP_PERMISSION_REMOVE, false);
+        PermissifyMain plugin = PermissifyMain.getInstance();
+        if (!plugin.getPermissifyAPI().getDatabaseHandler().isPresent())
+            return new CommandResponse(PermissifyConstants.UNABLE_TO_CREATE.replace("<TYPE>", "group").replace("<REASON>", "No database handler."), false);
+        boolean added = plugin.getPermissifyAPI().getDatabaseHandler().get().removeGroupPermission(args[0], ArgumentUtil.getRemainingArgs(1, args));
+        if (added) return new CommandResponse(PermissifyConstants.PERMISSION_ADDED_GROUP.replace("<PERMISSION>",
+                String.join(", ", ArgumentUtil.getRemainingArgs(1, args)).replace("<GROUP>", args[0])), true);
+        return new CommandResponse(PermissifyConstants.UNABLE_TO_ADD.replace("<REASON>", "Permission isn't on group!"), false);
     }
 }

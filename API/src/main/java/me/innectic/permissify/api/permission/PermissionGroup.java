@@ -24,17 +24,49 @@
  */
 package me.innectic.permissify.api.permission;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+
+import java.util.List;
+import java.util.Optional;
 
 /**
  * @author Innectic
  * @since 6/14/2017
  */
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class PermissionGroup {
-    @Getter private String name;
-    @Getter private String chatColor;
-    @Getter private String prefix;
-    @Getter private String suffix;
+    @Getter private final String name;
+    @Getter private final String chatColor;
+    @Getter private final String prefix;
+    @Getter private final String suffix;
+    @Getter private List<Permission> permissions;
+
+    /**
+     * Remove a permission from the group
+     *
+     * @param permission the permission to remove
+     */
+    public void removePermission(String permission) {
+        Optional<Permission> perm = permissions.stream().filter(groupPermission -> groupPermission.getPermission().equals(permission)).findFirst();
+        perm.ifPresent(groupPermission -> groupPermission.setGranted(false));
+    }
+
+    /**
+     * Add a permission to the group
+     *
+     * @param permission the permission to add
+     */
+    public void addPermission(String permission) {
+        Optional<Permission> perm = permissions.stream().filter(groupPermission -> groupPermission.getPermission().equals(permission)).findFirst();
+        if (perm.isPresent()) {
+            perm.get().setGranted(true);
+        } else {
+            permissions.add(new Permission(permission, true));
+        }
+    }
+
+    public boolean hasPermission(String permission) {
+        return permissions.stream().anyMatch(perm -> perm.getPermission().equals(permission));
+    }
 }
