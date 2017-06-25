@@ -1,7 +1,0 @@
-me\innectic\permissify\spigot\commands\PermissifyCommand.class
-me\innectic\permissify\spigot\utils\ColorUtil.class
-me\innectic\permissify\spigot\commands\CommandResponse.class
-me\innectic\permissify\spigot\PermissifyMain.class
-me\innectic\permissify\spigot\events\PlayerJoin.class
-me\innectic\permissify\spigot\commands\permissify\GroupCommand.class
-me\innectic\permissify\spigot\utils\ConfigVerifier.class
