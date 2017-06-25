@@ -12,6 +12,7 @@
     <modules>
         <module>Spigot</module>
         <module>API</module>
+        <module>Sponge</module>
     </modules>
 
     <dependencies>

@@ -40,7 +40,7 @@ public class ColorUtil {
      */
     public static boolean isValidChatColor(String check) {
         for (ChatColor color : ChatColor.values()) {
-            if (color.toString().equals(check)) return true;
+            if (color.toString().endsWith(check)) return true;
         }
         return false;
 
