@@ -80,14 +80,12 @@ public class MySQLHandler extends DatabaseHandler {
 
     @Override
     public void addPermission(UUID uuid, Permission... permissions) {
+        // Put the permissions into the cache
+        List<Permission> playerPermissions = cachedPermissions.getOrDefault(uuid, new ArrayList<>());
+        playerPermissions.addAll(Arrays.asList(permissions));
+        cachedPermissions.put(uuid, playerPermissions);
+
         for (Permission permission : permissions) {
-            // Add it to the cache before anything else. Connection errors shouldn't stall everything.
-            List<Permission> playerPermissions = cachedPermissions.getOrDefault(uuid, new ArrayList<>());
-            long found = playerPermissions.stream().map(Permission::getPermission).filter(perm -> perm.equals(permission.getPermission())).count();
-            if (found > 0) return;
-            playerPermissions.add(permission);
-            cachedPermissions.put(uuid, playerPermissions);
-            // Now attempt to add to mysql
             Optional<Connection> connection = getConnection();
             if (!connection.isPresent()) {
                 displayError(ConnectionError.REJECTED);
@@ -95,16 +93,16 @@ public class MySQLHandler extends DatabaseHandler {
             }
 
             try {
-                PreparedStatement statement = connection.get().prepareStatement("INSERT INTO permissions (uuid,permission,granted) VALUES (?,?,?)");
+                PreparedStatement statement = connection.get().prepareStatement("INSERT INTO playerPermissions (uuid,permission,granted) VALUES (?,?,?)");
                 statement.setString(1, uuid.toString());
                 statement.setString(2, permission.getPermission());
                 statement.setBoolean(3, permission.isGranted());
                 statement.execute();
-                // Cleanup
                 statement.close();
                 connection.get().close();
             } catch (SQLException e) {
                 displayError(ConnectionError.DATABASE_EXCEPTION, e);
+                return;
             }
         }
     }

@@ -67,10 +67,12 @@ public class PermissifyConstants {
     public static final String NOT_ENOUGH_ARGUMENTS_GROUP_PERMISSION_ADD = PERMISSIFY_PREFIX + "&c&lNot enough arguments! &e&l/permissify group addpermission [name] [permission]";
     public static final String NOT_ENOUGH_ARGUMENTS_GROUP_PERMISSION_REMOVE = PERMISSIFY_PREFIX + "&c&lNot enough arguments! &e&l/permissify group removepermission [name] [permission]";
     public static final String NOT_ENOUGH_ARGUMENTS_GROUP_PERMISSION_LIST = PERMISSIFY_PREFIX + "&c&lNot enough arguments! &e&l/permissify group listpermissions [group]";
+    public static final String NOT_ENOUGH_ARGUMENTS_PLAYER = PERMISSIFY_PREFIX + "&c&lNot enough arguments! &e&l/permissify player [player] [group|listpermissions|listgroups|addpermission|removepermission]";
 
     public static final String INVALID_CHATCOLOR = PERMISSIFY_PREFIX + "&c&lInvalid chat color <COLOR>";
     public static final String INVALID_GROUP = PERMISSIFY_PREFIX + "&c&lInvalid group!";
     public static final String CONSOLE_INVALID_COMMAND = PERMISSIFY_PREFIX + "&c&lOnly one console command available: /permissify superadmin [username]";
+    public static final String INVALID_PLAYER = PERMISSIFY_PREFIX + "&c&lInvalid player!";
 
     public static final String UNABLE_TO_CREATE = PERMISSIFY_PREFIX + "&c&lUnable to create <TYPE>: <REASON>";
     public static final String UNABLE_TO_REMOVE = PERMISSIFY_PREFIX + "&c&lUnable to remove <TYPE>: <REASON>";

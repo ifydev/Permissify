@@ -43,6 +43,9 @@ public class ColorUtil {
             if (color.toString().endsWith(check)) return true;
         }
         return false;
+    }
 
+    public static String makeReadable(String convert) {
+        return ChatColor.translateAlternateColorCodes('&', convert);
     }
 }
