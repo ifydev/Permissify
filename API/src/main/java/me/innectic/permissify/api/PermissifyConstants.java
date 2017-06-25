@@ -79,12 +79,12 @@ public class PermissifyConstants {
 
     // Help response
     public static final List<String> PERMISSIFY_HELP = new ArrayList<>(Arrays.asList(
-            "&e=============== &a&lPermissify Help &e===============",
+            "&e================== &a&lPermissify Help &e==================",
             "&a&l/permissify group create [name] [prefix] [suffix] [chat-color]",
             "&a&l/permissify group addpermission [name] [permission]",
             "&a&l/permissify group removepermission [name] [permission]",
             "&a&l/permissify group listpermission [name]",
             "&a&l/permissify group list",
-            "&e==============================================="
+            "&e====================================================="
     ));
 }

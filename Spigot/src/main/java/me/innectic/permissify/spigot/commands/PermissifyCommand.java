@@ -44,59 +44,65 @@ public class PermissifyCommand implements CommandExecutor {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String s, String[] args) {
+        PermissifyMain plugin = PermissifyMain.getInstance();
+        if (!plugin.getPermissifyAPI().getDatabaseHandler().isPresent()) {
+            // TODO: Error message
+            return false;
+        }
         if (sender instanceof ConsoleCommandSender) {
             if (args.length < 2 || (args.length >= 2 && !args[0].equalsIgnoreCase("superadmin"))) {
-                sender.sendMessage(PermissifyConstants.CONSOLE_INVALID_COMMAND);
+                sender.sendMessage(makeReadable(PermissifyConstants.CONSOLE_INVALID_COMMAND));
                 return false;
             }
-            PermissifyMain plugin = PermissifyMain.getInstance();
-            if (!plugin.getPermissifyAPI().getDatabaseHandler().isPresent()) return false;
             Player player = Bukkit.getPlayer(args[1]);
             if (player == null) return false;
             plugin.getPermissifyAPI().getDatabaseHandler().get().addSuperAdmin(player.getUniqueId());
-            sender.sendMessage("DOne: " + player.getName());
 
             return false;
         } else if (sender instanceof Player) {
             Player player = (Player) sender;
-            if (!player.hasPermission(PermissifyConstants.PERMISSIFY_BASIC)) {
-                player.sendMessage(PermissifyConstants.INSUFFICIENT_PERMISSIONS);
+
+            if (!player.hasPermission(PermissifyConstants.PERMISSIFY_BASIC) && !plugin.getPermissifyAPI().getDatabaseHandler().get().isSuperAdmin(((Player) sender).getUniqueId())) {
+                player.sendMessage(makeReadable(PermissifyConstants.INSUFFICIENT_PERMISSIONS));
                 return false;
             }
             if (args.length < 2) {
-                PermissifyConstants.PERMISSIFY_HELP.forEach(sender::sendMessage);
+                PermissifyConstants.PERMISSIFY_HELP.forEach(message -> sender.sendMessage(makeReadable(message)));
                 return false;
             }
-            PermissifyMain plugin = PermissifyMain.getInstance();
             if (args[0].equalsIgnoreCase("group")) {
                 if (args[1].equalsIgnoreCase("create")) {
                     CommandResponse response = plugin.getGroupCommand().handleAddGroup(sender, ArgumentUtil.getRemainingArgs(2, args));
-                    sender.sendMessage(response.getResponse());
+                    sender.sendMessage(makeReadable(response.getResponse()));
                     return response.isSucceeded();
                 } else if (args[1].equalsIgnoreCase("remove")) {
                     CommandResponse response = plugin.getGroupCommand().handleDeleteGroup(sender, ArgumentUtil.getRemainingArgs(2, args));
-                    sender.sendMessage(response.getResponse());
+                    sender.sendMessage(makeReadable(response.getResponse()));
                     return response.isSucceeded();
                 } else if (args[1].equalsIgnoreCase("addpermission")) {
                     CommandResponse response = plugin.getGroupCommand().handlePermissionAdd(sender, ArgumentUtil.getRemainingArgs(2, args));
-                    sender.sendMessage(response.getResponse());
+                    sender.sendMessage(makeReadable(response.getResponse()));
                     return response.isSucceeded();
                 } else if (args[1].equalsIgnoreCase("removepermission")) {
                     CommandResponse response = plugin.getGroupCommand().handlePermissionRemove(sender, ArgumentUtil.getRemainingArgs(2, args));
-                    sender.sendMessage(response.getResponse());
+                    sender.sendMessage(makeReadable(response.getResponse()));
                     return response.isSucceeded();
                 } else if (args[1].equalsIgnoreCase("list")) {
                     CommandResponse response = plugin.getGroupCommand().handleListGroups(sender, ArgumentUtil.getRemainingArgs(2, args));
-                    sender.sendMessage(response.getResponse());
+                    sender.sendMessage(makeReadable(response.getResponse()));
                     return response.isSucceeded();
                 } else if (args[1].equalsIgnoreCase("listpermissions")) {
                     CommandResponse response = plugin.getGroupCommand().handleListPermissions(sender, ArgumentUtil.getRemainingArgs(2, args));
-                    sender.sendMessage(response.getResponse());
+                    sender.sendMessage(makeReadable(response.getResponse()));
                     return response.isSucceeded();
                 }
                 PermissifyConstants.PERMISSIFY_HELP.forEach(sender::sendMessage);
             }
         }
         return false;
+    }
+
+    private String makeReadable(String convert) {
+        return ChatColor.translateAlternateColorCodes('&', convert);
     }
 }
