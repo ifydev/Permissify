@@ -24,7 +24,7 @@ public class PlayerCommand {
         PermissifyMain plugin = PermissifyMain.getInstance();
         if (!plugin.getPermissifyAPI().getDatabaseHandler().isPresent())
             return new CommandResponse(PermissifyConstants.UNABLE_TO_ADD.replace("<REASON>", "No database handler."), false);
-        if (!sender.hasPermission(PermissifyConstants.PERMISSIFY_PLAYER_GROUP_ADD))
+        if (!sender.hasPermission(PermissifyConstants.PERMISSIFY_PLAYER_GROUP_ADD) && !plugin.getPermissifyAPI().getDatabaseHandler().get().isSuperAdmin(((Player) sender).getUniqueId()))
             return new CommandResponse(PermissifyConstants.INSUFFICIENT_PERMISSIONS, false);
         if (args.length < 2) return new CommandResponse(PermissifyConstants.NOT_ENOUGH_ARGUMENTS_PLAYER_ADD_GROUP, false);
         Player targetPlayer = Bukkit.getPlayer(args[0]);
@@ -42,7 +42,7 @@ public class PlayerCommand {
         PermissifyMain plugin = PermissifyMain.getInstance();
         if (!plugin.getPermissifyAPI().getDatabaseHandler().isPresent())
             return new CommandResponse(PermissifyConstants.UNABLE_TO_REMOVE.replace("<REASON>", "No database handler."), false);
-        if (!sender.hasPermission(PermissifyConstants.PERMISSIFY_PLAYER_GROUP_REMOVE))
+        if (!sender.hasPermission(PermissifyConstants.PERMISSIFY_PLAYER_GROUP_REMOVE) && !plugin.getPermissifyAPI().getDatabaseHandler().get().isSuperAdmin(((Player) sender).getUniqueId()))
             return new CommandResponse(PermissifyConstants.INSUFFICIENT_PERMISSIONS, false);
         if (args.length < 2) return new CommandResponse(PermissifyConstants.NOT_ENOUGH_ARGUMENTS_PLAYER_REMOVE_GROUP, false);
         Player targetPlayer = Bukkit.getPlayer(args[0]);
@@ -60,7 +60,7 @@ public class PlayerCommand {
         PermissifyMain plugin = PermissifyMain.getInstance();
         if (!plugin.getPermissifyAPI().getDatabaseHandler().isPresent())
             return new CommandResponse(PermissifyConstants.UNABLE_TO_ADD.replace("<REASON>", "No database handler."), false);
-        if (!sender.hasPermission(PermissifyConstants.PERMISSIFY_PLAYER_PERMISSION_ADD))
+        if (!sender.hasPermission(PermissifyConstants.PERMISSIFY_PLAYER_PERMISSION_ADD) && !plugin.getPermissifyAPI().getDatabaseHandler().get().isSuperAdmin(((Player) sender).getUniqueId()))
             return new CommandResponse(PermissifyConstants.INSUFFICIENT_PERMISSIONS, false);
         if (args.length < 2) return new CommandResponse(PermissifyConstants.NOT_ENOUGH_ARGUMENTS_PLAYER_ADD_PERMMISSION, false);
         Player targetPlayer = Bukkit.getPlayer(args[0]);
@@ -78,7 +78,7 @@ public class PlayerCommand {
         PermissifyMain plugin = PermissifyMain.getInstance();
         if (!plugin.getPermissifyAPI().getDatabaseHandler().isPresent())
             return new CommandResponse(PermissifyConstants.UNABLE_TO_REMOVE.replace("<REASON>", "No database handler."), false);
-        if (!sender.hasPermission(PermissifyConstants.PERMISSIFY_PLAYER_PERMISSION_REMOVE))
+        if (!sender.hasPermission(PermissifyConstants.PERMISSIFY_PLAYER_PERMISSION_REMOVE) && !plugin.getPermissifyAPI().getDatabaseHandler().get().isSuperAdmin(((Player) sender).getUniqueId()))
             return new CommandResponse(PermissifyConstants.INSUFFICIENT_PERMISSIONS, false);
         if (args.length < 2) return new CommandResponse(PermissifyConstants.NOT_ENOUGH_ARGUMENTS_PLAYER_REMOVE_PERMMISSION, false);
         Player targetPlayer = Bukkit.getPlayer(args[0]);
@@ -94,7 +94,7 @@ public class PlayerCommand {
         PermissifyMain plugin = PermissifyMain.getInstance();
         if (!plugin.getPermissifyAPI().getDatabaseHandler().isPresent())
             return new CommandResponse(PermissifyConstants.UNABLE_TO_LIST.replace("<REASON>", "No database handler."), false);
-        if (!sender.hasPermission(PermissifyConstants.PERMISSIFY_PLAYER_GROUP_LIST))
+        if (!sender.hasPermission(PermissifyConstants.PERMISSIFY_PLAYER_GROUP_LIST) && !plugin.getPermissifyAPI().getDatabaseHandler().get().isSuperAdmin(((Player) sender).getUniqueId()))
             return new CommandResponse(PermissifyConstants.INSUFFICIENT_PERMISSIONS, false);
         if (args.length < 1) return new CommandResponse(PermissifyConstants.NOT_ENOUGH_ARGUMENTS_PLAYER_LIST_GROUP, false);
         Player targetPlayer = Bukkit.getPlayer(args[0]);
@@ -111,7 +111,7 @@ public class PlayerCommand {
         PermissifyMain plugin = PermissifyMain.getInstance();
         if (!plugin.getPermissifyAPI().getDatabaseHandler().isPresent())
             return new CommandResponse(PermissifyConstants.UNABLE_TO_LIST.replace("<REASON>", "No database handler."), false);
-        if (!sender.hasPermission(PermissifyConstants.PERMISSIFY_PLAYER_PERMISSION_LIST))
+        if (!sender.hasPermission(PermissifyConstants.PERMISSIFY_PLAYER_PERMISSION_LIST) && !plugin.getPermissifyAPI().getDatabaseHandler().get().isSuperAdmin(((Player) sender).getUniqueId()))
             return new CommandResponse(PermissifyConstants.INSUFFICIENT_PERMISSIONS, false);
         if (args.length < 1) return new CommandResponse(PermissifyConstants.NOT_ENOUGH_ARGUMENTS_PLAYER_LIST_PERMMISSIONS, false);
         Player targetPlayer = Bukkit.getPlayer(args[0]);
