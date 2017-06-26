@@ -29,6 +29,7 @@ import me.innectic.permissify.api.PermissifyAPI;
 import me.innectic.permissify.api.database.handlers.FullHandler;
 import me.innectic.permissify.spigot.commands.PermissifyCommand;
 import me.innectic.permissify.spigot.commands.permissify.GroupCommand;
+import me.innectic.permissify.spigot.commands.permissify.PlayerCommand;
 import me.innectic.permissify.spigot.events.PlayerJoin;
 import me.innectic.permissify.spigot.utils.ConfigVerifier;
 import org.bukkit.Bukkit;
@@ -49,6 +50,7 @@ public class PermissifyMain extends JavaPlugin {
     @Getter private PermissifyAPI permissifyAPI;
 
     @Getter private GroupCommand groupCommand;
+    @Getter private PlayerCommand playerCommand;
 
     @Override
     public void onEnable() {
@@ -73,6 +75,7 @@ public class PermissifyMain extends JavaPlugin {
             e.printStackTrace();
         }
         groupCommand = new GroupCommand();
+        playerCommand = new PlayerCommand();
         // Register commands
         registerCommands();
         // Register listeners

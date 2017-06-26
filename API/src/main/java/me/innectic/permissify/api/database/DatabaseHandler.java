@@ -133,6 +133,24 @@ public abstract class DatabaseHandler {
     public abstract boolean deleteGroup(String name);
 
     /**
+     * Add a player to a permission group, and grant permissions.
+     *
+     * @param uuid  the uuid of the player
+     * @param group the group to add them to
+     * @return      if they were added
+     */
+    public abstract boolean addPlayerToGroup(UUID uuid, PermissionGroup group);
+
+    /**
+     * Remove a player from a group.
+     *
+     * @param uuid the player to remove
+     * @param group the group to remove from
+     * @return if the player was removed
+     */
+    public abstract boolean removePlayerFromGroup(UUID uuid, PermissionGroup group);
+
+    /**
      * Get all permissions groups.
      *
      * @return the registered permission groups

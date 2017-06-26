@@ -254,6 +254,60 @@ public class MySQLHandler extends DatabaseHandler {
     }
 
     @Override
+    public boolean addPlayerToGroup(UUID uuid, PermissionGroup group) {
+        if (group.hasPlayer(uuid)) return false;
+        group.addPlayer(uuid);
+        // Update the cache
+        cachedGroups.removeIf(entry -> entry.getName().equals(group.getName()));
+        cachedGroups.add(group);
+
+        Optional<Connection> connection = getConnection();
+        if (!connection.isPresent()) {
+            displayError(ConnectionError.REJECTED);
+            return false;
+        }
+        try {
+            PreparedStatement statement = connection.get().prepareStatement("INSERT INTO groupMembers (uuid,group) VALUES (?,?)");
+            statement.setString(1, uuid.toString());
+            statement.setString(2, group.getName());
+            statement.execute();
+            statement.close();
+            connection.get().close();
+            return true;
+        } catch (SQLException e) {
+            displayError(ConnectionError.DATABASE_EXCEPTION, e);
+        }
+        return false;
+    }
+
+    @Override
+    public boolean removePlayerFromGroup(UUID uuid, PermissionGroup group) {
+        if (!group.hasPlayer(uuid)) return false;
+        group.removePlayer(uuid);
+        // Update the cache
+        cachedGroups.removeIf(entry -> entry.getName().equals(group.getName()));
+        cachedGroups.add(group);
+
+        Optional<Connection> connection = getConnection();
+        if (!connection.isPresent()) {
+            displayError(ConnectionError.REJECTED);
+            return false;
+        }
+        try {
+            PreparedStatement statement = connection.get().prepareStatement("DELETE FROM groupMembers WHERE uuid=? AND `group`=?");
+            statement.setString(1, uuid.toString());
+            statement.setString(2, group.getName());
+            statement.execute();
+            statement.close();
+            connection.get().close();
+            return true;
+        } catch (SQLException e) {
+            displayError(ConnectionError.DATABASE_EXCEPTION, e);
+        }
+        return false;
+    }
+
+    @Override
     public List<PermissionGroup> getGroups() {
         return cachedGroups;
     }

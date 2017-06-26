@@ -96,12 +96,23 @@ public class PermissifyCommand implements CommandExecutor {
                         sender.sendMessage(ColorUtil.makeReadable(PermissifyConstants.NOT_ENOUGH_ARGUMENTS_PLAYER));
                         return;
                     }
-                    Player targetPlayer = Bukkit.getPlayer(args[1]);
-                    if (targetPlayer == null) {
-                        sender.sendMessage(ColorUtil.makeReadable(PermissifyConstants.INVALID_PLAYER));
+                    if (args[1].equalsIgnoreCase("addpermission")) {
+                        response = plugin.getPlayerCommand().handleAddPermission(sender, ArgumentUtil.getRemainingArgs(2, args));
+                    } else if (args[0].equalsIgnoreCase("removepermission")){
+                        response = plugin.getPlayerCommand().handleRemovePermission(sender, ArgumentUtil.getRemainingArgs(2, args));
+                    } else if (args[0].equalsIgnoreCase("addgroup")) {
+                        response = plugin.getPlayerCommand().handleAddPlayerToGroup(sender, ArgumentUtil.getRemainingArgs(2, args));
+                    } else if (args[0].equalsIgnoreCase("listpermissions")) {
+                        response = plugin.getPlayerCommand().handleListPermissions(sender, ArgumentUtil.getRemainingArgs(2, args));
+                    } else if (args[1].equalsIgnoreCase("listgroups")) {
+                        response = plugin.getPlayerCommand().handleListGroups(sender, ArgumentUtil.getRemainingArgs(2, args));
+                    } else if (args[1].equalsIgnoreCase("removegroup")) {
+                        response = plugin.getPlayerCommand().handleRemovePlayerFromGroup(sender, ArgumentUtil.getRemainingArgs(2, args));
+                    } else {
+                        PermissifyConstants.PERMISSIFY_HELP.forEach(message -> sender.sendMessage(ColorUtil.makeReadable(message)));
                         return;
                     }
-                    player.sendMessage(ChatColor.RED + targetPlayer.getUniqueId().toString());
+                    sender.sendMessage(ColorUtil.makeReadable(response.getResponse()));
                 }
             }
         });

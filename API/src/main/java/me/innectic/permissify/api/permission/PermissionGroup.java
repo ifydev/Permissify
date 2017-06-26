@@ -27,8 +27,10 @@ package me.innectic.permissify.api.permission;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 /**
  * @author Innectic
@@ -40,7 +42,8 @@ public class PermissionGroup {
     @Getter private final String chatColor;
     @Getter private final String prefix;
     @Getter private final String suffix;
-    @Getter private List<Permission> permissions;
+    @Getter private List<Permission> permissions = new ArrayList<>();
+    private List<UUID> players = new ArrayList<>();
 
     /**
      * Remove a permission from the group
@@ -68,5 +71,17 @@ public class PermissionGroup {
 
     public boolean hasPermission(String permission) {
         return permissions.stream().anyMatch(perm -> perm.getPermission().equals(permission));
+    }
+
+    public void addPlayer(UUID uuid) {
+        if (!players.contains(uuid)) players.add(uuid);
+    }
+
+    public void removePlayer(UUID uuid) {
+        players.removeIf(entry -> entry.equals(uuid));
+    }
+
+    public boolean hasPlayer(UUID uuid) {
+        return players.contains(uuid);
     }
 }
