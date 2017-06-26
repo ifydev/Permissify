@@ -158,6 +158,21 @@ public abstract class DatabaseHandler {
     public abstract List<PermissionGroup> getGroups();
 
     /**
+     * Get all permission groups a player is in.
+     *
+     * @param uuid the uuid of the player
+     * @return the groups the player is in
+     */
+    public abstract List<PermissionGroup> getGroups(UUID uuid);
+
+    /**
+     * Update a player's cache.
+     *
+     * @param uuid the uuid to update
+     */
+    public abstract void updateCache(UUID uuid);
+
+    /**
      * Add a set of permissions to the group.
      *
      * @param group       the group to add to

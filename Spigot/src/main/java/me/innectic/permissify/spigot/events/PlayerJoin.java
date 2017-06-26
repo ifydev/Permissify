@@ -44,6 +44,7 @@ public class PlayerJoin implements Listener {
         if (player == null) return;
         // Set the permissions of the player
         PermissifyMain.getInstance().getPermissifyAPI().getDatabaseHandler().ifPresent(handler -> {
+            handler.updateCache(player.getUniqueId());  // TODO: See the todo on that method, this one is literally just to make sure you see it
             List<Permission> permissions = handler.getPermissions(player.getUniqueId());
             // Add the permissions to the player
             handler.getGroups().stream().filter(permissionGroup ->

@@ -30,6 +30,7 @@ import me.innectic.permissify.api.database.handlers.FullHandler;
 import me.innectic.permissify.spigot.commands.PermissifyCommand;
 import me.innectic.permissify.spigot.commands.permissify.GroupCommand;
 import me.innectic.permissify.spigot.commands.permissify.PlayerCommand;
+import me.innectic.permissify.spigot.events.PlayerChat;
 import me.innectic.permissify.spigot.events.PlayerJoin;
 import me.innectic.permissify.spigot.utils.ConfigVerifier;
 import org.bukkit.Bukkit;
@@ -118,5 +119,6 @@ public class PermissifyMain extends JavaPlugin {
     private void registerListeners() {
         PluginManager pluginManager = Bukkit.getPluginManager();
         pluginManager.registerEvents(new PlayerJoin(), this);
+        pluginManager.registerEvents(new PlayerChat(), this);
     }
 }

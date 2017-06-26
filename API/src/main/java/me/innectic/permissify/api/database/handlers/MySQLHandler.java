@@ -320,6 +320,42 @@ public class MySQLHandler extends DatabaseHandler {
     }
 
     @Override
+    public List<PermissionGroup> getGroups(UUID uuid) {
+        return cachedGroups.stream().filter(group -> group.hasPlayer(uuid)).collect(Collectors.toList());
+    }
+
+    @Override
+    public void updateCache(UUID uuid) {
+        // TODO: Make this method not exist. It shouldn't be needed.
+        Optional<Connection> connection = getConnection();
+        if (!connection.isPresent()) {
+            displayError(ConnectionError.REJECTED);
+            return;
+        }
+        try {
+            PreparedStatement statement = connection.get().prepareStatement("SELECT `group` FROM groupMembers WHERE uuid=?");
+            statement.setString(1, uuid.toString());
+            ResultSet results = statement.executeQuery();
+            while (results.next()) {
+                // Put the group into the user's cache
+                cachedGroups.stream().filter(group -> {
+                    try {
+                        return group.getName().equals(results.getString("group"));
+                    } catch (SQLException e) {
+                        displayError(ConnectionError.DATABASE_EXCEPTION, e);
+                    }
+                    return false;
+                }).forEach(group -> group.addPlayer(uuid));
+            }
+            results.close();
+            statement.close();
+            connection.get().close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
     public boolean addGroupPermission(String group, String... permissions) {
         // Make sure this is a valid group
         Optional<PermissionGroup> permissionGroup = getGroups().stream().filter(permission -> permission.getName().equalsIgnoreCase(group)).findFirst();
