@@ -78,9 +78,9 @@ public class PermissifyConstants {
     public static final String NOT_ENOUGH_ARGUMENTS_GROUP_PERMISSION_REMOVE = PERMISSIFY_PREFIX + "&c&lNot enough arguments! &e&l/permissify group removepermission [name] [permission]";
     public static final String NOT_ENOUGH_ARGUMENTS_GROUP_PERMISSION_LIST = PERMISSIFY_PREFIX + "&c&lNot enough arguments! &e&l/permissify group listpermissions [group]";
     public static final String NOT_ENOUGH_ARGUMENTS_PLAYER = PERMISSIFY_PREFIX + "&c&lNot enough arguments! &e&l/permissify player [addgroup|removegroup|listpermissions|listgroups|addpermission|removepermission] [player]";
-    public static final String NOT_ENOUGH_ARGUMENTS_PLAYER_ADD_PERMMISSION = PERMISSIFY_PREFIX  + "&c&lNot enough arguments! &e&l/permissify player addpermission [permission] [player]";
-    public static final String NOT_ENOUGH_ARGUMENTS_PLAYER_REMOVE_PERMMISSION = PERMISSIFY_PREFIX  + "&c&lNot enough arguments! &e&l/permissify player removepermission [permission] [player]";
-    public static final String NOT_ENOUGH_ARGUMENTS_PLAYER_LIST_PERMMISSIONS = PERMISSIFY_PREFIX  + "&c&lNot enough arguments! &e&l/permissify player listpermissions [player]";
+    public static final String NOT_ENOUGH_ARGUMENTS_PLAYER_ADD_PERMISSION = PERMISSIFY_PREFIX  + "&c&lNot enough arguments! &e&l/permissify player addpermission [permission] [player]";
+    public static final String NOT_ENOUGH_ARGUMENTS_PLAYER_REMOVE_PERMISSION = PERMISSIFY_PREFIX  + "&c&lNot enough arguments! &e&l/permissify player removepermission [permission] [player]";
+    public static final String NOT_ENOUGH_ARGUMENTS_PLAYER_LIST_PERMISSIONS = PERMISSIFY_PREFIX  + "&c&lNot enough arguments! &e&l/permissify player listpermissions [player]";
     public static final String NOT_ENOUGH_ARGUMENTS_PLAYER_ADD_GROUP= PERMISSIFY_PREFIX + "&c&lNot enough arguments! &e&l/permissify player addgroup [group] [player]";
     public static final String NOT_ENOUGH_ARGUMENTS_PLAYER_REMOVE_GROUP= PERMISSIFY_PREFIX + "&c&lNot enough arguments! &e&l/permissify player removegroup [group] [player]";
     public static final String NOT_ENOUGH_ARGUMENTS_PLAYER_LIST_GROUP = PERMISSIFY_PREFIX + "&c&lNot enough arguments! &e&l/permissify player listgroup [player]";

@@ -46,8 +46,7 @@ public class PlayerJoin implements Listener {
         PermissifyMain.getInstance().getPermissifyAPI().getDatabaseHandler().ifPresent(handler -> {
             List<Permission> permissions = handler.getPermissions(player.getUniqueId());
             // Add the permissions to the player
-            permissions.forEach(permission ->
-                    player.addAttachment(PermissifyMain.getInstance(), permission.getPermission(), permission.isGranted()));
+            permissions.forEach(permission -> player.addAttachment(PermissifyMain.getInstance(), permission.getPermission(), permission.isGranted()));
         });
     }
 }

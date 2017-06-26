@@ -122,11 +122,18 @@ public class MySQLHandler extends DatabaseHandler {
             }
 
             try {
-                PreparedStatement statement = connection.get().prepareStatement("DELETE FROM permissions WHERE uuid=? AND permission=?");
+                PreparedStatement statement = connection.get().prepareStatement("DELETE FROM playerPermissions WHERE uuid=? AND permission=?");
                 statement.setString(1, uuid.toString());
                 statement.setString(2, permission);
                 statement.execute();
                 // Cleanup
+                statement.close();
+                statement = connection.get().prepareStatement("INSERT INTO playerPermissions (uuid,permission,granted) VALUES (?,?,?)");
+                statement.setString(1, uuid.toString());
+                statement.setString(2, permission);
+                statement.setBoolean(3, false);
+                // Cleanup
+                statement.execute();
                 statement.close();
                 connection.get().close();
             } catch (SQLException e) {
@@ -150,7 +157,7 @@ public class MySQLHandler extends DatabaseHandler {
         }
 
         try {
-            PreparedStatement statement = connection.get().prepareStatement("SELECT granted FROM permissions WHERE uuid=? AND permission=?");
+            PreparedStatement statement = connection.get().prepareStatement("SELECT granted FROM playerPermissions WHERE uuid=? AND permission=?");
             statement.setString(1, uuid.toString());
             statement.setString(2, permission);
             // Does the player have the permission for this?
@@ -181,7 +188,7 @@ public class MySQLHandler extends DatabaseHandler {
             return permissions;
         }
         try {
-            PreparedStatement statement = connection.get().prepareStatement("SELECT permission,granted FROM permissions WHERE uuid=?");
+            PreparedStatement statement = connection.get().prepareStatement("SELECT permission,granted FROM playerPermissions WHERE uuid=?");
             statement.setString(1, uuid.toString());
             ResultSet results = statement.executeQuery();
 

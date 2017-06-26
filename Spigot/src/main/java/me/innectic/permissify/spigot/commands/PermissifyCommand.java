@@ -98,11 +98,11 @@ public class PermissifyCommand implements CommandExecutor {
                     }
                     if (args[1].equalsIgnoreCase("addpermission")) {
                         response = plugin.getPlayerCommand().handleAddPermission(sender, ArgumentUtil.getRemainingArgs(2, args));
-                    } else if (args[0].equalsIgnoreCase("removepermission")){
+                    } else if (args[1].equalsIgnoreCase("removepermission")){
                         response = plugin.getPlayerCommand().handleRemovePermission(sender, ArgumentUtil.getRemainingArgs(2, args));
-                    } else if (args[0].equalsIgnoreCase("addgroup")) {
+                    } else if (args[1].equalsIgnoreCase("addgroup")) {
                         response = plugin.getPlayerCommand().handleAddPlayerToGroup(sender, ArgumentUtil.getRemainingArgs(2, args));
-                    } else if (args[0].equalsIgnoreCase("listpermissions")) {
+                    } else if (args[1].equalsIgnoreCase("listpermissions")) {
                         response = plugin.getPlayerCommand().handleListPermissions(sender, ArgumentUtil.getRemainingArgs(2, args));
                     } else if (args[1].equalsIgnoreCase("listgroups")) {
                         response = plugin.getPlayerCommand().handleListGroups(sender, ArgumentUtil.getRemainingArgs(2, args));
