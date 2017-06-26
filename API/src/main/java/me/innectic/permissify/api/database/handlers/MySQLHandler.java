@@ -274,7 +274,7 @@ public class MySQLHandler extends DatabaseHandler {
             return false;
         }
         try {
-            PreparedStatement statement = connection.get().prepareStatement("INSERT INTO groupMembers (uuid,group) VALUES (?,?)");
+            PreparedStatement statement = connection.get().prepareStatement("INSERT INTO groupMembers (uuid,`group`) VALUES (?,?)");
             statement.setString(1, uuid.toString());
             statement.setString(2, group.getName());
             statement.execute();
@@ -337,15 +337,18 @@ public class MySQLHandler extends DatabaseHandler {
             statement.setString(1, uuid.toString());
             ResultSet results = statement.executeQuery();
             while (results.next()) {
-                // Put the group into the user's cache
-                cachedGroups.stream().filter(group -> {
-                    try {
-                        return group.getName().equals(results.getString("group"));
-                    } catch (SQLException e) {
-                        displayError(ConnectionError.DATABASE_EXCEPTION, e);
-                    }
-                    return false;
-                }).forEach(group -> group.addPlayer(uuid));
+                String groupName = results.getString("group");
+                Optional<PermissionGroup> group = cachedGroups.stream().filter(permissionGroup -> permissionGroup .getName().equals(groupName)).findFirst();
+                // Get the group from the database, if we don't have have it already
+                if (!group.isPresent()) {
+                    PreparedStatement groupStatement = connection.get().prepareStatement("SELECT prefix,suffix,chatcolor FROM groups WHERE name=?");
+                    groupStatement.setString(1, groupName);
+                    ResultSet groupResults = groupStatement.executeQuery();
+                    if (!groupResults.next()) return;
+                    cachedGroups.add(new PermissionGroup(
+                            groupName, groupResults.getString("chatcolor"), groupResults.getString("prefix"),
+                            groupResults.getString("suffix")));
+                }
             }
             results.close();
             statement.close();
