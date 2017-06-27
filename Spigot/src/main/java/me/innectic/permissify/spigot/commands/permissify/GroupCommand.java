@@ -31,10 +31,13 @@ import me.innectic.permissify.api.util.ArgumentUtil;
 import me.innectic.permissify.spigot.PermissifyMain;
 import me.innectic.permissify.spigot.commands.CommandResponse;
 import me.innectic.permissify.spigot.utils.ColorUtil;
+import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.permissions.PermissionAttachment;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -97,8 +100,21 @@ public class GroupCommand {
         }
         if (args.length < 2) return new CommandResponse(PermissifyConstants.NOT_ENOUGH_ARGUMENTS_GROUP_PERMISSION_ADD, false);
         boolean added = plugin.getPermissifyAPI().getDatabaseHandler().get().addGroupPermission(args[0], ArgumentUtil.getRemainingArgs(1, args));
-        if (added) return new CommandResponse(PermissifyConstants.PERMISSION_ADDED_GROUP.replace("<PERMISSION>",
-                String.join(", ", ArgumentUtil.getRemainingArgs(1, args)).replace("<GROUP>", args[0])), true);
+        if (added) {
+            String[] remaining = ArgumentUtil.getRemainingArgs(1, args);
+            Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+                if (!plugin.getPermissifyAPI().getDatabaseHandler().isPresent()) return;
+                Optional<PermissionGroup> group = plugin.getPermissifyAPI().getDatabaseHandler().get().getGroups()
+                        .stream().filter(permissionGroup -> permissionGroup.getName().equals(args[0])).findFirst();
+                group.ifPresent(permissionGroup -> {
+                    for (String permission : remaining)
+                        permissionGroup.getPlayers().stream().map(Bukkit::getPlayer).filter(Objects::nonNull)
+                                .forEach(player -> player.addAttachment(plugin, permission, true));
+                });
+            });
+            return new CommandResponse(PermissifyConstants.PERMISSION_ADDED_GROUP.replace("<PERMISSION>",
+                    String.join(", ", ArgumentUtil.getRemainingArgs(1, args)).replace("<GROUP>", args[0])), true);
+        }
         return new CommandResponse(PermissifyConstants.UNABLE_TO_ADD.replace("<REASON>", "Permission is already on group!"), false);
     }
 
@@ -111,8 +127,21 @@ public class GroupCommand {
         }
         if (args.length < 2) return new CommandResponse(PermissifyConstants.NOT_ENOUGH_ARGUMENTS_GROUP_PERMISSION_REMOVE, false);
         boolean added = plugin.getPermissifyAPI().getDatabaseHandler().get().removeGroupPermission(args[0], ArgumentUtil.getRemainingArgs(1, args));
-        if (added) return new CommandResponse(PermissifyConstants.PERMISSION_REMOVED_GROUP.replace("<PERMISSION>",
-                String.join(", ", ArgumentUtil.getRemainingArgs(1, args)).replace("<GROUP>", args[0])), true);
+        if (added) {
+            String[] remaining = ArgumentUtil.getRemainingArgs(1, args);
+            Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+                if (!plugin.getPermissifyAPI().getDatabaseHandler().isPresent()) return;
+                Optional<PermissionGroup> group = plugin.getPermissifyAPI().getDatabaseHandler().get().getGroups()
+                        .stream().filter(permissionGroup -> permissionGroup.getName().equals(args[0])).findFirst();
+                group.ifPresent(permissionGroup -> {
+                    for (String permission : remaining)
+                    permissionGroup.getPlayers().stream().map(Bukkit::getPlayer).filter(Objects::nonNull)
+                            .forEach(player -> player.addAttachment(plugin, permission, false));
+                });
+            });
+            return new CommandResponse(PermissifyConstants.PERMISSION_REMOVED_GROUP.replace("<PERMISSION>",
+                    String.join(", ", remaining).replace("<GROUP>", args[0])), true);
+        }
         return new CommandResponse(PermissifyConstants.UNABLE_TO_ADD.replace("<REASON>", "Permission isn't on group!"), false);
     }
 

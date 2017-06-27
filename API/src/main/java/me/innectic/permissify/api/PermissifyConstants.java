@@ -70,7 +70,7 @@ public class PermissifyConstants {
     public static final String PERMISSION_ADDED_PLAYER = PERMISSIFY_PREFIX + "&c&lPermission <PERMISSION> has been added to <PLAYER>!";
     public static final String PERMISSION_REMOVED_PLAYER = PERMISSIFY_PREFIX + "&c&lPermission <PERMISSION> has been removed from <PLAYER>!";
     public static final String PLAYER_ADDED_TO_GROUP = PERMISSIFY_PREFIX + "&c&lAdded <PLAYER> to <GROUP>";
-    public static final String PLAYER_REMOVED_FROM_GROUP = PERMISSIFY_PREFIX + "&c&Removed <PLAYER> from <GROUP>";
+    public static final String PLAYER_REMOVED_FROM_GROUP = PERMISSIFY_PREFIX + "&c&lRemoved <PLAYER> from <GROUP>";
 
     public static final String NOT_ENOUGH_ARGUMENTS_GROUP_CREATE = PERMISSIFY_PREFIX + "&c&lNot enough arguments! &e&l/permissify group create [name] [prefix] [suffix] [chat-color]";
     public static final String NOT_ENOUGH_ARGUMENTS_GROUP_REMOVE = PERMISSIFY_PREFIX + "&c&lNot enough arguments! &e&l/permissify group remove [name]";

@@ -43,7 +43,7 @@ public class PermissionGroup {
     @Getter private final String prefix;
     @Getter private final String suffix;
     @Getter private List<Permission> permissions = new ArrayList<>();
-    private List<UUID> players = new ArrayList<>();
+    @Getter private List<UUID> players = new ArrayList<>();
 
     /**
      * Remove a permission from the group
