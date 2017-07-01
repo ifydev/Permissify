@@ -24,12 +24,12 @@
  */
 package me.innectic.permissify.spigot.utils;
 
+import me.innectic.permissify.spigot.PermissifyMain;
 import me.innectic.permissify.api.database.ConnectionInformation;
 import me.innectic.permissify.api.database.handlers.FullHandler;
 import me.innectic.permissify.api.database.handlers.HandlerType;
 import me.innectic.permissify.api.database.handlers.MySQLHandler;
 import me.innectic.permissify.api.util.VerifyConfig;
-import me.innectic.permissify.spigot.PermissifyMain;
 
 import java.util.Optional;
 

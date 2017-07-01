@@ -24,11 +24,11 @@
  */
 package me.innectic.permissify.spigot.commands.permissify;
 
+import me.innectic.permissify.spigot.PermissifyMain;
+import me.innectic.permissify.spigot.commands.CommandResponse;
 import me.innectic.permissify.api.PermissifyConstants;
 import me.innectic.permissify.api.permission.Permission;
 import me.innectic.permissify.api.permission.PermissionGroup;
-import me.innectic.permissify.spigot.PermissifyMain;
-import me.innectic.permissify.spigot.commands.CommandResponse;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;

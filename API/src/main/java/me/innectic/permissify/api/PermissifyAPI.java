@@ -28,6 +28,7 @@ import lombok.Getter;
 import me.innectic.permissify.api.database.ConnectionInformation;
 import me.innectic.permissify.api.database.DatabaseHandler;
 import me.innectic.permissify.api.database.handlers.HandlerType;
+
 import java.lang.reflect.InvocationTargetException;
 import java.util.Optional;
 

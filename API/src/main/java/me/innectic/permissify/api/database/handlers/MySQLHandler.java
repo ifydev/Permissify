@@ -25,9 +25,9 @@
 package me.innectic.permissify.api.database.handlers;
 
 import me.innectic.permissify.api.database.ConnectionError;
+import me.innectic.permissify.api.database.DatabaseHandler;
 import me.innectic.permissify.api.permission.Permission;
 import me.innectic.permissify.api.database.ConnectionInformation;
-import me.innectic.permissify.api.database.DatabaseHandler;
 import me.innectic.permissify.api.permission.PermissionGroup;
 
 import java.sql.*;

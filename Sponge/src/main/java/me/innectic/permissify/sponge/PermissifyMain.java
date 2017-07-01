@@ -22,13 +22,19 @@
 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 * SOFTWARE.
  */
-package me.innectic.permissify;
+package me.innectic.permissify.sponge;
 
 import com.google.inject.Inject;
+import me.innectic.permissify.sponge.config.PermissifyConfig;
+import me.innectic.permissify.sponge.events.PlayerJoinEvent;
 import org.slf4j.Logger;
+import org.spongepowered.api.Sponge;
+import org.spongepowered.api.config.ConfigDir;
+import org.spongepowered.api.config.DefaultConfig;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.filter.Getter;
+import org.spongepowered.api.event.game.state.GamePreInitializationEvent;
 import org.spongepowered.api.event.game.state.GameStartedServerEvent;
 import org.spongepowered.api.event.network.ClientConnectionEvent;
 import org.spongepowered.api.plugin.Plugin;
@@ -36,16 +42,36 @@ import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
 import org.spongepowered.api.text.format.TextStyles;
 
+import java.io.File;
+import java.nio.file.Path;
+import java.util.Objects;
+import java.util.Optional;
+
 @Plugin(id = "permissify", name = "Permissify", version = "1.0", authors = "Innectic")
-public class Permissify {
-    @Inject private Logger logger;
+public class PermissifyMain {
+    @Inject @lombok.Getter private Logger logger;
+
+    @Inject @ConfigDir(sharedRoot = false) @lombok.Getter private Path configurationDirectory;
+    @Inject @DefaultConfig(sharedRoot = false) @lombok.Getter private Path defaultConfiguration;
+    @Inject @ConfigDir(sharedRoot = false) @lombok.Getter private File defaultConfigurationFile;
+    private PermissifyConfig config;
 
     @Listener
-    public void onServerStart(GameStartedServerEvent event) {
+    public void onServerPreInit(GamePreInitializationEvent event) {
+        Sponge.getEventManager().registerListeners(this, new PlayerJoinEvent());
     }
 
-    @Listener
-    public void onPlayerJoin(ClientConnectionEvent.Join event, @Getter("getTargetEntity") Player player) {
+    public static Optional<PermissifyMain> getPlugin() {
+        // Epic one-liner ahead.
+        return Sponge.getPluginManager().getPlugin("permissify").filter(pluginContainer ->
+                pluginContainer.getInstance().isPresent()).filter(Objects::nonNull)
+                .filter(PermissifyMain.class::isInstance).map(PermissifyMain.class::cast);
     }
 
+    /**
+     * Ensures the configuration exists, and loads all values.
+     */
+    private void setupConfiguration() {
+        config = new PermissifyConfig();
+    }
 }

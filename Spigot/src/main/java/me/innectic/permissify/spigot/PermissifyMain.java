@@ -25,13 +25,13 @@
 package me.innectic.permissify.spigot;
 
 import lombok.Getter;
-import me.innectic.permissify.api.PermissifyAPI;
-import me.innectic.permissify.api.database.handlers.FullHandler;
 import me.innectic.permissify.spigot.commands.PermissifyCommand;
-import me.innectic.permissify.spigot.commands.permissify.GroupCommand;
-import me.innectic.permissify.spigot.commands.permissify.PlayerCommand;
 import me.innectic.permissify.spigot.events.PlayerChat;
 import me.innectic.permissify.spigot.events.PlayerJoin;
+import me.innectic.permissify.api.PermissifyAPI;
+import me.innectic.permissify.api.database.handlers.FullHandler;
+import me.innectic.permissify.spigot.commands.permissify.GroupCommand;
+import me.innectic.permissify.spigot.commands.permissify.PlayerCommand;
 import me.innectic.permissify.spigot.utils.ConfigVerifier;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.PluginManager;
