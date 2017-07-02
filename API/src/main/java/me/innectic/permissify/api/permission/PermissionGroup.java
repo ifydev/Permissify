@@ -71,8 +71,9 @@ public class PermissionGroup {
         return permissions.stream().anyMatch(perm -> perm.getPermission().equals(permission));
     }
 
-    public void addPlayer(UUID uuid) {
-        if (!hasPlayer(uuid)) players.put(uuid, false);
+    public void addPlayer(UUID uuid, boolean isPrimary) {
+        System.out.println("Current: " + uuid + " - status: " + isPrimary);
+        players.put(uuid, isPrimary);
     }
 
     public void removePlayer(UUID uuid) {
@@ -84,6 +85,8 @@ public class PermissionGroup {
     }
 
     public boolean isPrimaryGroup(UUID uuid) {
+        System.out.println(this.players);
+        System.out.println(this.players.get(uuid));
         return players.containsKey(uuid) && players.get(uuid).equals(true);
     }
 

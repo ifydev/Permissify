@@ -274,7 +274,7 @@ public class MySQLHandler extends DatabaseHandler {
     @Override
     public boolean addPlayerToGroup(UUID uuid, PermissionGroup group) {
         if (group.hasPlayer(uuid)) return false;
-        group.addPlayer(uuid);
+        group.addPlayer(uuid, false);
         // Update the cache
         cachedGroups.removeIf(entry -> entry.getName().equals(group.getName()));
         cachedGroups.add(group);
@@ -353,8 +353,10 @@ public class MySQLHandler extends DatabaseHandler {
             statement.setString(2, uuid.toString());
             statement.setString(3, group.getName());
             statement.execute();
+            statement.close();
+            connection.get().close();
         } catch (SQLException e) {
-            e.printStackTrace();
+            displayError(ConnectionError.DATABASE_EXCEPTION, e);
         }
         return true;
     }
@@ -366,7 +368,6 @@ public class MySQLHandler extends DatabaseHandler {
 
     @Override
     public void updateCache(UUID uuid) {
-        // TODO: Make this method not exist. It shouldn't be needed.
         Optional<Connection> connection = getConnection();
         if (!connection.isPresent()) {
             displayError(ConnectionError.REJECTED);
@@ -381,20 +382,25 @@ public class MySQLHandler extends DatabaseHandler {
                 Optional<PermissionGroup> group = cachedGroups.stream().filter(permissionGroup -> permissionGroup .getName().equals(groupName)).findFirst();
                 // Get the group from the database, if we don't have have it already
                 if (!group.isPresent()) {
+                    System.out.println("Not present");
                     PreparedStatement groupStatement = connection.get().prepareStatement("SELECT prefix,suffix,chatcolor FROM groups WHERE name=?");
                     groupStatement.setString(1, groupName);
                     ResultSet groupResults = groupStatement.executeQuery();
                     if (!groupResults.next()) return;
+                    System.out.println("Got results");
                     PermissionGroup permissionGroup = new PermissionGroup(
                             groupName, groupResults.getString("chatcolor"), groupResults.getString("prefix"),
                             groupResults.getString("suffix"));
+                    System.out.println(permissionGroup);
                     groupResults.close();
                     groupStatement.close();
-                    PreparedStatement groupPlayersStatement = connection.get().prepareStatement("SELECT uuid FROM groupMembers WHERE `group`=?");
+                    PreparedStatement groupPlayersStatement = connection.get().prepareStatement("SELECT uuid,`primary` FROM groupMembers WHERE `group`=?");
                     groupPlayersStatement.setString(1, groupName);
                     ResultSet groupPlayersResult = groupPlayersStatement.executeQuery();
                     while (groupPlayersResult.next()) {
-                        permissionGroup.addPlayer(UUID.fromString(groupPlayersResult.getString("uuid")));
+                        permissionGroup.addPlayer(UUID.fromString(groupPlayersResult.getString("uuid")),
+                                groupPlayersResult.getBoolean("primary"));
+                        System.out.println(permissionGroup.getPlayers());
                     }
                     cachedGroups.add(permissionGroup);
                 }
@@ -403,7 +409,7 @@ public class MySQLHandler extends DatabaseHandler {
             statement.close();
             connection.get().close();
         } catch (SQLException e) {
-            e.printStackTrace();
+            displayError(ConnectionError.DATABASE_EXCEPTION, e);
         }
     }
 
@@ -511,6 +517,9 @@ public class MySQLHandler extends DatabaseHandler {
                     return true;
                 }
             }
+            results.close();
+            statement.close();
+            connection.get().close();
         } catch (SQLException e) {
             displayError(ConnectionError.DATABASE_EXCEPTION, e);
         }
@@ -554,7 +563,11 @@ public class MySQLHandler extends DatabaseHandler {
             statement.setString(1, FormatterType.CHAT.getUsageName());
             ResultSet results = statement.executeQuery();
             if (!results.next()) return "";
-            return results.getString("format");
+            String format = results.getString("format");
+            results.close();
+            statement.close();
+            connection.get().close();
+            return format;
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -598,9 +611,14 @@ public class MySQLHandler extends DatabaseHandler {
             statement.setString(1, FormatterType.WHISPER.getUsageName());
             ResultSet results = statement.executeQuery();
             if (!results.next()) return "";
-            return results.getString("format");
+            String format = results.getString("format");
+            results.close();
+            statement.close();
+            connection.get().close();
+            return format;
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return "";    }
+        return "";
+    }
 }
