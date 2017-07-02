@@ -30,7 +30,8 @@ public class ChatFormatter {
         Optional<PermissionGroup> group = handler.getPrimaryGroup(uuid);
         if (!group.isPresent()) return username + ": " + message;
         String formatter = handler.getChatFormat(false);
-        return formatter.replace("{group}", group.get().getName())
+        String finalGroup = group.get().getPrefix() + " " + group.get().getName() + " " + group.get().getSuffix();
+        return formatter.replace("{group}", finalGroup)
                 .replace("{username}", username).replace("{message}", message);
     }
 
@@ -54,8 +55,10 @@ public class ChatFormatter {
         Optional<PermissionGroup> receiverGroup = handler.getPrimaryGroup(senderUuid);
         if (!receiverGroup.isPresent()) return senderName + " > " + receiverName + ": " + message;
         String formatter = handler.getWhisperFormat(false);
-        return formatter.replace("{senderGroup}", senderGroup.get().getName())
+        String sender = senderGroup.get().getPrefix() + " " + senderGroup.get().getName() + " " + senderGroup.get().getSuffix();
+        String receiver = receiverGroup.get().getPrefix() + " " + receiverGroup.get().getName() + " " + receiverGroup.get().getSuffix();
+        return formatter.replace("{senderGroup}", sender)
                 .replace("{username}", senderName).replace("{message}", message)
-                .replace("{to}", receiverName).replace("{receiverGroup}", receiverGroup.get().getName());
+                .replace("{to}", receiverName).replace("{receiverGroup}", receiver);
     }
 }
