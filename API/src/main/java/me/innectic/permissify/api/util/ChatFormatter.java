@@ -5,6 +5,7 @@ import me.innectic.permissify.api.database.DatabaseHandler;
 import me.innectic.permissify.api.permission.PermissionGroup;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 /**
@@ -26,10 +27,10 @@ public class ChatFormatter {
         if (!PermissifyAPI.get().get().getDatabaseHandler().isPresent()) return username + ": " + message;
         DatabaseHandler handler = PermissifyAPI.get().get().getDatabaseHandler().get();
 
-        // TODO: Do something about primary groups that would be the "display" group
-        List<PermissionGroup> group = handler.getGroups(uuid);
+        Optional<PermissionGroup> group = handler.getPrimaryGroup(uuid);
+        if (!group.isPresent()) return username + ": " + message;
         String formatter = handler.getChatFormat(false);
-        return formatter.replace("{group}", group.get(0).getName())
+        return formatter.replace("{group}", group.get().getName())
                 .replace("{username}", username).replace("{message}", message);
     }
 
@@ -48,12 +49,13 @@ public class ChatFormatter {
         if (!PermissifyAPI.get().get().getDatabaseHandler().isPresent()) return senderName + " > " + receiverName + ": " + message;
         DatabaseHandler handler = PermissifyAPI.get().get().getDatabaseHandler().get();
 
-        // TODO: Do something about primary groups that would be the "display" group
-        List<PermissionGroup> senderGroups = handler.getGroups(senderUuid);
-        List<PermissionGroup> receiverGroups = handler.getGroups(receiverUuid);
+        Optional<PermissionGroup> senderGroup = handler.getPrimaryGroup(senderUuid);
+        if (!senderGroup.isPresent()) return senderName + " > " + receiverName + ": " + message;
+        Optional<PermissionGroup> receiverGroup = handler.getPrimaryGroup(senderUuid);
+        if (!receiverGroup.isPresent()) return senderName + " > " + receiverName + ": " + message;
         String formatter = handler.getWhisperFormat(false);
-        return formatter.replace("{senderGroup}", senderGroups.get(0).getName())
+        return formatter.replace("{senderGroup}", senderGroup.get().getName())
                 .replace("{username}", senderName).replace("{message}", message)
-                .replace("{to}", receiverName).replace("{receiverGroup}", receiverGroups.get(0).getName());
+                .replace("{to}", receiverName).replace("{receiverGroup}", receiverGroup.get().getName());
     }
 }
