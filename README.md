@@ -21,7 +21,11 @@ Make sure things that will be used between the different implementations are in 
 Make sure messages & permissions are in the constants file.
 Use your brain...
 
+Pull requests that don't follow the standards will be ignored until they meet the standards.
+
 And then all of the following stuff:
+
+## FOUR. SPACE. INDENTION.
 
 ### Indention is bad, avoid it.
 #### Don't:
