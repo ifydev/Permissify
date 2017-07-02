@@ -26,6 +26,7 @@ package me.innectic.permissify.spigot;
 
 import lombok.Getter;
 import me.innectic.permissify.spigot.commands.PermissifyCommand;
+import me.innectic.permissify.spigot.commands.permissify.FormatCommand;
 import me.innectic.permissify.spigot.events.PlayerChat;
 import me.innectic.permissify.spigot.events.PlayerJoin;
 import me.innectic.permissify.api.PermissifyAPI;
@@ -53,6 +54,7 @@ public class PermissifyMain extends JavaPlugin {
 
     @Getter private GroupCommand groupCommand;
     @Getter private PlayerCommand playerCommand;
+    @Getter private FormatCommand formatCommand;
 
     @Override
     public void onEnable() {
