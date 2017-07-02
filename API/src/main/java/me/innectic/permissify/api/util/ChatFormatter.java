@@ -28,7 +28,7 @@ public class ChatFormatter {
 
         // TODO: Do something about primary groups that would be the "display" group
         List<PermissionGroup> group = handler.getGroups(uuid);
-        String formatter = handler.getChatFormat();
+        String formatter = handler.getChatFormat(false);
         return formatter.replace("{group}", group.get(0).getName())
                 .replace("{username}", username).replace("{message}", message);
     }
@@ -51,7 +51,7 @@ public class ChatFormatter {
         // TODO: Do something about primary groups that would be the "display" group
         List<PermissionGroup> senderGroups = handler.getGroups(senderUuid);
         List<PermissionGroup> receiverGroups = handler.getGroups(receiverUuid);
-        String formatter = handler.getWhisperFormat();
+        String formatter = handler.getWhisperFormat(false);
         return formatter.replace("{senderGroup}", senderGroups.get(0).getName())
                 .replace("{username}", senderName).replace("{message}", message)
                 .replace("{to}", receiverName).replace("{receiverGroup}", receiverGroups.get(0).getName());

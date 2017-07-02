@@ -59,7 +59,6 @@ public class PermissifyCommand implements CommandExecutor {
                 plugin.getPermissifyAPI().getDatabaseHandler().get().addSuperAdmin(player.getUniqueId());
             } else if (sender instanceof Player) {
                 Player player = (Player) sender;
-
                 if (!player.hasPermission(PermissifyConstants.PERMISSIFY_BASIC) && !plugin.getPermissifyAPI().getDatabaseHandler().get().isSuperAdmin(((Player) sender).getUniqueId())) {
                     player.sendMessage(ColorUtil.makeReadable(PermissifyConstants.INSUFFICIENT_PERMISSIONS));
                 }
