@@ -26,11 +26,9 @@ package me.innectic.permissify.api.permission;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * @author Innectic
@@ -43,7 +41,7 @@ public class PermissionGroup {
     @Getter private final String prefix;
     @Getter private final String suffix;
     @Getter private List<Permission> permissions = new ArrayList<>();
-    @Getter private List<UUID> players = new ArrayList<>();
+    @Getter private Map<UUID, Boolean> players = new HashMap<>();
 
     /**
      * Remove a permission from the group
@@ -74,14 +72,22 @@ public class PermissionGroup {
     }
 
     public void addPlayer(UUID uuid) {
-        if (!players.contains(uuid)) players.add(uuid);
+        if (!hasPlayer(uuid)) players.put(uuid, false);
     }
 
     public void removePlayer(UUID uuid) {
-        players.removeIf(entry -> entry.equals(uuid));
+        players.remove(uuid);
     }
 
     public boolean hasPlayer(UUID uuid) {
-        return players.contains(uuid);
+        return players.containsKey(uuid);
+    }
+
+    public boolean isPrimaryGroup(UUID uuid) {
+        return players.containsKey(uuid) && players.get(uuid).equals(true);
+    }
+
+    public void setPrimaryGroup(UUID uuid, boolean isPrimary) {
+        players.put(uuid, isPrimary);
     }
 }

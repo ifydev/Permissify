@@ -336,6 +336,35 @@ public class MySQLHandler extends DatabaseHandler {
     }
 
     @Override
+    public boolean setPrimaryGroup(PermissionGroup group, UUID uuid) {
+        // @Return: Should primary group put the player in the group if they're not already in it?
+        if (!group.hasPlayer(uuid)) return false;
+        if (group.isPrimaryGroup(uuid)) return false;
+        group.setPrimaryGroup(uuid, true);
+        Optional<Connection> connection = getConnection();
+        if (!connection.isPresent()) {
+            displayError(ConnectionError.REJECTED);
+            return false;
+        }
+
+        try {
+            PreparedStatement statement = connection.get().prepareStatement("UPDATE groupMembers SET `primary`=? WHERE uuid=? AND `group`=?");
+            statement.setBoolean(1, true);
+            statement.setString(2, uuid.toString());
+            statement.setString(3, group.getName());
+            statement.execute();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return true;
+    }
+
+    @Override
+    public Optional<PermissionGroup> getPrimaryGroup(UUID uuid) {
+        return getGroups(uuid).stream().filter(group -> group.isPrimaryGroup(uuid)).findFirst();
+    }
+
+    @Override
     public void updateCache(UUID uuid) {
         // TODO: Make this method not exist. It shouldn't be needed.
         Optional<Connection> connection = getConnection();

@@ -148,9 +148,9 @@ public abstract class DatabaseHandler {
     /**
      * Remove a player from a group.
      *
-     * @param uuid the player to remove
+     * @param uuid  the player to remove
      * @param group the group to remove from
-     * @return if the player was removed
+     * @return      if the player was removed
      */
     public abstract boolean removePlayerFromGroup(UUID uuid, PermissionGroup group);
 
@@ -165,9 +165,25 @@ public abstract class DatabaseHandler {
      * Get all permission groups a player is in.
      *
      * @param uuid the uuid of the player
-     * @return the groups the player is in
+     * @return     the groups the player is in
      */
     public abstract List<PermissionGroup> getGroups(UUID uuid);
+
+    /**
+     * Set the primary group of the player
+     *
+     * @param group the group to set as the primary
+     * @param uuid  the uuid of the player to set the primary of
+     */
+    public abstract boolean setPrimaryGroup(PermissionGroup group, UUID uuid);
+
+    /**
+     * Get the primary group of a player.
+     *
+     * @param uuid the uuid of the player to get
+     * @return     the primary group of the player
+     */
+    public abstract Optional<PermissionGroup> getPrimaryGroup(UUID uuid);
 
     /**
      * Update a player's cache.
