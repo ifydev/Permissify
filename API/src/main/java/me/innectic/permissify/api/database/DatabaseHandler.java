@@ -24,6 +24,7 @@
  */
 package me.innectic.permissify.api.database;
 
+import lombok.Getter;
 import me.innectic.permissify.api.permission.Permission;
 import me.innectic.permissify.api.permission.PermissionGroup;
 
@@ -41,7 +42,8 @@ public abstract class DatabaseHandler {
     protected List<PermissionGroup> cachedGroups = new ArrayList<>();
     protected List<UUID> superAdmins = new ArrayList<>();
     protected final Optional<ConnectionInformation> connectionInformation;
-    protected String chatFormat = "{group} {username}: {message}";
+    @Getter protected String chatFormat = "{group} {username}: {message}";
+    @Getter protected String whisperFormat = "{senderGroup} {username} > {receiverGroup} {to}: {message}";
 
     public DatabaseHandler(ConnectionInformation connectionInformation) {
         this.connectionInformation = Optional.ofNullable(connectionInformation);
@@ -213,13 +215,15 @@ public abstract class DatabaseHandler {
 
     /**
      * Set the format for chat messages
+     *
+     * @param format the format for chat.
      */
     public abstract void setChatFormat(String format);
 
     /**
-     * Get the format of chat.
+     * Set the format of whispers
      *
-     * @return the current format of chat
+     * @param format the format for whispers.
      */
-    public abstract String getChatFormat();
+    public abstract void setWhisperFormat(String format);
 }

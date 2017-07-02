@@ -54,6 +54,7 @@ public class PermissifyConstants {
     public static final String PERMISSIFY_PLAYER_GROUP_ADD = "permissify.player.group.add";
     public static final String PERMISSIFY_PLAYER_GROUP_REMOVE = "permissify.player.group.remove";
     public static final String PERMISSIFY_PLAYER_GROUP_LIST = "permissify.player.group.list";
+    public static final String PERMISSIFY_FORMAT = "permissify.format";
 
     public static final String INSUFFICIENT_PERMISSIONS = PERMISSIFY_PREFIX + "&c&lInsufficient permissions!";
 
@@ -72,6 +73,8 @@ public class PermissifyConstants {
     public static final String PLAYER_ADDED_TO_GROUP = PERMISSIFY_PREFIX + "&c&lAdded <PLAYER> to <GROUP>";
     public static final String PLAYER_REMOVED_FROM_GROUP = PERMISSIFY_PREFIX + "&c&lRemoved <PLAYER> from <GROUP>";
 
+    public static final String FORMATTER_SET = PERMISSIFY_PREFIX + "&e&lFormatter <FORMATTER> set!";
+
     public static final String NOT_ENOUGH_ARGUMENTS_GROUP_CREATE = PERMISSIFY_PREFIX + "&c&lNot enough arguments! &e&l/permissify group create [name] [prefix] [suffix] [chat-color]";
     public static final String NOT_ENOUGH_ARGUMENTS_GROUP_REMOVE = PERMISSIFY_PREFIX + "&c&lNot enough arguments! &e&l/permissify group remove [name]";
     public static final String NOT_ENOUGH_ARGUMENTS_GROUP_PERMISSION_ADD = PERMISSIFY_PREFIX + "&c&lNot enough arguments! &e&l/permissify group addpermission [name] [permission]";
@@ -84,17 +87,20 @@ public class PermissifyConstants {
     public static final String NOT_ENOUGH_ARGUMENTS_PLAYER_ADD_GROUP= PERMISSIFY_PREFIX + "&c&lNot enough arguments! &e&l/permissify player addgroup [group] [player]";
     public static final String NOT_ENOUGH_ARGUMENTS_PLAYER_REMOVE_GROUP= PERMISSIFY_PREFIX + "&c&lNot enough arguments! &e&l/permissify player removegroup [group] [player]";
     public static final String NOT_ENOUGH_ARGUMENTS_PLAYER_LIST_GROUP = PERMISSIFY_PREFIX + "&c&lNot enough arguments! &e&l/permissify player listgroup [player]";
+    public static final String NOT_ENOUGH_ARGUMENTS_SET_FORMAT = PERMISSIFY_PREFIX + "&c&lNot enough arguments! &e&l/permissify format [whisper|chat] [format...]";
 
     public static final String INVALID_CHATCOLOR = PERMISSIFY_PREFIX + "&c&lInvalid chat color <COLOR>";
     public static final String INVALID_GROUP = PERMISSIFY_PREFIX + "&c&lInvalid group!";
     public static final String CONSOLE_INVALID_COMMAND = PERMISSIFY_PREFIX + "&c&lOnly one console command available: /permissify superadmin [username]";
     public static final String INVALID_PLAYER = PERMISSIFY_PREFIX + "&c&lInvalid player!";
+    public static final String INVALID_FORMATTER = PERMISSIFY_PREFIX + "&c&lInvalid argument: <ARGUMENT>";
 
     public static final String UNABLE_TO_CREATE = PERMISSIFY_PREFIX + "&c&lUnable to create <TYPE>: <REASON>";
     public static final String UNABLE_TO_REMOVE = PERMISSIFY_PREFIX + "&c&lUnable to remove <TYPE>: <REASON>";
     public static final String UNABLE_TO_ADD = PERMISSIFY_PREFIX + "&c&lUnable to add: <REASON>";
     public static final String UNABLE_TO_LIST = PERMISSIFY_PREFIX + "&c&lUnable to list: <REASON>";
     public static final String UNABLE_OTHER = PERMISSIFY_PREFIX + "&c&lUnable to continue: <REASON>";
+    public static final String UNABLE_TO_SET = PERMISSIFY_PREFIX + "&c&lUnable to set: <REASON>";
 
     // Help response
     public static final List<String> PERMISSIFY_HELP = new ArrayList<>(Arrays.asList(

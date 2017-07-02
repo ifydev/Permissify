@@ -500,7 +500,24 @@ public class MySQLHandler extends DatabaseHandler {
     }
 
     @Override
-    public String getChatFormat() {
-        return chatFormat;
+    public void setWhisperFormat(String format) {
+        this.chatFormat = format;
+
+        Optional<Connection> connection = getConnection();
+        if (!connection.isPresent()) {
+            displayError(ConnectionError.REJECTED);
+            return;
+        }
+
+        try {
+            PreparedStatement statement = connection.get().prepareStatement("UPDATE formatting SET format=? WHERE formatter=?");
+            statement.setString(1, format);
+            statement.setString(2, FormatterType.WHISPER.getUsageName());
+            statement.execute();
+            statement.close();
+            connection.get().close();
+        } catch (SQLException e) {
+            displayError(ConnectionError.DATABASE_EXCEPTION, e);
+        }
     }
 }

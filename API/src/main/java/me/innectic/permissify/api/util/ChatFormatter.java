@@ -32,4 +32,28 @@ public class ChatFormatter {
         return formatter.replace("{group}", group.get(0).getName())
                 .replace("{username}", username).replace("{message}", message);
     }
+
+    /**
+     * Format a whisper message
+     *
+     * @param senderUuid   the uuid of the player who sent it
+     * @param senderName   the name of the player who sent it
+     * @param receiverUuid the uuid of the receiver of the message
+     * @param receiverName the name of the receiver of the message
+     * @param message      the message sent
+     * @return             the final formatted message
+     */
+    public static String formatWhisper(UUID senderUuid, String senderName, UUID receiverUuid, String receiverName, String message) {
+        if (!PermissifyAPI.get().isPresent()) return senderName + " > " + receiverName + ": " + message;
+        if (!PermissifyAPI.get().get().getDatabaseHandler().isPresent()) return senderName + " > " + receiverName + ": " + message;
+        DatabaseHandler handler = PermissifyAPI.get().get().getDatabaseHandler().get();
+
+        // TODO: Do something about primary groups that would be the "display" group
+        List<PermissionGroup> senderGroups = handler.getGroups(senderUuid);
+        List<PermissionGroup> receiverGroups = handler.getGroups(receiverUuid);
+        String formatter = handler.getWhisperFormat();
+        return formatter.replace("{senderGroup}", senderGroups.get(0).getName())
+                .replace("{username}", senderName).replace("{message}", message)
+                .replace("{to}", receiverName).replace("{receiverGroup}", receiverGroups.get(0).getName());
+    }
 }
