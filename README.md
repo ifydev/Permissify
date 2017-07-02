@@ -15,8 +15,48 @@ Take a look at the `Issues` page to get started! Make sure to follow the code st
 
 # Standards
 
-Coming soon!
+The standards for Permissify's code are really simple.
 
-# Why does this exist?
+Make sure things that will be used between the different implementations are in the API
+Make sure messages & permissions are in the constants file.
+Use your brain...
 
-Because someone, not naming names (*cough* Innectic *cough*), hates every existing plugin on the planet for some reason.
+And then all of the following stuff:
+
+### Indention is bad, avoid it.
+#### Don't:
+
+```java
+if (player.hasPermision("potato.salad")) {
+    if (player.getName().equals("PotatoMemes")) {
+        player.sendMessage("Wow, you're cool!");
+    }
+}
+```
+
+#### Do:
+
+```java
+if (!player.hasPermission("potato.salad")) return;
+if (!player.getName().equals("PotatoMemes")) return;
+player.sendMessage("Wow, you're cool!");
+```
+
+### Put `{`, `(` and similar on the same line
+
+#### Don't
+```java
+
+public void things()
+{
+    // stuff
+}
+```
+
+#### Do:
+```java
+
+public void things() {
+    // stuff
+}
+```
