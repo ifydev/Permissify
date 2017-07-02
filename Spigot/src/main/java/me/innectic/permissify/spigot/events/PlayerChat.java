@@ -25,6 +25,7 @@
 package me.innectic.permissify.spigot.events;
 
 import me.innectic.permissify.api.permission.PermissionGroup;
+import me.innectic.permissify.api.util.ChatFormatter;
 import me.innectic.permissify.spigot.PermissifyMain;
 import me.innectic.permissify.spigot.utils.ColorUtil;
 import org.bukkit.Bukkit;
@@ -45,14 +46,12 @@ public class PlayerChat implements Listener {
     public void onPlayerChat(AsyncPlayerChatEvent e) {
         PermissifyMain plugin = PermissifyMain.getInstance();
         if (!plugin.getPermissifyAPI().getDatabaseHandler().isPresent()) return;
-        String originalMessage = e.getMessage();
         Player player = e.getPlayer();
-        if (player == null || originalMessage == null) return;
+        if (player == null) return;
         Optional<PermissionGroup> group = plugin.getPermissifyAPI().getDatabaseHandler().get().getGroups().stream().filter(permissionGroup -> permissionGroup.hasPlayer(player.getUniqueId())).findFirst();
         group.ifPresent(permissionGroup -> {
             e.setCancelled(true);
-            Bukkit.broadcastMessage(ColorUtil.makeReadable(permissionGroup.getPrefix() + player.getName() +
-                    permissionGroup.getSuffix() + "&" + permissionGroup.getChatColor() + e.getMessage()));
+            Bukkit.broadcastMessage(ColorUtil.makeReadable(ChatFormatter.formatChat(player.getUniqueId(), player.getName(), e.getMessage())));
         });
     }
 }
