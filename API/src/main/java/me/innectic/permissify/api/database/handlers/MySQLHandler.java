@@ -81,6 +81,16 @@ public class MySQLHandler extends DatabaseHandler {
     }
 
     @Override
+    public void clear() {
+        cachedGroups = new ArrayList<>();
+        cachedPermissions = new HashMap<>();
+        superAdmins = new ArrayList<>();
+
+        chatFormat = getChatFormat(true);
+        whisperFormat = getWhisperFormat(true);
+    }
+
+    @Override
     public void addPermission(UUID uuid, String... permissions) {
         // Put the permissions into the cache
         Map<String, Boolean> playerPermissions = cachedPermissions.getOrDefault(uuid, new HashMap<>());
@@ -500,6 +510,28 @@ public class MySQLHandler extends DatabaseHandler {
     }
 
     @Override
+    public String getChatFormat(boolean skipCache) {
+        if (!skipCache) return chatFormat;
+
+        Optional<Connection> connection = getConnection();
+        if (!connection.isPresent()) {
+            displayError(ConnectionError.REJECTED);
+            return "";
+        }
+
+        try {
+            PreparedStatement statement = connection.get().prepareStatement("SELECT format FROM formatting WHERE formatter=?");
+            statement.setString(1, FormatterType.CHAT.getUsageName());
+            ResultSet results = statement.executeQuery();
+            if (!results.next()) return "";
+            return results.getString("format");
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return "";
+    }
+
+    @Override
     public void setWhisperFormat(String format) {
         this.chatFormat = format;
 
@@ -520,4 +552,25 @@ public class MySQLHandler extends DatabaseHandler {
             displayError(ConnectionError.DATABASE_EXCEPTION, e);
         }
     }
+
+    @Override
+    public String getWhisperFormat(boolean skipCache) {
+        if (!skipCache) return whisperFormat;
+
+        Optional<Connection> connection = getConnection();
+        if (!connection.isPresent()) {
+            displayError(ConnectionError.REJECTED);
+            return "";
+        }
+
+        try {
+            PreparedStatement statement = connection.get().prepareStatement("SELECT format FROM formatting WHERE formatter=?");
+            statement.setString(1, FormatterType.WHISPER.getUsageName());
+            ResultSet results = statement.executeQuery();
+            if (!results.next()) return "";
+            return results.getString("format");
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return "";    }
 }

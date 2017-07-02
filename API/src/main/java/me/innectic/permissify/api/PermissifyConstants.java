@@ -55,6 +55,7 @@ public class PermissifyConstants {
     public static final String PERMISSIFY_PLAYER_GROUP_REMOVE = "permissify.player.group.remove";
     public static final String PERMISSIFY_PLAYER_GROUP_LIST = "permissify.player.group.list";
     public static final String PERMISSIFY_FORMAT = "permissify.format";
+    public static final String PERMISSIFY_CACHE = "permissify.cache";
 
     public static final String INSUFFICIENT_PERMISSIONS = PERMISSIFY_PREFIX + "&c&lInsufficient permissions!";
 
@@ -64,6 +65,7 @@ public class PermissifyConstants {
     public static final String GROUP_PERMISSIONS = PERMISSIFY_PREFIX + "&c&lPermissions for <GROUP>: <PERMISSIONS>";
     public static final String GROUP_LIST = PERMISSIFY_PREFIX + "&c&lRegistered groups: <GROUPS>";
     public static final String PLAYER_GROUP_LIST = PERMISSIFY_PREFIX + "&c&lGroups for <PLAYER>: <GROUPS>";
+    public static final String CACHE_CLEARED = PERMISSIFY_PREFIX + "&e&lCache has been cleared!";
 
     public static final String PERMISSION_ADDED_GROUP = PERMISSIFY_PREFIX + "&c&lPermission <PERMISSION> has been added to <GROUP>!";
     public static final String PERMISSION_REMOVED_GROUP = PERMISSIFY_PREFIX + "&c&lPermission <PERMISSION> has been removed from <GROUP>!";
@@ -93,7 +95,7 @@ public class PermissifyConstants {
     public static final String INVALID_GROUP = PERMISSIFY_PREFIX + "&c&lInvalid group!";
     public static final String CONSOLE_INVALID_COMMAND = PERMISSIFY_PREFIX + "&c&lOnly one console command available: /permissify superadmin [username]";
     public static final String INVALID_PLAYER = PERMISSIFY_PREFIX + "&c&lInvalid player!";
-    public static final String INVALID_FORMATTER = PERMISSIFY_PREFIX + "&c&lInvalid argument: <ARGUMENT>";
+    public static final String INVALID_ARGUMENT = PERMISSIFY_PREFIX + "&c&lInvalid argument: <ARGUMENT>";
 
     public static final String UNABLE_TO_CREATE = PERMISSIFY_PREFIX + "&c&lUnable to create <TYPE>: <REASON>";
     public static final String UNABLE_TO_REMOVE = PERMISSIFY_PREFIX + "&c&lUnable to remove <TYPE>: <REASON>";

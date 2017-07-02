@@ -24,7 +24,6 @@
  */
 package me.innectic.permissify.api.database;
 
-import lombok.Getter;
 import me.innectic.permissify.api.permission.Permission;
 import me.innectic.permissify.api.permission.PermissionGroup;
 
@@ -42,8 +41,8 @@ public abstract class DatabaseHandler {
     protected List<PermissionGroup> cachedGroups = new ArrayList<>();
     protected List<UUID> superAdmins = new ArrayList<>();
     protected final Optional<ConnectionInformation> connectionInformation;
-    @Getter protected String chatFormat = "{group} {username}: {message}";
-    @Getter protected String whisperFormat = "{senderGroup} {username} > {receiverGroup} {to}: {message}";
+    protected String chatFormat = "{group} {username}: {message}";
+    protected String whisperFormat = "{senderGroup} {username} > {receiverGroup} {to}: {message}";
 
     public DatabaseHandler(ConnectionInformation connectionInformation) {
         this.connectionInformation = Optional.ofNullable(connectionInformation);
@@ -80,6 +79,11 @@ public abstract class DatabaseHandler {
      * @return if the connection was successful or not
      */
     public abstract boolean connect();
+
+    /**
+     * Clear the handler's cache and reload all needed values.
+     */
+    public abstract void clear();
 
     /**
      * Add a permission to a player
@@ -221,9 +225,25 @@ public abstract class DatabaseHandler {
     public abstract void setChatFormat(String format);
 
     /**
+     * Get the format for public chat messages
+     *
+     * @param skipCache should the cache be skipped? Forces getting from the database
+     * @return          the format
+     */
+    public abstract String getChatFormat(boolean skipCache);
+
+    /**
      * Set the format of whispers
      *
      * @param format the format for whispers.
      */
     public abstract void setWhisperFormat(String format);
+
+    /**
+     * Get the format for whispers.
+     *
+     * @param skipCache should the cache be skipped? Forces getting from the database
+     * @return          the format
+     */
+    public abstract String getWhisperFormat(boolean skipCache);
 }

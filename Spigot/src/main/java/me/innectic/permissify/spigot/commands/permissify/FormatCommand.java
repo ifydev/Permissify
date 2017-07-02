@@ -17,7 +17,7 @@ public class FormatCommand {
         if (args.length < 2) return new CommandResponse(PermissifyConstants.NOT_ENOUGH_ARGUMENTS_SET_FORMAT, false);
         if (args[0].equals("chat")) return handleSetChatFormat(sender, ArgumentUtil.getRemainingArgs(1, args));
         else if (args[0].equals("whisper")) return handleWhisperFormat(sender, ArgumentUtil.getRemainingArgs(1, args));
-        return new CommandResponse(PermissifyConstants.INVALID_FORMATTER.replace("<ARGUMENT>", args[0]), true);
+        return new CommandResponse(PermissifyConstants.INVALID_ARGUMENT.replace("<ARGUMENT>", args[0]), true);
     }
 
     private CommandResponse handleSetChatFormat(CommandSender sender, String[] args) {
