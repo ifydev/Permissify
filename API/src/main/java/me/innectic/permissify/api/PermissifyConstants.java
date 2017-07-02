@@ -57,12 +57,12 @@ public class PermissifyConstants {
     public static final String PERMISSIFY_PLAYER_SET_MAIN_GROUP = "permissify.player.group.setmain";
     public static final String PERMISSIFY_FORMAT = "permissify.format";
     public static final String PERMISSIFY_CACHE = "permissify.cache";
+    public static final String PERMISSIFY_ADMIN = "permissify.admin";
 
     public static final String INSUFFICIENT_PERMISSIONS = PERMISSIFY_PREFIX + "&c&lInsufficient permissions!";
 
     public static final String GROUP_CREATED = PERMISSIFY_PREFIX + "&c&lGroup <GROUP> has been created!";
     public static final String GROUP_REMOVED = PERMISSIFY_PREFIX + "&c&lGroup <GROUP> has been removed!";
-    public static final String GROUP_EDITED = PERMISSIFY_PREFIX + "&c&lGroup <GROUP> has been edited!";
     public static final String GROUP_PERMISSIONS = PERMISSIFY_PREFIX + "&c&lPermissions for <GROUP>: <PERMISSIONS>";
     public static final String GROUP_LIST = PERMISSIFY_PREFIX + "&c&lRegistered groups: <GROUPS>";
     public static final String PLAYER_GROUP_LIST = PERMISSIFY_PREFIX + "&c&lGroups for <PLAYER>: <GROUPS>";
@@ -117,5 +117,11 @@ public class PermissifyConstants {
             "&a&l/permissify group listpermissions [name]",
             "&a&l/permissify group list",
             "&e====================================================="
+    ));
+
+    // Error response
+    public static final List<String> PERMISSIFY_ERROR = new ArrayList<>(Arrays.asList(
+            "&c&lError encountered: <ERROR_TYPE>",
+            "&c&lShould report: <SHOULD_REPORT>"
     ));
 }

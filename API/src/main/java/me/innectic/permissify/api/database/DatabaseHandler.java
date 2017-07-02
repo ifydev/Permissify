@@ -49,26 +49,6 @@ public abstract class DatabaseHandler {
     }
 
     /**
-     * Display an error to the server console, and the online ops. TODO: This should be converted to sending the message to players with a certain permission. `permissify.admin`?
-     *
-     * @param error the type of error
-     */
-    protected void displayError(ConnectionError error) {
-        System.out.println(error.getDisplay());
-    }
-
-    /**
-     * Display an error to the server console, and the online ops. TODO: This should be converted to sending the message to players with a certain permission. `permissify.admin`?
-     *
-     * @param error the type of error
-     * @param e     the exception that happened
-     */
-    protected void displayError(ConnectionError error, Exception e) {
-        System.out.println(error.getDisplay());
-        e.printStackTrace();
-    }
-
-    /**
      * Initialize the database handler
      */
     public abstract void initialize();

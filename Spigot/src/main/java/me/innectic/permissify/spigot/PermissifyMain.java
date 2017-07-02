@@ -36,6 +36,7 @@ import me.innectic.permissify.spigot.commands.permissify.GroupCommand;
 import me.innectic.permissify.spigot.commands.permissify.PlayerCommand;
 import me.innectic.permissify.spigot.events.PreProcess;
 import me.innectic.permissify.spigot.utils.ConfigVerifier;
+import me.innectic.permissify.spigot.utils.DisplayUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -76,7 +77,7 @@ public class PermissifyMain extends JavaPlugin {
             return;
         }
         try {
-            permissifyAPI.initialize(handler.get().getHandlerType().get(), handler.get().getConnectionInformation());
+            permissifyAPI.initialize(handler.get().getHandlerType().get(), handler.get().getConnectionInformation(), new DisplayUtil());
         } catch (Exception e) {
             e.printStackTrace();
         }

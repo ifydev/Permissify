@@ -24,6 +24,7 @@
  */
 package me.innectic.permissify.api.database.handlers;
 
+import me.innectic.permissify.api.PermissifyAPI;
 import me.innectic.permissify.api.database.ConnectionError;
 import me.innectic.permissify.api.database.DatabaseHandler;
 import me.innectic.permissify.api.permission.Permission;
@@ -56,7 +57,7 @@ public class MySQLHandler extends DatabaseHandler {
             String connectionURL = "jdbc:mysql://" + connectionInformation.get().getUrl() + ":" + connectionInformation.get().getPort() + "/" + connectionInformation.get().getDatabase();
             return Optional.ofNullable(DriverManager.getConnection(connectionURL, connectionInformation.get().getUsername(), connectionInformation.get().getPassword()));
         } catch (SQLException e) {
-            displayError(ConnectionError.DATABASE_EXCEPTION, e);
+            PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.of(e)));
         }
         return Optional.empty();
     }
@@ -99,7 +100,7 @@ public class MySQLHandler extends DatabaseHandler {
             playerPermissions.put(permission, true);
             Optional<Connection> connection = getConnection();
             if (!connection.isPresent()) {
-                displayError(ConnectionError.REJECTED);
+                PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.empty()));
                 return;
             }
             try {
@@ -111,7 +112,7 @@ public class MySQLHandler extends DatabaseHandler {
                 statement.close();
                 connection.get().close();
             } catch (SQLException e) {
-                displayError(ConnectionError.DATABASE_EXCEPTION, e);
+                PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.of(e)));
                 return;
             }
         }
@@ -128,7 +129,7 @@ public class MySQLHandler extends DatabaseHandler {
             // Attempt to remove from MySQL
             Optional<Connection> connection = getConnection();
             if (!connection.isPresent()) {
-                displayError(ConnectionError.REJECTED);
+                PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.empty()));
                 return;
             }
 
@@ -148,7 +149,7 @@ public class MySQLHandler extends DatabaseHandler {
                 statement.close();
                 connection.get().close();
             } catch (SQLException e) {
-                displayError(ConnectionError.DATABASE_EXCEPTION, e);
+                PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.of(e)));
             }
         }
     }
@@ -163,7 +164,7 @@ public class MySQLHandler extends DatabaseHandler {
         // Cache didn't have it, see if the database does.
         Optional<Connection> connection = getConnection();
         if (!connection.isPresent()) {
-            displayError(ConnectionError.REJECTED);
+            PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.empty()));
             return false;
         }
 
@@ -181,7 +182,7 @@ public class MySQLHandler extends DatabaseHandler {
             connection.get().close();
             return granted;
         } catch (SQLException e) {
-            displayError(ConnectionError.DATABASE_EXCEPTION, e);
+            PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.of(e)));
         }
         return false;
     }
@@ -195,7 +196,7 @@ public class MySQLHandler extends DatabaseHandler {
         List<Permission> permissions = new ArrayList<>();
 
         if (!connection.isPresent()) {
-            displayError(ConnectionError.REJECTED);
+            PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.empty()));
             return permissions;
         }
         try {
@@ -212,7 +213,7 @@ public class MySQLHandler extends DatabaseHandler {
             connection.get().close();
             return permissions;
         } catch (SQLException e) {
-            displayError(ConnectionError.DATABASE_EXCEPTION, e);
+            PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.of(e)));
         }
         return new ArrayList<>();
     }
@@ -226,7 +227,7 @@ public class MySQLHandler extends DatabaseHandler {
 
         Optional<Connection> connection = getConnection();
         if (!connection.isPresent()) {
-            displayError(ConnectionError.REJECTED);
+            PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.empty()));
             return false;
         }
 
@@ -241,7 +242,7 @@ public class MySQLHandler extends DatabaseHandler {
             statement.close();
             connection.get().close();
         } catch (SQLException e) {
-            displayError(ConnectionError.DATABASE_EXCEPTION, e);
+            PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.of(e)));
         }
 
         return true;
@@ -255,7 +256,7 @@ public class MySQLHandler extends DatabaseHandler {
 
         Optional<Connection> connection = getConnection();
         if (!connection.isPresent()) {
-            displayError(ConnectionError.REJECTED);
+            PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.empty()));
             return false;
         }
         try {
@@ -265,7 +266,7 @@ public class MySQLHandler extends DatabaseHandler {
             statement.close();
             connection.get().close();
         } catch (SQLException e) {
-            displayError(ConnectionError.DATABASE_EXCEPTION, e);
+            PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.of(e)));
             return false;
         }
         return true;
@@ -281,7 +282,7 @@ public class MySQLHandler extends DatabaseHandler {
 
         Optional<Connection> connection = getConnection();
         if (!connection.isPresent()) {
-            displayError(ConnectionError.REJECTED);
+            PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.empty()));
             return false;
         }
         try {
@@ -293,7 +294,7 @@ public class MySQLHandler extends DatabaseHandler {
             connection.get().close();
             return true;
         } catch (SQLException e) {
-            displayError(ConnectionError.DATABASE_EXCEPTION, e);
+            PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.of(e)));
         }
         return false;
     }
@@ -308,7 +309,7 @@ public class MySQLHandler extends DatabaseHandler {
 
         Optional<Connection> connection = getConnection();
         if (!connection.isPresent()) {
-            displayError(ConnectionError.REJECTED);
+            PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.empty()));
             return false;
         }
         try {
@@ -320,7 +321,7 @@ public class MySQLHandler extends DatabaseHandler {
             connection.get().close();
             return true;
         } catch (SQLException e) {
-            displayError(ConnectionError.DATABASE_EXCEPTION, e);
+            PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.of(e)));
         }
         return false;
     }
@@ -343,7 +344,7 @@ public class MySQLHandler extends DatabaseHandler {
         group.setPrimaryGroup(uuid, true);
         Optional<Connection> connection = getConnection();
         if (!connection.isPresent()) {
-            displayError(ConnectionError.REJECTED);
+            PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.empty()));
             return false;
         }
 
@@ -356,7 +357,7 @@ public class MySQLHandler extends DatabaseHandler {
             statement.close();
             connection.get().close();
         } catch (SQLException e) {
-            displayError(ConnectionError.DATABASE_EXCEPTION, e);
+            PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.of(e)));
         }
         return true;
     }
@@ -370,7 +371,7 @@ public class MySQLHandler extends DatabaseHandler {
     public void updateCache(UUID uuid) {
         Optional<Connection> connection = getConnection();
         if (!connection.isPresent()) {
-            displayError(ConnectionError.REJECTED);
+            PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.empty()));
             return;
         }
         try {
@@ -405,7 +406,7 @@ public class MySQLHandler extends DatabaseHandler {
             statement.close();
             connection.get().close();
         } catch (SQLException e) {
-            displayError(ConnectionError.DATABASE_EXCEPTION, e);
+            PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.of(e)));
         }
     }
 
@@ -418,7 +419,7 @@ public class MySQLHandler extends DatabaseHandler {
         for (String permission : permissions) {
             Optional<Connection> connection = getConnection();
             if (!connection.isPresent()) {
-                displayError(ConnectionError.REJECTED);
+                PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.empty()));
                 return false;
             }
             try {
@@ -432,7 +433,7 @@ public class MySQLHandler extends DatabaseHandler {
 
                 permissionGroup.get().addPermission(permission);
             } catch (SQLException e) {
-                displayError(ConnectionError.DATABASE_EXCEPTION, e);
+                PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.of(e)));
                 return false;
             }
         }
@@ -449,7 +450,7 @@ public class MySQLHandler extends DatabaseHandler {
             permissionGroup.get().removePermission(permission);
             Optional<Connection> connection = getConnection();
             if (!connection.isPresent()) {
-                displayError(ConnectionError.REJECTED);
+                PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.empty()));
                 return false;
             }
             try {
@@ -460,7 +461,7 @@ public class MySQLHandler extends DatabaseHandler {
                 statement.close();
                 connection.get().close();
             } catch (SQLException e) {
-                displayError(ConnectionError.DATABASE_EXCEPTION, e);
+                PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.of(e)));
                 return false;
             }
         }
@@ -481,7 +482,7 @@ public class MySQLHandler extends DatabaseHandler {
         // Update mysql
         Optional<Connection> connection = getConnection();
         if (!connection.isPresent()) {
-            displayError(ConnectionError.REJECTED);
+            PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.empty()));
             return;
         }
         try {
@@ -491,7 +492,7 @@ public class MySQLHandler extends DatabaseHandler {
             statement.close();
             connection.get().close();
         } catch (SQLException e) {
-            displayError(ConnectionError.DATABASE_EXCEPTION, e);
+            PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.of(e)));
         }
     }
 
@@ -500,7 +501,7 @@ public class MySQLHandler extends DatabaseHandler {
         if (superAdmins.contains(uuid)) return true;
         Optional<Connection> connection = getConnection();
         if (!connection.isPresent()) {
-            displayError(ConnectionError.REJECTED);
+            PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.empty()));
             return false;
         }
 
@@ -517,7 +518,7 @@ public class MySQLHandler extends DatabaseHandler {
             statement.close();
             connection.get().close();
         } catch (SQLException e) {
-            displayError(ConnectionError.DATABASE_EXCEPTION, e);
+            PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.of(e)));
         }
         return false;
     }
@@ -528,7 +529,7 @@ public class MySQLHandler extends DatabaseHandler {
 
         Optional<Connection> connection = getConnection();
         if (!connection.isPresent()) {
-            displayError(ConnectionError.REJECTED);
+            PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.empty()));
             return;
         }
 
@@ -540,7 +541,7 @@ public class MySQLHandler extends DatabaseHandler {
             statement.close();
             connection.get().close();
         } catch (SQLException e) {
-            displayError(ConnectionError.DATABASE_EXCEPTION, e);
+            PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.of(e)));
         }
     }
 
@@ -550,7 +551,7 @@ public class MySQLHandler extends DatabaseHandler {
 
         Optional<Connection> connection = getConnection();
         if (!connection.isPresent()) {
-            displayError(ConnectionError.REJECTED);
+            PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.empty()));
             return "";
         }
 
@@ -576,7 +577,7 @@ public class MySQLHandler extends DatabaseHandler {
 
         Optional<Connection> connection = getConnection();
         if (!connection.isPresent()) {
-            displayError(ConnectionError.REJECTED);
+            PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.empty()));
             return;
         }
 
@@ -588,7 +589,7 @@ public class MySQLHandler extends DatabaseHandler {
             statement.close();
             connection.get().close();
         } catch (SQLException e) {
-            displayError(ConnectionError.DATABASE_EXCEPTION, e);
+            PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.of(e)));
         }
     }
 
@@ -598,7 +599,7 @@ public class MySQLHandler extends DatabaseHandler {
 
         Optional<Connection> connection = getConnection();
         if (!connection.isPresent()) {
-            displayError(ConnectionError.REJECTED);
+            PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.empty()));
             return "";
         }
 
