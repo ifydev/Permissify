@@ -23,6 +23,7 @@ public class CacheCommand {
     private CommandResponse handleCacheClear(CommandSender sender, String[] args) {
         if (!PermissifyMain.getInstance().getPermissifyAPI().getDatabaseHandler().isPresent())
             return new CommandResponse(PermissifyConstants.UNABLE_OTHER.replace("<REASON>", "No database handler"), false);
+        PermissifyMain.getInstance().getPermissifyAPI().getDatabaseHandler().get().clear();
         return new CommandResponse(PermissifyConstants.CACHE_CLEARED, true);
     }
 }

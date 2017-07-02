@@ -109,10 +109,10 @@ public class PermissifyCommand implements CommandExecutor {
                     }
                     sender.sendMessage(ColorUtil.makeReadable(response.getResponse()));
                 } else if (args[0].equalsIgnoreCase("format")) {
-                    CommandResponse response = plugin.getFormatCommand().handleSetFormat(sender, ArgumentUtil.getRemainingArgs(2, args));
+                    CommandResponse response = plugin.getFormatCommand().handleSetFormat(sender, ArgumentUtil.getRemainingArgs(1, args));
                     sender.sendMessage(ColorUtil.makeReadable(response.getResponse()));
                 } else if (args[0].equalsIgnoreCase("cache")) {
-                    CommandResponse response = plugin.getCacheCommand().handleCache(sender, ArgumentUtil.getRemainingArgs(2, args));
+                    CommandResponse response = plugin.getCacheCommand().handleCache(sender, ArgumentUtil.getRemainingArgs(1, args));
                     sender.sendMessage(ColorUtil.makeReadable(response.getResponse()));
                 }
             }
