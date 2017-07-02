@@ -107,7 +107,7 @@ public class GroupCommand {
                         .stream().filter(permissionGroup -> permissionGroup.getName().equals(args[0])).findFirst();
                 group.ifPresent(permissionGroup -> {
                     for (String permission : remaining)
-                        permissionGroup.getPlayers().stream().map(Bukkit::getPlayer).filter(Objects::nonNull)
+                        permissionGroup.getPlayers().keySet().stream().map(Bukkit::getPlayer).filter(Objects::nonNull)
                                 .forEach(player -> player.addAttachment(plugin, permission, true));
                 });
             });
@@ -134,7 +134,7 @@ public class GroupCommand {
                         .stream().filter(permissionGroup -> permissionGroup.getName().equals(args[0])).findFirst();
                 group.ifPresent(permissionGroup -> {
                     for (String permission : remaining)
-                    permissionGroup.getPlayers().stream().map(Bukkit::getPlayer).filter(Objects::nonNull)
+                    permissionGroup.getPlayers().keySet().stream().map(Bukkit::getPlayer).filter(Objects::nonNull)
                             .forEach(player -> player.addAttachment(plugin, permission, false));
                 });
             });
