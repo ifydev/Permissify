@@ -29,6 +29,7 @@ import me.innectic.permissify.api.database.DatabaseHandler;
 import me.innectic.permissify.api.permission.Permission;
 import me.innectic.permissify.api.database.ConnectionInformation;
 import me.innectic.permissify.api.permission.PermissionGroup;
+import me.innectic.permissify.api.util.FormatterType;
 
 import java.sql.*;
 import java.util.*;
@@ -474,5 +475,32 @@ public class MySQLHandler extends DatabaseHandler {
             displayError(ConnectionError.DATABASE_EXCEPTION, e);
         }
         return false;
+    }
+
+    @Override
+    public void setChatFormat(String format) {
+        this.chatFormat = format;
+
+        Optional<Connection> connection = getConnection();
+        if (!connection.isPresent()) {
+            displayError(ConnectionError.REJECTED);
+            return;
+        }
+
+        try {
+            PreparedStatement statement = connection.get().prepareStatement("UPDATE formatting SET format=? WHERE formatter=?");
+            statement.setString(1, format);
+            statement.setString(2, FormatterType.CHAT.getUsageName());
+            statement.execute();
+            statement.close();
+            connection.get().close();
+        } catch (SQLException e) {
+            displayError(ConnectionError.DATABASE_EXCEPTION, e);
+        }
+    }
+
+    @Override
+    public String getChatFormat() {
+        return chatFormat;
     }
 }

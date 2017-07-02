@@ -37,13 +37,11 @@ import java.util.*;
  */
 public abstract class DatabaseHandler {
 
-    /**
-     * Cached permissions from the database.
-     */
     protected Map<UUID, Map<String, Boolean>> cachedPermissions = new HashMap<>();
     protected List<PermissionGroup> cachedGroups = new ArrayList<>();
     protected List<UUID> superAdmins = new ArrayList<>();
     protected final Optional<ConnectionInformation> connectionInformation;
+    protected String chatFormat = "{group} {username}: {message}";
 
     public DatabaseHandler(ConnectionInformation connectionInformation) {
         this.connectionInformation = Optional.ofNullable(connectionInformation);
@@ -212,4 +210,16 @@ public abstract class DatabaseHandler {
      * @return if the uuid is a super admin
      */
     public abstract boolean isSuperAdmin(UUID uuid);
+
+    /**
+     * Set the format for chat messages
+     */
+    public abstract void setChatFormat(String format);
+
+    /**
+     * Get the format of chat.
+     *
+     * @return the current format of chat
+     */
+    public abstract String getChatFormat();
 }
