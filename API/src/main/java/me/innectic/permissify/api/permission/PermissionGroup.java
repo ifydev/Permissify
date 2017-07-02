@@ -72,7 +72,6 @@ public class PermissionGroup {
     }
 
     public void addPlayer(UUID uuid, boolean isPrimary) {
-        System.out.println("Current: " + uuid + " - status: " + isPrimary);
         players.put(uuid, isPrimary);
     }
 
@@ -85,8 +84,6 @@ public class PermissionGroup {
     }
 
     public boolean isPrimaryGroup(UUID uuid) {
-        System.out.println(this.players);
-        System.out.println(this.players.get(uuid));
         return players.containsKey(uuid) && players.get(uuid).equals(true);
     }
 

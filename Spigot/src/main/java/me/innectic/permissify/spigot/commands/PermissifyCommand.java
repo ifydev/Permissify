@@ -103,6 +103,8 @@ public class PermissifyCommand implements CommandExecutor {
                         response = plugin.getPlayerCommand().handleListGroups(sender, ArgumentUtil.getRemainingArgs(2, args));
                     } else if (args[1].equalsIgnoreCase("removegroup")) {
                         response = plugin.getPlayerCommand().handleRemovePlayerFromGroup(sender, ArgumentUtil.getRemainingArgs(2, args));
+                    } else if (args[1].equalsIgnoreCase("setmain")) {
+                        response = plugin.getPlayerCommand().handleSetMainGroup(sender, ArgumentUtil.getRemainingArgs(2, args));
                     } else {
                         PermissifyConstants.PERMISSIFY_HELP.forEach(message -> sender.sendMessage(ColorUtil.makeReadable(message)));
                         return;

@@ -24,14 +24,11 @@ public class ChatFormatter {
      */
     public static String formatChat(UUID uuid, String username, String message) {
         if (!PermissifyAPI.get().isPresent()) return username + ": " + message;
-        System.out.println("A");
         if (!PermissifyAPI.get().get().getDatabaseHandler().isPresent()) return username + ": " + message;
-        System.out.println("b");
         DatabaseHandler handler = PermissifyAPI.get().get().getDatabaseHandler().get();
 
         Optional<PermissionGroup> group = handler.getPrimaryGroup(uuid);
         if (!group.isPresent()) return username + ": " + message;
-        System.out.println("c");
         String formatter = handler.getChatFormat(false);
         String finalGroup = group.get().getPrefix() + " " + group.get().getName() + " " + group.get().getSuffix();
         String color = "&" + group.get().getChatColor();

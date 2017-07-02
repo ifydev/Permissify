@@ -80,6 +80,27 @@ public class PlayerCommand {
                 .replace("<PLAYER>", targetPlayer.getName()).replace("<GROUP>", group.get().getName()), true);
     }
 
+    public CommandResponse handleSetMainGroup(CommandSender sender, String[] args) {
+        PermissifyMain plugin = PermissifyMain.getInstance();
+        if (!plugin.getPermissifyAPI().getDatabaseHandler().isPresent())
+            return new CommandResponse(PermissifyConstants.UNABLE_TO_SET.replace("<REASON>", "No database handler."), false);
+        if (!sender.hasPermission(PermissifyConstants.PERMISSIFY_PLAYER_SET_MAIN_GROUP))
+            return new CommandResponse(PermissifyConstants.INSUFFICIENT_PERMISSIONS, false);
+        if (args.length < 2) return new CommandResponse(PermissifyConstants.NOT_ENOUGH_ARGUMENTS_SET_MAIN_GROUP, false);
+        Player player = Bukkit.getPlayer(args[0]);
+        if (player == null) return new CommandResponse(PermissifyConstants.INVALID_PLAYER, false);
+        Optional<PermissionGroup> group = plugin.getPermissifyAPI().getDatabaseHandler().get().getGroups().stream()
+                .filter(permissionGroup -> permissionGroup.getName().equals(args[1])).findFirst();
+        if (!group.isPresent()) return new CommandResponse(PermissifyConstants.INVALID_GROUP, false);
+        if (!group.get().getPlayers().containsKey(player.getUniqueId()))
+            return new CommandResponse(PermissifyConstants.PLAYER_NOT_IN_GROUP.replace("<PLAYER>", player.getName()).replace("<GROUP>", group.get().getName()), false);
+        boolean groupSet = plugin.getPermissifyAPI().getDatabaseHandler().get().setPrimaryGroup(group.get(), player.getUniqueId());
+        if (groupSet)
+            return new CommandResponse(PermissifyConstants.MAIN_GROUP_SET.replace("<PLAYER>", player.getName()).replace("<GROUP>", group.get().getName()), false);
+        // Should be pretty much impossible to get here, unless the database isn't connected.
+        return new CommandResponse(PermissifyConstants.PLAYER_NOT_IN_GROUP.replace("<PLAYER>", player.getName()).replace("<GROUP>", group.get().getName()), false);
+    }
+
     public CommandResponse handleAddPermission(CommandSender sender, String[] args) {
         PermissifyMain plugin = PermissifyMain.getInstance();
         if (!plugin.getPermissifyAPI().getDatabaseHandler().isPresent())
