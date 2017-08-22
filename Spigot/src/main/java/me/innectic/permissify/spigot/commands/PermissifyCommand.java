@@ -35,6 +35,8 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
 
+import java.util.List;
+
 /**
  * @author Innectic
  * @since 6/15/2017
@@ -46,12 +48,12 @@ public class PermissifyCommand implements CommandExecutor {
         PermissifyMain plugin = PermissifyMain.getInstance();
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
             if (!plugin.getPermissifyAPI().getDatabaseHandler().isPresent()) {
-                sender.sendMessage(PermissifyConstants.UNABLE_OTHER.replace("<REASON>", "No database handler"));
+                sendResponse(PermissifyConstants.UNABLE_OTHER.replace("<REASON>", "No database handler"), sender);
                 return;
             }
             if (sender instanceof ConsoleCommandSender) {
                 if (args.length < 2 || (args.length >= 2 && !args[0].equalsIgnoreCase("superadmin"))) {
-                    sender.sendMessage(ColorUtil.makeReadable(PermissifyConstants.CONSOLE_INVALID_COMMAND));
+                    sendResponse(PermissifyConstants.CONSOLE_INVALID_COMMAND, sender);
                     return;
                 }
                 Player player = Bukkit.getPlayer(args[1]);
@@ -63,62 +65,72 @@ public class PermissifyCommand implements CommandExecutor {
                     player.sendMessage(ColorUtil.makeReadable(PermissifyConstants.INSUFFICIENT_PERMISSIONS));
                 }
                 if (args.length < 2) {
-                    PermissifyConstants.PERMISSIFY_HELP.forEach(message -> sender.sendMessage(ColorUtil.makeReadable(message)));
+                    sendResponse(PermissifyConstants.PERMISSIFY_HELP, player);
                     return;
                 }
                 if (args[0].equalsIgnoreCase("group")) {
                     CommandResponse response;
                     if (args[1].equalsIgnoreCase("create")) {
-                        response = plugin.getGroupCommand().handleAddGroup(sender, ArgumentUtil.getRemainingArgs(2, args));
+                        response = plugin.getGroupCommand().handleAddGroup(player, ArgumentUtil.getRemainingArgs(2, args));
                     } else if (args[1].equalsIgnoreCase("remove")) {
-                        response = plugin.getGroupCommand().handleDeleteGroup(sender, ArgumentUtil.getRemainingArgs(2, args));
+                        response = plugin.getGroupCommand().handleDeleteGroup(player, ArgumentUtil.getRemainingArgs(2, args));
                     } else if (args[1].equalsIgnoreCase("addpermission")) {
-                        response = plugin.getGroupCommand().handlePermissionAdd(sender, ArgumentUtil.getRemainingArgs(2, args));
+                        response = plugin.getGroupCommand().handlePermissionAdd(player, ArgumentUtil.getRemainingArgs(2, args));
                     } else if (args[1].equalsIgnoreCase("removepermission")) {
-                        response = plugin.getGroupCommand().handlePermissionRemove(sender, ArgumentUtil.getRemainingArgs(2, args));
+                        response = plugin.getGroupCommand().handlePermissionRemove(player, ArgumentUtil.getRemainingArgs(2, args));
                     } else if (args[1].equalsIgnoreCase("list")) {
-                        response = plugin.getGroupCommand().handleListGroups(sender, ArgumentUtil.getRemainingArgs(2, args));
+                        response = plugin.getGroupCommand().handleListGroups(player, ArgumentUtil.getRemainingArgs(2, args));
                     } else if (args[1].equalsIgnoreCase("listpermissions")) {
-                        response = plugin.getGroupCommand().handleListPermissions(sender, ArgumentUtil.getRemainingArgs(2, args));
+                        response = plugin.getGroupCommand().handleListPermissions(player, ArgumentUtil.getRemainingArgs(2, args));
                     } else {
-                        PermissifyConstants.PERMISSIFY_HELP.forEach(message -> sender.sendMessage(ColorUtil.makeReadable(message)));
+                        sendResponse(PermissifyConstants.PERMISSIFY_HELP, player);
                         return;
                     }
-                    sender.sendMessage(ColorUtil.makeReadable(response.getResponse()));
+                    sendResponse(response, sender);
                 } else if (args[0].equalsIgnoreCase("player")) {
                     CommandResponse response;
                     if (args.length < 3) {
-                        sender.sendMessage(ColorUtil.makeReadable(PermissifyConstants.NOT_ENOUGH_ARGUMENTS_PLAYER));
+                        sendResponse(PermissifyConstants.NOT_ENOUGH_ARGUMENTS_PLAYER, player);
                         return;
                     }
-                    if (args[1].equalsIgnoreCase("addpermission")) {
+                    if (args[1].equalsIgnoreCase("addpermission"))
                         response = plugin.getPlayerCommand().handleAddPermission(sender, ArgumentUtil.getRemainingArgs(2, args));
-                    } else if (args[1].equalsIgnoreCase("removepermission")){
+                    else if (args[1].equalsIgnoreCase("removepermission"))
                         response = plugin.getPlayerCommand().handleRemovePermission(sender, ArgumentUtil.getRemainingArgs(2, args));
-                    } else if (args[1].equalsIgnoreCase("addgroup")) {
+                    else if (args[1].equalsIgnoreCase("addgroup"))
                         response = plugin.getPlayerCommand().handleAddPlayerToGroup(sender, ArgumentUtil.getRemainingArgs(2, args));
-                    } else if (args[1].equalsIgnoreCase("listpermissions")) {
+                    else if (args[1].equalsIgnoreCase("listpermissions"))
                         response = plugin.getPlayerCommand().handleListPermissions(sender, ArgumentUtil.getRemainingArgs(2, args));
-                    } else if (args[1].equalsIgnoreCase("listgroups")) {
+                    else if (args[1].equalsIgnoreCase("listgroups"))
                         response = plugin.getPlayerCommand().handleListGroups(sender, ArgumentUtil.getRemainingArgs(2, args));
-                    } else if (args[1].equalsIgnoreCase("removegroup")) {
-                        response = plugin.getPlayerCommand().handleRemovePlayerFromGroup(sender, ArgumentUtil.getRemainingArgs(2, args));
-                    } else if (args[1].equalsIgnoreCase("setmain")) {
-                        response = plugin.getPlayerCommand().handleSetMainGroup(sender, ArgumentUtil.getRemainingArgs(2, args));
-                    } else {
-                        PermissifyConstants.PERMISSIFY_HELP.forEach(message -> sender.sendMessage(ColorUtil.makeReadable(message)));
+                    else if (args[1].equalsIgnoreCase("removegroup")) response = plugin.getPlayerCommand().handleRemovePlayerFromGroup(sender, ArgumentUtil.getRemainingArgs(2, args));
+                    else if (args[1].equalsIgnoreCase("setmain")) response = plugin.getPlayerCommand().handleSetMainGroup(sender, ArgumentUtil.getRemainingArgs(2, args));
+                    else {
+                        sendResponse(PermissifyConstants.PERMISSIFY_HELP, player);
                         return;
                     }
-                    sender.sendMessage(ColorUtil.makeReadable(response.getResponse()));
+                    sendResponse(response, player);
                 } else if (args[0].equalsIgnoreCase("format")) {
                     CommandResponse response = plugin.getFormatCommand().handleSetFormat(sender, ArgumentUtil.getRemainingArgs(1, args));
                     sender.sendMessage(ColorUtil.makeReadable(response.getResponse()));
                 } else if (args[0].equalsIgnoreCase("cache")) {
                     CommandResponse response = plugin.getCacheCommand().handleCache(sender, ArgumentUtil.getRemainingArgs(1, args));
-                    sender.sendMessage(ColorUtil.makeReadable(response.getResponse()));
+                    sendResponse(response, player);
                 }
             }
         });
         return false;
+    }
+
+    private void sendResponse(CommandResponse response, CommandSender source) {
+        sendResponse(response.getResponse(), source);
+    }
+
+    private void sendResponse(List<String> responses, CommandSender source) {
+        responses.forEach(response -> sendResponse(response, source));
+    }
+
+    private void sendResponse(String response, CommandSender source) {
+        source.sendMessage(ColorUtil.makeReadable(response));  // XXX: Probably don't need ColorUtil anymore...
     }
 }
