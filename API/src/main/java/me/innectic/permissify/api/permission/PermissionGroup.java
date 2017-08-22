@@ -60,11 +60,8 @@ public class PermissionGroup {
      */
     public void addPermission(String permission) {
         Optional<Permission> perm = permissions.stream().filter(groupPermission -> groupPermission.getPermission().equals(permission)).findFirst();
-        if (perm.isPresent()) {
-            perm.get().setGranted(true);
-        } else {
-            permissions.add(new Permission(permission, true));
-        }
+        if (perm.isPresent()) perm.get().setGranted(true);
+        else permissions.add(new Permission(permission, true));
     }
 
     public boolean hasPermission(String permission) {

@@ -68,12 +68,8 @@ public class PermissifyMain extends JavaPlugin {
         Optional<FullHandler> handler = configVerifier.verifyConnectionInformation();
         // Initialize the API
         permissifyAPI = new PermissifyAPI();
-        if (!handler.isPresent()) {
-            System.out.println("No handler");
-            return;
-        }
-        if (!handler.get().getHandlerType().isPresent()) {
-            System.out.println("No handler type");
+        if (!handler.isPresent() || !handler.get().getHandlerType().isPresent()) {
+            System.out.println("Internal Permission Error: No handler / type present!");
             return;
         }
         try {
@@ -81,10 +77,6 @@ public class PermissifyMain extends JavaPlugin {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        groupCommand = new GroupCommand();
-        playerCommand = new PlayerCommand();
-        formatCommand = new FormatCommand();
-        cacheCommand = new CacheCommand();
         // Register commands
         registerCommands();
         // Register listeners
@@ -121,6 +113,10 @@ public class PermissifyMain extends JavaPlugin {
     }
 
     private void registerCommands() {
+        groupCommand = new GroupCommand();
+        playerCommand = new PlayerCommand();
+        formatCommand = new FormatCommand();
+        cacheCommand = new CacheCommand();
         getCommand("permissify").setExecutor(new PermissifyCommand());
     }
 

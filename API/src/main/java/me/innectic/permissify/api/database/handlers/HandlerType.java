@@ -28,6 +28,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import me.innectic.permissify.api.database.DatabaseHandler;
 
+import java.util.Arrays;
 import java.util.Optional;
 
 /**
@@ -49,9 +50,6 @@ public enum HandlerType {
      * @return the handler. Filled if found, empty otherwise.
      */
     public static Optional<HandlerType> findType(String type) {
-        for (HandlerType handler : values()) {
-            if (handler.getDisplayName().equalsIgnoreCase(type)) return Optional.of(handler);
-        }
-        return Optional.empty();
+        return Arrays.stream(values()).filter(handler -> handler.getDisplayName().equalsIgnoreCase(type)).findFirst();
     }
 }
