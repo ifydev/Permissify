@@ -24,6 +24,7 @@
  */
 package me.innectic.permissify.api.database;
 
+import lombok.Getter;
 import me.innectic.permissify.api.permission.Permission;
 import me.innectic.permissify.api.permission.PermissionGroup;
 
@@ -37,8 +38,8 @@ import java.util.*;
  */
 public abstract class DatabaseHandler {
 
-    protected Map<UUID, Map<String, Boolean>> cachedPermissions = new HashMap<>();
-    protected List<PermissionGroup> cachedGroups = new ArrayList<>();
+    @Getter protected Map<UUID, Map<String, Boolean>> cachedPermissions = new HashMap<>();
+    @Getter protected List<PermissionGroup> cachedGroups = new ArrayList<>();
     protected List<UUID> superAdmins = new ArrayList<>();
     protected final Optional<ConnectionInformation> connectionInformation;
     protected String chatFormat = "{group} {username}: {message}";
