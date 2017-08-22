@@ -64,15 +64,27 @@ public class PermissifyCommand implements CommandExecutor {
                 if (!player.hasPermission(PermissifyConstants.PERMISSIFY_BASIC) && !plugin.getPermissifyAPI().getDatabaseHandler().get().isSuperAdmin(((Player) sender).getUniqueId())) {
                     player.sendMessage(ColorUtil.makeReadable(PermissifyConstants.INSUFFICIENT_PERMISSIONS));
                 }
+                if (args[0].equalsIgnoreCase("help")) {
+                    int page = 0;
+                    if (args.length >= 2) {
+                        try {
+                            page = Integer.parseInt(args[1]);
+                        } catch (NumberFormatException ignored) {}
+                    }
+                    page -= 1;
+                    if (page < 0) page = 0;
+                    sendHelp(player, page);
+                    return;
+                }
                 if (args.length < 2) {
-                    sendResponse(PermissifyConstants.PERMISSIFY_HELP, player);
+                    sendHelp(player);
                     return;
                 }
                 if (args[0].equalsIgnoreCase("group")) {
                     CommandResponse response;
-                    if (args[1].equalsIgnoreCase("create")) {
+                    if (args[1].equalsIgnoreCase("create") || args[1].equalsIgnoreCase("add")) {
                         response = plugin.getGroupCommand().handleAddGroup(player, ArgumentUtil.getRemainingArgs(2, args));
-                    } else if (args[1].equalsIgnoreCase("remove")) {
+                    } else if (args[1].equalsIgnoreCase("remove") || args[1].equalsIgnoreCase("delete")) {
                         response = plugin.getGroupCommand().handleDeleteGroup(player, ArgumentUtil.getRemainingArgs(2, args));
                     } else if (args[1].equalsIgnoreCase("addpermission")) {
                         response = plugin.getGroupCommand().handlePermissionAdd(player, ArgumentUtil.getRemainingArgs(2, args));
@@ -83,7 +95,7 @@ public class PermissifyCommand implements CommandExecutor {
                     } else if (args[1].equalsIgnoreCase("listpermissions")) {
                         response = plugin.getGroupCommand().handleListPermissions(player, ArgumentUtil.getRemainingArgs(2, args));
                     } else {
-                        sendResponse(PermissifyConstants.PERMISSIFY_HELP, player);
+                        sendHelp(player);
                         return;
                     }
                     sendResponse(response, sender);
@@ -106,7 +118,7 @@ public class PermissifyCommand implements CommandExecutor {
                     else if (args[1].equalsIgnoreCase("removegroup")) response = plugin.getPlayerCommand().handleRemovePlayerFromGroup(sender, ArgumentUtil.getRemainingArgs(2, args));
                     else if (args[1].equalsIgnoreCase("setmain")) response = plugin.getPlayerCommand().handleSetMainGroup(sender, ArgumentUtil.getRemainingArgs(2, args));
                     else {
-                        sendResponse(PermissifyConstants.PERMISSIFY_HELP, player);
+                        sendHelp(player);
                         return;
                     }
                     sendResponse(response, player);
@@ -132,5 +144,15 @@ public class PermissifyCommand implements CommandExecutor {
 
     private void sendResponse(String response, CommandSender source) {
         source.sendMessage(ColorUtil.makeReadable(response));  // XXX: Probably don't need ColorUtil anymore...
+    }
+
+    private void sendHelp(Player player) {
+        sendHelp(player, 0);
+    }
+
+    private void sendHelp(Player player, int page) {
+        sendResponse(PermissifyConstants.PERMISSIFY_HELP_HEADER, player);
+        sendResponse(PermissifyConstants.PERMISSIFY_HELP_PAGES.get(page), player);
+        sendResponse(PermissifyConstants.PERMISSIFY_HELP_FOOTER, player);
     }
 }

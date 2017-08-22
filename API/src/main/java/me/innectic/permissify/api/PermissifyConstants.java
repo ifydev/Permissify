@@ -32,7 +32,7 @@ import java.util.List;
  * @author Innectic
  * @since 6/16/2017
  *
- * Constant attributes between the different plugins.
+ * Constant attributes between the different server implementations.
  */
 public class PermissifyConstants {
     // TODO: Create a language formatter to allow for translating.
@@ -108,20 +108,36 @@ public class PermissifyConstants {
     public static final String UNABLE_OTHER = PERMISSIFY_PREFIX + "&c&lUnable to continue: <REASON>";
     public static final String UNABLE_TO_SET = PERMISSIFY_PREFIX + "&c&lUnable to set: <REASON>";
 
-    // Help response
-    public static final List<String> PERMISSIFY_HELP = new ArrayList<>(Arrays.asList(
-            "&e================== &a&lPermissify Help &e==================",
-            "&a&l/permissify group create [name] [prefix] [suffix] [chat-color]",
-            "&a&l/permissify group addpermission [name] [permission]",
-            "&a&l/permissify group removepermission [name] [permission]",
-            "&a&l/permissify group listpermissions [name]",
+    public static final String PERMISSIFY_HELP_HEADER = "&e================== &a&lPermissify Help &e==================";
+    public static final String PERMISSIFY_HELP_FOOTER = "&e=====================================================";
+//    public static final int LINES_PER_PAGE = 10;   TODO: Pagination should happen by `len(pages) / lines_per_page`.
+
+    public static final List<List<String>> PERMISSIFY_HELP_PAGES = new ArrayList<>(Arrays.asList(Arrays.asList(
+            "&a&l/permissify help [page]",
+            "&a&l/permissify superadmin [player] - &c&lWARNING: &e&lSUPERADMIN GIVES PERMISSION FOR EVERYTHING!",
+            "&a&l/permissify cache",
+            "&a&l/permissify cache purge",
+            "&a&l/permissify format chat [format]",
+            "&a&l/permissify format whisper [format]",
+            "&a&l/permissify group create [name] [prefix] [suffix] [chatcolor]",
+            "&a&l/permissify group remove [name]",
+            "&a&l/permissify group addpermission [group] [permissions...]",
+            "&a&l/permissify group removepermission [group] [permissions...]"
+    ), Arrays.asList(
+            "&a&l/permissify group listpermissions [group]",
             "&a&l/permissify group list",
-            "&e====================================================="
-    ));
+            "&a&l/permissify player addpermission ",
+            "&a&l/permissify player removepermission ",
+            "&a&l/permissify player addgroup ",
+            "&a&l/permissify player listpermissions",
+            "&a&l/permissify player listgroups ",
+            "&a&l/permissify player removegroup ",
+            "&a&l/permissify player setmain "
+    )));
 
     // Error response
     public static final List<String> PERMISSIFY_ERROR = new ArrayList<>(Arrays.asList(
             "&c&lError encountered: <ERROR_TYPE>",
-            "&c&lShould report: <SHOULD_REPORT>"
+            "&c&lShould this be reported?: <SHOULD_REPORT>"
     ));
 }
