@@ -28,6 +28,7 @@ import me.innectic.permissify.api.PermissifyConstants;
 import me.innectic.permissify.api.util.ArgumentUtil;
 import me.innectic.permissify.spigot.PermissifyMain;
 import me.innectic.permissify.spigot.utils.ColorUtil;
+import me.innectic.permissify.spigot.utils.PermissionUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -61,10 +62,10 @@ public class PermissifyCommand implements CommandExecutor {
                 plugin.getPermissifyAPI().getDatabaseHandler().get().addSuperAdmin(player.getUniqueId());
             } else if (sender instanceof Player) {
                 Player player = (Player) sender;
-                if (!player.hasPermission(PermissifyConstants.PERMISSIFY_BASIC) && !plugin.getPermissifyAPI().getDatabaseHandler().get().isSuperAdmin(((Player) sender).getUniqueId())) {
+                if (!PermissionUtil.hasPermissionOrSuperAdmin(player, PermissifyConstants.PERMISSIFY_BASIC)) {
                     player.sendMessage(ColorUtil.makeReadable(PermissifyConstants.INSUFFICIENT_PERMISSIONS));
                 }
-                if (args[0].equalsIgnoreCase("help")) {
+                if (args.length >= 1 && args[0].equalsIgnoreCase("help")) {
                     int page = 0;
                     if (args.length >= 2) {
                         try {
@@ -74,6 +75,10 @@ public class PermissifyCommand implements CommandExecutor {
                     page -= 1;
                     if (page < 0) page = 0;
                     sendHelp(player, page);
+                    return;
+                } else if (args.length >= 1 && args[0].equalsIgnoreCase("cache")) {
+                    CommandResponse response = plugin.getCacheCommand().handleCache(sender, ArgumentUtil.getRemainingArgs(1, args));
+                    sendResponse(response, player);
                     return;
                 }
                 if (args.length < 2) {
@@ -125,9 +130,6 @@ public class PermissifyCommand implements CommandExecutor {
                 } else if (args[0].equalsIgnoreCase("format")) {
                     CommandResponse response = plugin.getFormatCommand().handleSetFormat(sender, ArgumentUtil.getRemainingArgs(1, args));
                     sender.sendMessage(ColorUtil.makeReadable(response.getResponse()));
-                } else if (args[0].equalsIgnoreCase("cache")) {
-                    CommandResponse response = plugin.getCacheCommand().handleCache(sender, ArgumentUtil.getRemainingArgs(1, args));
-                    sendResponse(response, player);
                 }
             }
         });
@@ -146,11 +148,11 @@ public class PermissifyCommand implements CommandExecutor {
         source.sendMessage(ColorUtil.makeReadable(response));  // XXX: Probably don't need ColorUtil anymore...
     }
 
-    private void sendHelp(Player player) {
+    private void sendHelp(CommandSender player) {
         sendHelp(player, 0);
     }
 
-    private void sendHelp(Player player, int page) {
+    private void sendHelp(CommandSender player, int page) {
         sendResponse(PermissifyConstants.PERMISSIFY_HELP_HEADER, player);
         sendResponse(PermissifyConstants.PERMISSIFY_HELP_PAGES.get(page), player);
         sendResponse(PermissifyConstants.PERMISSIFY_HELP_FOOTER, player);

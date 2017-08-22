@@ -1,0 +1,7 @@
+storage: mysql
+connection:
+  host: localhost
+  port: 3306
+  database: db
+  username: permissify
+  password: magicalpassword

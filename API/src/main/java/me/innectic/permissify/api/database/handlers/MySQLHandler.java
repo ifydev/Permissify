@@ -82,13 +82,39 @@ public class MySQLHandler extends DatabaseHandler {
     }
 
     @Override
-    public void clear() {
+    public void clear(List<UUID> onlinePlayers) {
         cachedGroups = new ArrayList<>();
         cachedPermissions = new HashMap<>();
         superAdmins = new ArrayList<>();
 
         chatFormat = getChatFormat(true);
         whisperFormat = getWhisperFormat(true);
+
+        Optional<Connection> connection = getConnection();
+        if (connection.isPresent()) {
+            try {
+                // Load all super admins
+                PreparedStatement adminStatement = connection.get().prepareStatement("SELECT uuid FROM superAdmin");
+                ResultSet adminResults = adminStatement.executeQuery();
+                while (adminResults.next()) {
+                    superAdmins.add(UUID.fromString(adminResults.getString("uuid")));
+                }
+                adminResults.close();
+                adminStatement.close();
+
+                // Load all group names
+                PreparedStatement groupStatement = connection.get().prepareStatement("SELECT name from groups");
+                ResultSet groupResults = groupStatement.executeQuery();
+                while (groupResults.next()) {
+                    groupNames.add(groupResults.getString("name"));
+                }
+                groupStatement.close();
+                groupResults.close();
+                connection.get().close();
+            } catch (SQLException e) {
+                PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.of(e)));
+            }
+        } else PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.empty()));
     }
 
     @Override
@@ -224,6 +250,7 @@ public class MySQLHandler extends DatabaseHandler {
         if (cachedGroups.stream().anyMatch(group -> group.getName().equalsIgnoreCase(name))) return false;
         // Add the new group to the cache
         cachedGroups.add(new PermissionGroup(name, chatColor, prefix, suffix));
+        groupNames.add(name);
 
         Optional<Connection> connection = getConnection();
         if (!connection.isPresent()) {
@@ -253,6 +280,7 @@ public class MySQLHandler extends DatabaseHandler {
         if (getGroups().stream().noneMatch(group -> group.getName().equalsIgnoreCase(name))) return false;
         // Delete from the cache
         cachedGroups.removeIf(group -> group.getName().equalsIgnoreCase(name));
+        groupNames.removeIf(entry -> entry.equalsIgnoreCase(name));
 
         Optional<Connection> connection = getConnection();
         if (!connection.isPresent()) {
@@ -270,6 +298,36 @@ public class MySQLHandler extends DatabaseHandler {
             return false;
         }
         return true;
+    }
+
+    @Override
+    public Optional<PermissionGroup> getGroup(String name) {
+        if (!groupNames.contains(name)) return Optional.empty();
+        Optional<PermissionGroup> cached = cachedGroups.stream().filter(group -> group.getName().equalsIgnoreCase(name)).findFirst();
+        if (cached.isPresent()) return cached;
+        // Not a cached group, and it's a real group. Must be pulled from DB.
+        Optional<Connection> connection = getConnection();
+        if (!connection.isPresent()) {
+            PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.empty()));
+            return Optional.empty();
+        }
+
+        try {
+            PreparedStatement statement = connection.get().prepareStatement("SELECT * FROM groups WHERE name=?");
+            statement.setString(1, name);
+            ResultSet results = statement.executeQuery();
+            if (results.next()) {
+                PermissionGroup group = new PermissionGroup(results.getString("name"), results.getString("chatcolor"), results.getString("prefix"), results.getString("suffix"));
+                cachedGroups.add(group);
+                return Optional.of(group);
+            }
+            results.close();
+            statement.close();
+            connection.get().close();
+        } catch (SQLException e) {
+            PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.of(e)));
+        }
+        return Optional.empty();
     }
 
     @Override
@@ -498,29 +556,7 @@ public class MySQLHandler extends DatabaseHandler {
 
     @Override
     public boolean isSuperAdmin(UUID uuid) {
-        if (superAdmins.contains(uuid)) return true;
-        Optional<Connection> connection = getConnection();
-        if (!connection.isPresent()) {
-            PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.empty()));
-            return false;
-        }
-
-        try {
-            PreparedStatement statement = connection.get().prepareStatement("SELECT uuid FROM superAdmin");
-            ResultSet results = statement.executeQuery();
-            while (results.next()) {
-                if (results.getString("uuid").equals(uuid.toString())) {
-                    superAdmins.add(UUID.fromString(results.getString("uuid")));
-                    return true;
-                }
-            }
-            results.close();
-            statement.close();
-            connection.get().close();
-        } catch (SQLException e) {
-            PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.of(e)));
-        }
-        return false;
+        return superAdmins.contains(uuid);
     }
 
     @Override

@@ -126,13 +126,13 @@ public class PermissifyConstants {
     ), Arrays.asList(
             "&a&l/permissify group listpermissions [group]",
             "&a&l/permissify group list",
-            "&a&l/permissify player addpermission ",
-            "&a&l/permissify player removepermission ",
-            "&a&l/permissify player addgroup ",
-            "&a&l/permissify player listpermissions",
-            "&a&l/permissify player listgroups ",
-            "&a&l/permissify player removegroup ",
-            "&a&l/permissify player setmain "
+            "&a&l/permissify player addpermission [permission] [player]",
+            "&a&l/permissify player removepermission [permission] [player]",
+            "&a&l/permissify player addgroup [player] [group]",
+            "&a&l/permissify player listpermissions [player]",
+            "&a&l/permissify player listgroups [player]",
+            "&a&l/permissify player removegroup [player] [group]",
+            "&a&l/permissify player setmain [player] [group]"
     )));
 
     // Error response
