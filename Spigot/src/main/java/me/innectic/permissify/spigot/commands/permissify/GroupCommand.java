@@ -173,7 +173,7 @@ public class GroupCommand {
         DatabaseHandler handler = plugin.getPermissifyAPI().getDatabaseHandler().get();
         if (args.length < 1) {
             // If we only have one, show the default group.
-            String defaultGroupName = handler.getDefaultGroup().map(group -> group.getChatColor() + group.getName())
+            String defaultGroupName = handler.getDefaultGroup().map(group -> ChatColor.getByChar(group.getChatColor()) + group.getName())
                     .orElse(PermissifyConstants.EMPTY_DEFAULT_GROUP_NAME);
             String response = PermissifyConstants.DEFAULT_GROUP_RESPONSE.replace("<GROUP>", defaultGroupName);
             return new CommandResponse(response, true);
