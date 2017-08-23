@@ -25,6 +25,7 @@
 package me.innectic.permissify.spigot;
 
 import lombok.Getter;
+import lombok.Setter;
 import me.innectic.permissify.spigot.commands.PermissifyCommand;
 import me.innectic.permissify.spigot.commands.permissify.CacheCommand;
 import me.innectic.permissify.spigot.commands.permissify.FormatCommand;
@@ -59,6 +60,8 @@ public class PermissifyMain extends JavaPlugin {
     @Getter private FormatCommand formatCommand;
     @Getter private CacheCommand cacheCommand;
 
+    @Getter @Setter private boolean handleChat = false;
+
     @Override
     public void onEnable() {
         createConfig();
@@ -69,9 +72,10 @@ public class PermissifyMain extends JavaPlugin {
         // Initialize the API
         permissifyAPI = new PermissifyAPI();
         if (!handler.isPresent() || !handler.get().getHandlerType().isPresent()) {
-            System.out.println("Internal Permission Error: No handler / type present!");
+            System.out.println("Internal Permissify Error: No handler / type present!");
             return;
         }
+        handleChat = getConfig().getBoolean("handleChat");
         try {
             permissifyAPI.initialize(handler.get().getHandlerType().get(), handler.get().getConnectionInformation(), new DisplayUtil());
         } catch (Exception e) {

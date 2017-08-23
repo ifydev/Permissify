@@ -45,6 +45,7 @@ public class PlayerChat implements Listener {
     @EventHandler
     public void onPlayerChat(AsyncPlayerChatEvent e) {
         PermissifyMain plugin = PermissifyMain.getInstance();
+        if (!plugin.isHandleChat()) return;
         if (!plugin.getPermissifyAPI().getDatabaseHandler().isPresent()) return;
         Player player = e.getPlayer();
         if (player == null) return;

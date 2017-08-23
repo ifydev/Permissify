@@ -41,15 +41,18 @@ public class FormatCommand {
     public CommandResponse handleSetFormat(CommandSender sender, String[] args) {
         if (!PermissionUtil.hasPermissionOrSuperAdmin((Player) sender, PermissifyConstants.PERMISSIFY_FORMAT))
             return new CommandResponse(PermissifyConstants.INSUFFICIENT_PERMISSIONS, false);
-        if (args.length < 2) return new CommandResponse(PermissifyConstants.NOT_ENOUGH_ARGUMENTS_SET_FORMAT, false);
-        if (args[0].equals("chat")) return handleSetChatFormat(sender, ArgumentUtil.getRemainingArgs(1, args));
-        else if (args[0].equals("whisper")) return handleWhisperFormat(sender, ArgumentUtil.getRemainingArgs(1, args));
+        if (args.length < 1) return new CommandResponse(PermissifyConstants.NOT_ENOUGH_ARGUMENTS_SET_FORMAT, false);
+        if (args[0].equalsIgnoreCase("chat")) return handleSetChatFormat(sender, ArgumentUtil.getRemainingArgs(1, args));
+        else if (args[0].equalsIgnoreCase("whisper")) return handleWhisperFormat(sender, ArgumentUtil.getRemainingArgs(1, args));
+        else if (args[0].equalsIgnoreCase("enable")) return handleEnableFormat(sender, ArgumentUtil.getRemainingArgs(1, args));
+        else if (args[0].equalsIgnoreCase("disable")) return handleDisableFormat(sender, ArgumentUtil.getRemainingArgs(1, args));
         return new CommandResponse(PermissifyConstants.INVALID_ARGUMENT.replace("<ARGUMENT>", args[0]), true);
     }
 
     private CommandResponse handleSetChatFormat(CommandSender sender, String[] args) {
         if (!PermissifyMain.getInstance().getPermissifyAPI().getDatabaseHandler().isPresent())
             return new CommandResponse(PermissifyConstants.UNABLE_TO_SET.replace("<REASON>", "No database handler"), false);
+        if (args.length < 1) return new CommandResponse(PermissifyConstants.NOT_ENOUGH_ARGUMENTS_SET_FORMAT, false);
         String format = String.join(" ", args).trim();
         PermissifyMain.getInstance().getPermissifyAPI().getDatabaseHandler().get().setChatFormat(format);
         return new CommandResponse(PermissifyConstants.FORMATTER_SET.replace("<FORMATTER>", "chat"), true);
@@ -58,8 +61,21 @@ public class FormatCommand {
     private CommandResponse handleWhisperFormat(CommandSender sender, String[] args) {
         if (!PermissifyMain.getInstance().getPermissifyAPI().getDatabaseHandler().isPresent())
             return new CommandResponse(PermissifyConstants.UNABLE_TO_SET.replace("<REASON>", "No database handler"), false);
+        if (args.length < 1) return new CommandResponse(PermissifyConstants.NOT_ENOUGH_ARGUMENTS_SET_FORMAT, false);
         String format = String.join(" ", args).trim();
         PermissifyMain.getInstance().getPermissifyAPI().getDatabaseHandler().get().setWhisperFormat(format);
         return new CommandResponse(PermissifyConstants.FORMATTER_SET.replace("<FORMATTER>", "whisper"), true);
+    }
+
+    private CommandResponse handleDisableFormat(CommandSender sender, String[] args) {
+        PermissifyMain.getInstance().getConfig().set("handleChat", false);
+        PermissifyMain.getInstance().setHandleChat(false);
+        return new CommandResponse(PermissifyConstants.TOGGLED_CHAT_HANDLE.replace("<STATE>", "Disabled"), true);
+    }
+
+    private CommandResponse handleEnableFormat(CommandSender sender, String[] args) {
+        PermissifyMain.getInstance().getConfig().set("handleChat", true);
+        PermissifyMain.getInstance().setHandleChat(true);
+        return new CommandResponse(PermissifyConstants.TOGGLED_CHAT_HANDLE.replace("<STATE>", "Enabled"), true);
     }
 }

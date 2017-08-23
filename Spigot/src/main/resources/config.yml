@@ -1,7 +1,8 @@
 storage: mysql
+handleChat: false
 connection:
   host: localhost
   port: 3306
-  database: db
+  database: permissify
   username: permissify
   password: magicalpassword

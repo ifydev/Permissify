@@ -78,6 +78,7 @@ public class PermissifyConstants {
     public static final String PLAYER_REMOVED_FROM_GROUP = PERMISSIFY_PREFIX + "&e&lRemoved <PLAYER> from <GROUP>";
     public static final String FORMATTER_SET = PERMISSIFY_PREFIX + "&e&lFormatter <FORMATTER> set!";
     public static final String MAIN_GROUP_SET = PERMISSIFY_PREFIX + "&e&lSet main group for <PLAYER> to <GROUP>!";
+    public static final String TOGGLED_CHAT_HANDLE = PERMISSIFY_PREFIX + "&e&l<STATE> chat formatting.";
 
     public static final String EMPTY_DEFAULT_GROUP_NAME = "&c&lNONE";
     public static final String DEFAULT_GROUP_RESPONSE = PERMISSIFY_PREFIX + "&e&lThe current default group is '<GROUP>&e&l'.";
@@ -95,7 +96,7 @@ public class PermissifyConstants {
     public static final String NOT_ENOUGH_ARGUMENTS_PLAYER_ADD_GROUP= PERMISSIFY_PREFIX + "&c&lNot enough arguments! &e&l/permissify player addgroup [group] [player]";
     public static final String NOT_ENOUGH_ARGUMENTS_PLAYER_REMOVE_GROUP= PERMISSIFY_PREFIX + "&c&lNot enough arguments! &e&l/permissify player removegroup [group] [player]";
     public static final String NOT_ENOUGH_ARGUMENTS_PLAYER_LIST_GROUP = PERMISSIFY_PREFIX + "&c&lNot enough arguments! &e&l/permissify player listgroup [player]";
-    public static final String NOT_ENOUGH_ARGUMENTS_SET_FORMAT = PERMISSIFY_PREFIX + "&c&lNot enough arguments! &e&l/permissify format [whisper|chat] [format...]";
+    public static final String NOT_ENOUGH_ARGUMENTS_SET_FORMAT = PERMISSIFY_PREFIX + "&c&lNot enough arguments! &e&l/permissify format [whisper|chat|disable|enable] [format?...]";
     public static final String NOT_ENOUGH_ARGUMENTS_SET_MAIN_GROUP = PERMISSIFY_PREFIX + "&c&lNot enough arguments! &e&l/permissify player setmain [player] [group]";
 
     public static final String INVALID_CHATCOLOR = PERMISSIFY_PREFIX + "&c&lInvalid chat color <COLOR>";
@@ -124,11 +125,13 @@ public class PermissifyConstants {
             "&a&l/permissify cache purge",
             "&a&l/permissify format chat [format]",
             "&a&l/permissify format whisper [format]",
+            "&a&l/permissify format enable",
+            "&a&l/permissify format disable",
             "&a&l/permissify group create [name] [prefix] [suffix] [chatcolor]",
-            "&a&l/permissify group remove [name]",
-            "&a&l/permissify group addpermission [group] [permissions...]",
-            "&a&l/permissify group removepermission [group] [permissions...]"
+            "&a&l/permissify group remove [name]"
     ), Arrays.asList(
+            "&a&l/permissify group addpermission [group] [permissions...]",
+            "&a&l/permissify group removepermission [group] [permissions...]",
             "&a&l/permissify group listpermissions [group]",
             "&a&l/permissify group list",
             "&a&l/permissify player addpermission [permission] [player]",
@@ -136,8 +139,10 @@ public class PermissifyConstants {
             "&a&l/permissify player addgroup [player] [group]",
             "&a&l/permissify player listpermissions [player]",
             "&a&l/permissify player listgroups [player]",
-            "&a&l/permissify player removegroup [player] [group]",
-            "&a&l/permissify player setmain [player] [group]"
+            "&a&l/permissify player removegroup [player] [group]"
+    ), Arrays.asList(
+            "&a&l/permissify player setmain [player] [group]",
+            "&a&l/permissify group default [group?]"
     )));
 
     // Error response

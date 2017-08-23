@@ -54,6 +54,8 @@ public class ConfigVerifier implements VerifyConfig {
         Optional<HandlerType> type = HandlerType.findType(plugin.getConfig().getString("storage"));
         if  (!type.isPresent()) return Optional.empty();
 
+        if (plugin.getConfig().get("handleChat") == null) return Optional.empty();
+
         Optional<ConnectionInformation> connectionInformation = Optional.empty();
         if (type.get().getHandler() == MySQLHandler.class) {
             if (plugin.getConfig().getString("connection.host") == null) return Optional.empty();
