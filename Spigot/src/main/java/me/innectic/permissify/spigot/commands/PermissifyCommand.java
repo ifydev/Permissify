@@ -87,19 +87,21 @@ public class PermissifyCommand implements CommandExecutor {
                 }
                 if (args[0].equalsIgnoreCase("group")) {
                     CommandResponse response;
-                    if (args[1].equalsIgnoreCase("create") || args[1].equalsIgnoreCase("add")) {
+                    if (args[1].equalsIgnoreCase("create") || args[1].equalsIgnoreCase("add"))
                         response = plugin.getGroupCommand().handleAddGroup(player, ArgumentUtil.getRemainingArgs(2, args));
-                    } else if (args[1].equalsIgnoreCase("remove") || args[1].equalsIgnoreCase("delete")) {
+                    else if (args[1].equalsIgnoreCase("remove") || args[1].equalsIgnoreCase("delete"))
                         response = plugin.getGroupCommand().handleDeleteGroup(player, ArgumentUtil.getRemainingArgs(2, args));
-                    } else if (args[1].equalsIgnoreCase("addpermission")) {
+                    else if (args[1].equalsIgnoreCase("addpermission"))
                         response = plugin.getGroupCommand().handlePermissionAdd(player, ArgumentUtil.getRemainingArgs(2, args));
-                    } else if (args[1].equalsIgnoreCase("removepermission")) {
+                    else if (args[1].equalsIgnoreCase("removepermission"))
                         response = plugin.getGroupCommand().handlePermissionRemove(player, ArgumentUtil.getRemainingArgs(2, args));
-                    } else if (args[1].equalsIgnoreCase("list")) {
+                    else if (args[1].equalsIgnoreCase("list"))
                         response = plugin.getGroupCommand().handleListGroups(player, ArgumentUtil.getRemainingArgs(2, args));
-                    } else if (args[1].equalsIgnoreCase("listpermissions")) {
+                    else if (args[1].equalsIgnoreCase("listpermissions"))
                         response = plugin.getGroupCommand().handleListPermissions(player, ArgumentUtil.getRemainingArgs(2, args));
-                    } else {
+                    else if (args[1].equalsIgnoreCase("default"))
+                        response = plugin.getGroupCommand().handleSetDefault(player, ArgumentUtil.getRemainingArgs(2, args));
+                    else {
                         sendHelp(player);
                         return;
                     }

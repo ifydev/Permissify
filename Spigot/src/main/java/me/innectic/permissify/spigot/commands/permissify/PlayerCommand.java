@@ -59,7 +59,7 @@ public class PlayerCommand {
         OfflinePlayer targetPlayer = Bukkit.getPlayer(args[0]);
         if (targetPlayer == null || !targetPlayer.hasPlayedBefore()) return new CommandResponse(PermissifyConstants.INVALID_PLAYER, false);
         Optional<PermissionGroup> group = plugin.getPermissifyAPI().getDatabaseHandler().get().getGroup(args[1]);
-        if (!group.isPresent()) return new CommandResponse(PermissifyConstants.INVALID_GROUP, false);
+        if (!group.isPresent()) return new CommandResponse(PermissifyConstants.INVALID_GROUP.replace("<GROUP>", args[1]), false);
         plugin.getPermissifyAPI().getDatabaseHandler().get().addPlayerToGroup(targetPlayer.getUniqueId(), group.get());
         if (targetPlayer.isOnline()) group.get().getPermissions().forEach(permission ->
                 targetPlayer.getPlayer().addAttachment(plugin, permission.getPermission(), true));
@@ -78,7 +78,7 @@ public class PlayerCommand {
         OfflinePlayer targetPlayer = Bukkit.getPlayer(args[0]);
         if (targetPlayer == null || !targetPlayer.hasPlayedBefore()) return new CommandResponse(PermissifyConstants.INVALID_PLAYER, false);
         Optional<PermissionGroup> group = plugin.getPermissifyAPI().getDatabaseHandler().get().getGroup(args[1]);
-        if (!group.isPresent()) return new CommandResponse(PermissifyConstants.INVALID_GROUP, false);
+        if (!group.isPresent()) return new CommandResponse(PermissifyConstants.INVALID_GROUP.replace("<GROUP>", args[1]), false);
         plugin.getPermissifyAPI().getDatabaseHandler().get().removePlayerFromGroup(targetPlayer.getUniqueId(), group.get());
         if (targetPlayer.isOnline()) group.get().getPermissions().forEach(permission ->
                 targetPlayer.getPlayer().addAttachment(plugin, permission.getPermission(), false));
@@ -97,7 +97,7 @@ public class PlayerCommand {
         OfflinePlayer player = Bukkit.getPlayer(args[0]);
         if (player == null || !player.hasPlayedBefore()) return new CommandResponse(PermissifyConstants.INVALID_PLAYER, false);
         Optional<PermissionGroup> group = plugin.getPermissifyAPI().getDatabaseHandler().get().getGroup(args[1]);
-        if (!group.isPresent()) return new CommandResponse(PermissifyConstants.INVALID_GROUP, false);
+        if (!group.isPresent()) return new CommandResponse(PermissifyConstants.INVALID_GROUP.replace("<GROUP>", args[1]), false);
         if (!group.get().getPlayers().containsKey(player.getUniqueId()))
             return new CommandResponse(PermissifyConstants.PLAYER_NOT_IN_GROUP.replace("<PLAYER>", player.getName()).replace("<GROUP>", group.get().getName()), false);
         boolean groupSet = plugin.getPermissifyAPI().getDatabaseHandler().get().setPrimaryGroup(group.get(), player.getUniqueId());

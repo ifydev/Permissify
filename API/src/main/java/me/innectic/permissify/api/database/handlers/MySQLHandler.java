@@ -128,6 +128,7 @@ public class MySQLHandler extends DatabaseHandler {
                     groupMembersResults.close();
                     groupMembersStatement.close();
                     cachedGroups.add(group);
+                    if (groupResults.getBoolean("defaultGroup")) defaultGroup = Optional.of(group);
                 }
                 groupStatement.close();
                 groupResults.close();
@@ -650,5 +651,30 @@ public class MySQLHandler extends DatabaseHandler {
             e.printStackTrace();
         }
         return "";
+    }
+
+    @Override
+    public void setDefaultGroup(PermissionGroup group) {
+        defaultGroup = Optional.of(group);
+
+        Optional<Connection> connection = getConnection();
+        if (!connection.isPresent()) {
+            PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.empty()));
+            return;
+        }
+        try {
+            PreparedStatement removeDefaultsStatement = connection.get().prepareStatement("UPDATE groups SET defaultGroup=FALSE WHERE defaultGroup=TRUE");
+            removeDefaultsStatement.execute();
+            removeDefaultsStatement.close();
+
+            PreparedStatement setDefaultStatement = connection.get().prepareStatement("UPDATE groups SET defaultGroup=? WHERE name=?");
+            setDefaultStatement.setBoolean(1, true);
+            setDefaultStatement.setString(2, group.getName());
+            setDefaultStatement.execute();
+            setDefaultStatement.close();
+            connection.get().close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 }
