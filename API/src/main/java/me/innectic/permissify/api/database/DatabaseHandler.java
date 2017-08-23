@@ -25,6 +25,7 @@
 package me.innectic.permissify.api.database;
 
 import lombok.Getter;
+import lombok.Setter;
 import me.innectic.permissify.api.permission.Permission;
 import me.innectic.permissify.api.permission.PermissionGroup;
 
@@ -40,8 +41,9 @@ public abstract class DatabaseHandler {
 
     @Getter protected Map<UUID, Map<String, Boolean>> cachedPermissions = new HashMap<>();
     @Getter protected List<PermissionGroup> cachedGroups = new ArrayList<>();
+    @Getter protected Optional<PermissionGroup> defaultGroup = Optional.empty();
+    @Getter protected final Optional<ConnectionInformation> connectionInformation;
     protected List<UUID> superAdmins = new ArrayList<>();
-    protected final Optional<ConnectionInformation> connectionInformation;
     protected String chatFormat = "{group} {username}: {message}";
     protected String whisperFormat = "{senderGroup} {username} > {receiverGroup} {to}: {message}";
 
@@ -253,4 +255,11 @@ public abstract class DatabaseHandler {
      * @return          the format
      */
     public abstract String getWhisperFormat(boolean skipCache);
+
+    /**
+     * Set the default permission group to the one provided.
+     *
+     * @param group the new group to become the default.
+     */
+    public abstract void setDefaultGroup(PermissionGroup group);
 }

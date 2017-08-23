@@ -55,28 +55,33 @@ public class PermissifyConstants {
     public static final String PERMISSIFY_PLAYER_GROUP_REMOVE = "permissify.player.group.remove";
     public static final String PERMISSIFY_PLAYER_GROUP_LIST = "permissify.player.group.list";
     public static final String PERMISSIFY_PLAYER_SET_MAIN_GROUP = "permissify.player.group.setmain";
+    public static final String PERMISSIFY_GROUP_DEFAULT = "permissify.group.default";
     public static final String PERMISSIFY_FORMAT = "permissify.format";
     public static final String PERMISSIFY_CACHE = "permissify.cache";
     public static final String PERMISSIFY_ADMIN = "permissify.admin";
 
     public static final String INSUFFICIENT_PERMISSIONS = PERMISSIFY_PREFIX + "&c&lInsufficient permissions!";
 
-    public static final String GROUP_CREATED = PERMISSIFY_PREFIX + "&c&lGroup <GROUP> has been created!";
-    public static final String GROUP_REMOVED = PERMISSIFY_PREFIX + "&c&lGroup <GROUP> has been removed!";
-    public static final String GROUP_PERMISSIONS = PERMISSIFY_PREFIX + "&c&lPermissions for <GROUP>: <PERMISSIONS>";
-    public static final String GROUP_LIST = PERMISSIFY_PREFIX + "&c&lRegistered groups: <GROUPS>";
-    public static final String PLAYER_GROUP_LIST = PERMISSIFY_PREFIX + "&c&lGroups for <PLAYER>: <GROUPS>";
-    public static final String CACHE_PURGED = PERMISSIFY_PREFIX + "&e&lCache has been cleared!";
+    public static final String GROUP_CREATED = PERMISSIFY_PREFIX + "&e&lGroup <GROUP> has been created!";
+    public static final String GROUP_REMOVED = PERMISSIFY_PREFIX + "&e&lGroup <GROUP> has been removed!";
+    public static final String GROUP_PERMISSIONS = PERMISSIFY_PREFIX + "&e&lPermissions for <GROUP>: <PERMISSIONS>";
+    public static final String GROUP_LIST = PERMISSIFY_PREFIX + "&e&lRegistered groups: <GROUPS>";
+    public static final String PLAYER_GROUP_LIST = PERMISSIFY_PREFIX + "&e&lGroups for <PLAYER>: <GROUPS>";
+    public static final String CACHE_PURGED = PERMISSIFY_PREFIX + "&e&lCache has been purged!";
 
-    public static final String PERMISSION_ADDED_GROUP = PERMISSIFY_PREFIX + "&c&lPermission <PERMISSION> has been added to <GROUP>!";
-    public static final String PERMISSION_REMOVED_GROUP = PERMISSIFY_PREFIX + "&c&lPermission <PERMISSION> has been removed from <GROUP>!";
+    public static final String PERMISSION_ADDED_GROUP = PERMISSIFY_PREFIX + "&e&lPermission <PERMISSION> has been added to <GROUP>!";
+    public static final String PERMISSION_REMOVED_GROUP = PERMISSIFY_PREFIX + "&e&lPermission <PERMISSION> has been removed from <GROUP>!";
 
-    public static final String PERMISSION_ADDED_PLAYER = PERMISSIFY_PREFIX + "&c&lPermission <PERMISSION> has been added to <PLAYER>!";
-    public static final String PERMISSION_REMOVED_PLAYER = PERMISSIFY_PREFIX + "&c&lPermission <PERMISSION> has been removed from <PLAYER>!";
-    public static final String PLAYER_ADDED_TO_GROUP = PERMISSIFY_PREFIX + "&c&lAdded <PLAYER> to <GROUP>";
-    public static final String PLAYER_REMOVED_FROM_GROUP = PERMISSIFY_PREFIX + "&c&lRemoved <PLAYER> from <GROUP>";
+    public static final String PERMISSION_ADDED_PLAYER = PERMISSIFY_PREFIX + "&e&lPermission <PERMISSION> has been added to <PLAYER>!";
+    public static final String PERMISSION_REMOVED_PLAYER = PERMISSIFY_PREFIX + "&e&lPermission <PERMISSION> has been removed from <PLAYER>!";
+    public static final String PLAYER_ADDED_TO_GROUP = PERMISSIFY_PREFIX + "&e&lAdded <PLAYER> to <GROUP>";
+    public static final String PLAYER_REMOVED_FROM_GROUP = PERMISSIFY_PREFIX + "&e&lRemoved <PLAYER> from <GROUP>";
     public static final String FORMATTER_SET = PERMISSIFY_PREFIX + "&e&lFormatter <FORMATTER> set!";
     public static final String MAIN_GROUP_SET = PERMISSIFY_PREFIX + "&e&lSet main group for <PLAYER> to <GROUP>!";
+
+    public static final String EMPTY_DEFAULT_GROUP_NAME = "&c&lNONE";
+    public static final String DEFAULT_GROUP_RESPONSE = PERMISSIFY_PREFIX + "&e&lThe current default group is '<GROUP>&e&l'.";
+    public static final String DEFAULT_GROUP_SET = PERMISSIFY_PREFIX + "&e&lThe default group has been set to '<GROUP>&e&l'.";
 
     public static final String NOT_ENOUGH_ARGUMENTS_GROUP_CREATE = PERMISSIFY_PREFIX + "&c&lNot enough arguments! &e&l/permissify group create [name] [prefix] [suffix] [chat-color]";
     public static final String NOT_ENOUGH_ARGUMENTS_GROUP_REMOVE = PERMISSIFY_PREFIX + "&c&lNot enough arguments! &e&l/permissify group remove [name]";
@@ -94,12 +99,12 @@ public class PermissifyConstants {
     public static final String NOT_ENOUGH_ARGUMENTS_SET_MAIN_GROUP = PERMISSIFY_PREFIX + "&c&lNot enough arguments! &e&l/permissify player setmain [player] [group]";
 
     public static final String INVALID_CHATCOLOR = PERMISSIFY_PREFIX + "&c&lInvalid chat color <COLOR>";
-    public static final String INVALID_GROUP = PERMISSIFY_PREFIX + "&c&lInvalid group!";
+    public static final String INVALID_GROUP = PERMISSIFY_PREFIX + "&c&lInvalid group '<GROUP>'!";
     public static final String CONSOLE_INVALID_COMMAND = PERMISSIFY_PREFIX + "&c&lOnly one console command available: /permissify superadmin [username]";
     public static final String INVALID_PLAYER = PERMISSIFY_PREFIX + "&c&lInvalid player!";
     public static final String INVALID_ARGUMENT = PERMISSIFY_PREFIX + "&c&lInvalid argument: <ARGUMENT>";
 
-    public static final String PLAYER_NOT_IN_GROUP = PERMISSIFY_PREFIX + "&e&l<PLAYER> isn't in the group <GROUP>!";
+    public static final String PLAYER_NOT_IN_GROUP = PERMISSIFY_PREFIX + "&c&l<PLAYER> isn't in the group <GROUP>!";
 
     public static final String UNABLE_TO_CREATE = PERMISSIFY_PREFIX + "&c&lUnable to create <TYPE>: <REASON>";
     public static final String UNABLE_TO_REMOVE = PERMISSIFY_PREFIX + "&c&lUnable to remove <TYPE>: <REASON>";

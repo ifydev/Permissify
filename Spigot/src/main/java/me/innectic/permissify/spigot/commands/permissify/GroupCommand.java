@@ -24,6 +24,7 @@
  */
 package me.innectic.permissify.spigot.commands.permissify;
 
+import me.innectic.permissify.api.database.DatabaseHandler;
 import me.innectic.permissify.spigot.PermissifyMain;
 import me.innectic.permissify.spigot.commands.CommandResponse;
 import me.innectic.permissify.api.PermissifyConstants;
@@ -33,6 +34,7 @@ import me.innectic.permissify.api.util.ArgumentUtil;
 import me.innectic.permissify.spigot.utils.ColorUtil;
 import me.innectic.permissify.spigot.utils.PermissionUtil;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -145,7 +147,7 @@ public class GroupCommand {
         if (args.length < 1) return new CommandResponse(PermissifyConstants.NOT_ENOUGH_ARGUMENTS_GROUP_PERMISSION_LIST, false);
         Optional<PermissionGroup> group = plugin.getPermissifyAPI().getDatabaseHandler().get().getGroups().stream()
                 .filter(permissionGroup -> permissionGroup.getName().equals(args[0])).findFirst();
-        if (!group.isPresent()) return new CommandResponse(PermissifyConstants.INVALID_GROUP, false);
+        if (!group.isPresent()) return new CommandResponse(PermissifyConstants.INVALID_GROUP.replace("<GROUP>", args[0]), false);
         List<String> groupPermissions = group.get().getPermissions().stream().map(Permission::getPermission).collect(Collectors.toList());
         return new CommandResponse(PermissifyConstants.GROUP_PERMISSIONS.replace("<GROUP>", group.get().getName())
                 .replace("<PERMISSIONS>", String.join(", ", groupPermissions)), true);
@@ -160,5 +162,26 @@ public class GroupCommand {
         List<PermissionGroup> groups = plugin.getPermissifyAPI().getDatabaseHandler().get().getGroups();
         List<String> groupNames = groups.stream().map(PermissionGroup::getName).collect(Collectors.toList());
         return new CommandResponse(PermissifyConstants.GROUP_LIST.replace("<GROUPS>", String.join(", ", groupNames)), true);
+    }
+
+    public CommandResponse handleSetDefault(CommandSender sender, String[] args) {
+        PermissifyMain plugin = PermissifyMain.getInstance();
+        if (!PermissionUtil.hasPermissionOrSuperAdmin((Player) sender, PermissifyConstants.PERMISSIFY_GROUP_DEFAULT))
+            return new CommandResponse(PermissifyConstants.INSUFFICIENT_PERMISSIONS, false);
+        if (!plugin.getPermissifyAPI().getDatabaseHandler().isPresent())
+            return new CommandResponse(PermissifyConstants.UNABLE_TO_SET.replace("<REASON>", "No database handler"), false);
+        DatabaseHandler handler = plugin.getPermissifyAPI().getDatabaseHandler().get();
+        if (args.length < 1) {
+            // If we only have one, show the default group.
+            String defaultGroupName = handler.getDefaultGroup().map(group -> group.getChatColor() + group.getName())
+                    .orElse(PermissifyConstants.EMPTY_DEFAULT_GROUP_NAME);
+            String response = PermissifyConstants.DEFAULT_GROUP_RESPONSE.replace("<GROUP>", defaultGroupName);
+            return new CommandResponse(response, true);
+        }
+        Optional<PermissionGroup> defaultGroup = handler.getGroup(args[0]);
+        if (!defaultGroup.isPresent())
+            return new CommandResponse(PermissifyConstants.INVALID_GROUP.replace("<GROUP>", args[0]), false);
+        handler.setDefaultGroup(defaultGroup.get());
+        return new CommandResponse(PermissifyConstants.DEFAULT_GROUP_SET.replace("<GROUP>", args[0]), true);
     }
 }
