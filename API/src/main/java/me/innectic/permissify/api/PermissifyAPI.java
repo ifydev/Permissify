@@ -31,6 +31,7 @@ import me.innectic.permissify.api.database.handlers.HandlerType;
 import me.innectic.permissify.api.util.DisplayUtil;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.Optional;
 
 /**
@@ -60,6 +61,7 @@ public class PermissifyAPI {
         boolean connected = databaseHandler.get().connect();
         if (connected) System.out.println("Connected to the database.");
         else System.out.println("Unable to connect to the database.");
+        databaseHandler.ifPresent(handler -> handler.clear(new ArrayList<>()));
     }
 
     public static Optional<PermissifyAPI> get() {

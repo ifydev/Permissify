@@ -24,6 +24,7 @@
  */
 package me.innectic.permissify.api.database;
 
+import lombok.Getter;
 import me.innectic.permissify.api.permission.Permission;
 import me.innectic.permissify.api.permission.PermissionGroup;
 
@@ -37,8 +38,8 @@ import java.util.*;
  */
 public abstract class DatabaseHandler {
 
-    protected Map<UUID, Map<String, Boolean>> cachedPermissions = new HashMap<>();
-    protected List<PermissionGroup> cachedGroups = new ArrayList<>();
+    @Getter protected Map<UUID, Map<String, Boolean>> cachedPermissions = new HashMap<>();
+    @Getter protected List<PermissionGroup> cachedGroups = new ArrayList<>();
     protected List<UUID> superAdmins = new ArrayList<>();
     protected final Optional<ConnectionInformation> connectionInformation;
     protected String chatFormat = "{group} {username}: {message}";
@@ -62,8 +63,10 @@ public abstract class DatabaseHandler {
 
     /**
      * Clear the handler's cache and reload all needed values.
+     *
+     * @param onlinePlayers the current players online who will need permissions.
      */
-    public abstract void clear();
+    public abstract void clear(List<UUID> onlinePlayers);
 
     /**
      * Add a permission to a player
@@ -115,6 +118,14 @@ public abstract class DatabaseHandler {
      * @param name the name of the group
      */
     public abstract boolean deleteGroup(String name);
+
+    /**
+     * Get the permission group from name.
+     *
+     * @param name the name of the group.
+     * @return     fulfilled if exists, empty otherwise
+     */
+    public abstract Optional<PermissionGroup> getGroup(String name);
 
     /**
      * Add a player to a permission group, and grant permissions.

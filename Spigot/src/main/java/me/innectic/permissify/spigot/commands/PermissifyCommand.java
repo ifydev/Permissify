@@ -28,12 +28,15 @@ import me.innectic.permissify.api.PermissifyConstants;
 import me.innectic.permissify.api.util.ArgumentUtil;
 import me.innectic.permissify.spigot.PermissifyMain;
 import me.innectic.permissify.spigot.utils.ColorUtil;
+import me.innectic.permissify.spigot.utils.PermissionUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
+
+import java.util.List;
 
 /**
  * @author Innectic
@@ -46,12 +49,12 @@ public class PermissifyCommand implements CommandExecutor {
         PermissifyMain plugin = PermissifyMain.getInstance();
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
             if (!plugin.getPermissifyAPI().getDatabaseHandler().isPresent()) {
-                sender.sendMessage(PermissifyConstants.UNABLE_OTHER.replace("<REASON>", "No database handler"));
+                sendResponse(PermissifyConstants.UNABLE_OTHER.replace("<REASON>", "No database handler"), sender);
                 return;
             }
             if (sender instanceof ConsoleCommandSender) {
                 if (args.length < 2 || (args.length >= 2 && !args[0].equalsIgnoreCase("superadmin"))) {
-                    sender.sendMessage(ColorUtil.makeReadable(PermissifyConstants.CONSOLE_INVALID_COMMAND));
+                    sendResponse(PermissifyConstants.CONSOLE_INVALID_COMMAND, sender);
                     return;
                 }
                 Player player = Bukkit.getPlayer(args[1]);
@@ -59,66 +62,99 @@ public class PermissifyCommand implements CommandExecutor {
                 plugin.getPermissifyAPI().getDatabaseHandler().get().addSuperAdmin(player.getUniqueId());
             } else if (sender instanceof Player) {
                 Player player = (Player) sender;
-                if (!player.hasPermission(PermissifyConstants.PERMISSIFY_BASIC) && !plugin.getPermissifyAPI().getDatabaseHandler().get().isSuperAdmin(((Player) sender).getUniqueId())) {
+                if (!PermissionUtil.hasPermissionOrSuperAdmin(player, PermissifyConstants.PERMISSIFY_BASIC)) {
                     player.sendMessage(ColorUtil.makeReadable(PermissifyConstants.INSUFFICIENT_PERMISSIONS));
                 }
+                if (args.length >= 1 && args[0].equalsIgnoreCase("help")) {
+                    int page = 0;
+                    if (args.length >= 2) {
+                        try {
+                            page = Integer.parseInt(args[1]);
+                        } catch (NumberFormatException ignored) {}
+                    }
+                    page -= 1;
+                    if (page < 0) page = 0;
+                    sendHelp(player, page);
+                    return;
+                } else if (args.length >= 1 && args[0].equalsIgnoreCase("cache")) {
+                    CommandResponse response = plugin.getCacheCommand().handleCache(sender, ArgumentUtil.getRemainingArgs(1, args));
+                    sendResponse(response, player);
+                    return;
+                }
                 if (args.length < 2) {
-                    PermissifyConstants.PERMISSIFY_HELP.forEach(message -> sender.sendMessage(ColorUtil.makeReadable(message)));
+                    sendHelp(player);
                     return;
                 }
                 if (args[0].equalsIgnoreCase("group")) {
                     CommandResponse response;
-                    if (args[1].equalsIgnoreCase("create")) {
-                        response = plugin.getGroupCommand().handleAddGroup(sender, ArgumentUtil.getRemainingArgs(2, args));
-                    } else if (args[1].equalsIgnoreCase("remove")) {
-                        response = plugin.getGroupCommand().handleDeleteGroup(sender, ArgumentUtil.getRemainingArgs(2, args));
+                    if (args[1].equalsIgnoreCase("create") || args[1].equalsIgnoreCase("add")) {
+                        response = plugin.getGroupCommand().handleAddGroup(player, ArgumentUtil.getRemainingArgs(2, args));
+                    } else if (args[1].equalsIgnoreCase("remove") || args[1].equalsIgnoreCase("delete")) {
+                        response = plugin.getGroupCommand().handleDeleteGroup(player, ArgumentUtil.getRemainingArgs(2, args));
                     } else if (args[1].equalsIgnoreCase("addpermission")) {
-                        response = plugin.getGroupCommand().handlePermissionAdd(sender, ArgumentUtil.getRemainingArgs(2, args));
+                        response = plugin.getGroupCommand().handlePermissionAdd(player, ArgumentUtil.getRemainingArgs(2, args));
                     } else if (args[1].equalsIgnoreCase("removepermission")) {
-                        response = plugin.getGroupCommand().handlePermissionRemove(sender, ArgumentUtil.getRemainingArgs(2, args));
+                        response = plugin.getGroupCommand().handlePermissionRemove(player, ArgumentUtil.getRemainingArgs(2, args));
                     } else if (args[1].equalsIgnoreCase("list")) {
-                        response = plugin.getGroupCommand().handleListGroups(sender, ArgumentUtil.getRemainingArgs(2, args));
+                        response = plugin.getGroupCommand().handleListGroups(player, ArgumentUtil.getRemainingArgs(2, args));
                     } else if (args[1].equalsIgnoreCase("listpermissions")) {
-                        response = plugin.getGroupCommand().handleListPermissions(sender, ArgumentUtil.getRemainingArgs(2, args));
+                        response = plugin.getGroupCommand().handleListPermissions(player, ArgumentUtil.getRemainingArgs(2, args));
                     } else {
-                        PermissifyConstants.PERMISSIFY_HELP.forEach(message -> sender.sendMessage(ColorUtil.makeReadable(message)));
+                        sendHelp(player);
                         return;
                     }
-                    sender.sendMessage(ColorUtil.makeReadable(response.getResponse()));
+                    sendResponse(response, sender);
                 } else if (args[0].equalsIgnoreCase("player")) {
                     CommandResponse response;
                     if (args.length < 3) {
-                        sender.sendMessage(ColorUtil.makeReadable(PermissifyConstants.NOT_ENOUGH_ARGUMENTS_PLAYER));
+                        sendResponse(PermissifyConstants.NOT_ENOUGH_ARGUMENTS_PLAYER, player);
                         return;
                     }
-                    if (args[1].equalsIgnoreCase("addpermission")) {
+                    if (args[1].equalsIgnoreCase("addpermission"))
                         response = plugin.getPlayerCommand().handleAddPermission(sender, ArgumentUtil.getRemainingArgs(2, args));
-                    } else if (args[1].equalsIgnoreCase("removepermission")){
+                    else if (args[1].equalsIgnoreCase("removepermission"))
                         response = plugin.getPlayerCommand().handleRemovePermission(sender, ArgumentUtil.getRemainingArgs(2, args));
-                    } else if (args[1].equalsIgnoreCase("addgroup")) {
+                    else if (args[1].equalsIgnoreCase("addgroup"))
                         response = plugin.getPlayerCommand().handleAddPlayerToGroup(sender, ArgumentUtil.getRemainingArgs(2, args));
-                    } else if (args[1].equalsIgnoreCase("listpermissions")) {
+                    else if (args[1].equalsIgnoreCase("listpermissions"))
                         response = plugin.getPlayerCommand().handleListPermissions(sender, ArgumentUtil.getRemainingArgs(2, args));
-                    } else if (args[1].equalsIgnoreCase("listgroups")) {
+                    else if (args[1].equalsIgnoreCase("listgroups"))
                         response = plugin.getPlayerCommand().handleListGroups(sender, ArgumentUtil.getRemainingArgs(2, args));
-                    } else if (args[1].equalsIgnoreCase("removegroup")) {
-                        response = plugin.getPlayerCommand().handleRemovePlayerFromGroup(sender, ArgumentUtil.getRemainingArgs(2, args));
-                    } else if (args[1].equalsIgnoreCase("setmain")) {
-                        response = plugin.getPlayerCommand().handleSetMainGroup(sender, ArgumentUtil.getRemainingArgs(2, args));
-                    } else {
-                        PermissifyConstants.PERMISSIFY_HELP.forEach(message -> sender.sendMessage(ColorUtil.makeReadable(message)));
+                    else if (args[1].equalsIgnoreCase("removegroup")) response = plugin.getPlayerCommand().handleRemovePlayerFromGroup(sender, ArgumentUtil.getRemainingArgs(2, args));
+                    else if (args[1].equalsIgnoreCase("setmain")) response = plugin.getPlayerCommand().handleSetMainGroup(sender, ArgumentUtil.getRemainingArgs(2, args));
+                    else {
+                        sendHelp(player);
                         return;
                     }
-                    sender.sendMessage(ColorUtil.makeReadable(response.getResponse()));
+                    sendResponse(response, player);
                 } else if (args[0].equalsIgnoreCase("format")) {
                     CommandResponse response = plugin.getFormatCommand().handleSetFormat(sender, ArgumentUtil.getRemainingArgs(1, args));
-                    sender.sendMessage(ColorUtil.makeReadable(response.getResponse()));
-                } else if (args[0].equalsIgnoreCase("cache")) {
-                    CommandResponse response = plugin.getCacheCommand().handleCache(sender, ArgumentUtil.getRemainingArgs(1, args));
                     sender.sendMessage(ColorUtil.makeReadable(response.getResponse()));
                 }
             }
         });
         return false;
+    }
+
+    private void sendResponse(CommandResponse response, CommandSender source) {
+        sendResponse(response.getResponse(), source);
+    }
+
+    private void sendResponse(List<String> responses, CommandSender source) {
+        responses.forEach(response -> sendResponse(response, source));
+    }
+
+    private void sendResponse(String response, CommandSender source) {
+        source.sendMessage(ColorUtil.makeReadable(response));  // XXX: Probably don't need ColorUtil anymore...
+    }
+
+    private void sendHelp(CommandSender player) {
+        sendHelp(player, 0);
+    }
+
+    private void sendHelp(CommandSender player, int page) {
+        sendResponse(PermissifyConstants.PERMISSIFY_HELP_HEADER, player);
+        sendResponse(PermissifyConstants.PERMISSIFY_HELP_PAGES.get(page), player);
+        sendResponse(PermissifyConstants.PERMISSIFY_HELP_FOOTER, player);
     }
 }
