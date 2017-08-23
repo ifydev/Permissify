@@ -103,10 +103,31 @@ public class MySQLHandler extends DatabaseHandler {
                 adminStatement.close();
 
                 // Load all group names
-                PreparedStatement groupStatement = connection.get().prepareStatement("SELECT name from groups");
+                PreparedStatement groupStatement = connection.get().prepareStatement("SELECT * from groups");
                 ResultSet groupResults = groupStatement.executeQuery();
                 while (groupResults.next()) {
-                    groupNames.add(groupResults.getString("name"));
+                    PermissionGroup group = new PermissionGroup(groupResults.getString("name"),
+                            groupResults.getString("chatcolor"),
+                            groupResults.getString("prefix"),
+                            groupResults.getString("suffix"));
+                    PreparedStatement groupPermissionsStatement = connection.get().prepareStatement("SELECT  * FROM groupPermissions WHERE groupName=?");
+                    groupPermissionsStatement.setString(1, group.getName());
+                    ResultSet groupPermissionsResult = groupPermissionsStatement.executeQuery();
+                    while (groupPermissionsResult.next()) {
+                        group.addPermission(groupPermissionsResult.getString("permission"));
+                    }
+                    groupPermissionsResult.close();
+                    groupPermissionsStatement.close();
+
+                    PreparedStatement groupMembersStatement = connection.get().prepareStatement("SELECT uuid,`primary` FROM groupMembers WHERE `group`=?");
+                    groupMembersStatement.setString(1, group.getName());
+                    ResultSet groupMembersResults = groupMembersStatement.executeQuery();
+                    while (groupMembersResults.next()) {
+                        group.addPlayer(UUID.fromString(groupMembersResults.getString("uuid")), groupMembersResults.getBoolean("primary"));
+                    }
+                    groupMembersResults.close();
+                    groupMembersStatement.close();
+                    cachedGroups.add(group);
                 }
                 groupStatement.close();
                 groupResults.close();
@@ -215,9 +236,12 @@ public class MySQLHandler extends DatabaseHandler {
 
     @Override
     public List<Permission> getPermissions(UUID uuid) {
-        if (cachedPermissions.containsKey(uuid))
+        if (cachedPermissions.containsKey(uuid)) {
+            System.out.println("Found cached permissions for " + uuid);
             return cachedPermissions.get(uuid).entrySet().stream()
                     .map(entry -> new Permission(entry.getKey(), entry.getValue())).collect(Collectors.toList());
+        }
+        System.out.println("No cache for " + uuid + " found. Getting.");
         Optional<Connection> connection = getConnection();
         List<Permission> permissions = new ArrayList<>();
 
@@ -250,7 +274,6 @@ public class MySQLHandler extends DatabaseHandler {
         if (cachedGroups.stream().anyMatch(group -> group.getName().equalsIgnoreCase(name))) return false;
         // Add the new group to the cache
         cachedGroups.add(new PermissionGroup(name, chatColor, prefix, suffix));
-        groupNames.add(name);
 
         Optional<Connection> connection = getConnection();
         if (!connection.isPresent()) {
@@ -280,7 +303,6 @@ public class MySQLHandler extends DatabaseHandler {
         if (getGroups().stream().noneMatch(group -> group.getName().equalsIgnoreCase(name))) return false;
         // Delete from the cache
         cachedGroups.removeIf(group -> group.getName().equalsIgnoreCase(name));
-        groupNames.removeIf(entry -> entry.equalsIgnoreCase(name));
 
         Optional<Connection> connection = getConnection();
         if (!connection.isPresent()) {
@@ -302,32 +324,7 @@ public class MySQLHandler extends DatabaseHandler {
 
     @Override
     public Optional<PermissionGroup> getGroup(String name) {
-        if (!groupNames.contains(name)) return Optional.empty();
-        Optional<PermissionGroup> cached = cachedGroups.stream().filter(group -> group.getName().equalsIgnoreCase(name)).findFirst();
-        if (cached.isPresent()) return cached;
-        // Not a cached group, and it's a real group. Must be pulled from DB.
-        Optional<Connection> connection = getConnection();
-        if (!connection.isPresent()) {
-            PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.empty()));
-            return Optional.empty();
-        }
-
-        try {
-            PreparedStatement statement = connection.get().prepareStatement("SELECT * FROM groups WHERE name=?");
-            statement.setString(1, name);
-            ResultSet results = statement.executeQuery();
-            if (results.next()) {
-                PermissionGroup group = new PermissionGroup(results.getString("name"), results.getString("chatcolor"), results.getString("prefix"), results.getString("suffix"));
-                cachedGroups.add(group);
-                return Optional.of(group);
-            }
-            results.close();
-            statement.close();
-            connection.get().close();
-        } catch (SQLException e) {
-            PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.of(e)));
-        }
-        return Optional.empty();
+        return cachedGroups.stream().filter(group -> group.getName().equalsIgnoreCase(name)).findFirst();
     }
 
     @Override

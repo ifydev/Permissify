@@ -63,6 +63,7 @@ public class PlayerCommand {
         plugin.getPermissifyAPI().getDatabaseHandler().get().addPlayerToGroup(targetPlayer.getUniqueId(), group.get());
         if (targetPlayer.isOnline()) group.get().getPermissions().forEach(permission ->
                 targetPlayer.getPlayer().addAttachment(plugin, permission.getPermission(), true));
+        plugin.getPermissifyAPI().getDatabaseHandler().get().updateCache(targetPlayer.getUniqueId());
         return new CommandResponse(PermissifyConstants.PLAYER_ADDED_TO_GROUP
                 .replace("<PLAYER>", targetPlayer.getName()).replace("<GROUP>", group.get().getName()), true);
     }
@@ -81,6 +82,7 @@ public class PlayerCommand {
         plugin.getPermissifyAPI().getDatabaseHandler().get().removePlayerFromGroup(targetPlayer.getUniqueId(), group.get());
         if (targetPlayer.isOnline()) group.get().getPermissions().forEach(permission ->
                 targetPlayer.getPlayer().addAttachment(plugin, permission.getPermission(), false));
+        plugin.getPermissifyAPI().getDatabaseHandler().get().updateCache(targetPlayer.getUniqueId());
         return new CommandResponse(PermissifyConstants.PLAYER_REMOVED_FROM_GROUP
                 .replace("<PLAYER>", targetPlayer.getName()).replace("<GROUP>", group.get().getName()), true);
     }
@@ -99,6 +101,7 @@ public class PlayerCommand {
         if (!group.get().getPlayers().containsKey(player.getUniqueId()))
             return new CommandResponse(PermissifyConstants.PLAYER_NOT_IN_GROUP.replace("<PLAYER>", player.getName()).replace("<GROUP>", group.get().getName()), false);
         boolean groupSet = plugin.getPermissifyAPI().getDatabaseHandler().get().setPrimaryGroup(group.get(), player.getUniqueId());
+        plugin.getPermissifyAPI().getDatabaseHandler().get().updateCache(player.getUniqueId());
         if (groupSet)
             return new CommandResponse(PermissifyConstants.MAIN_GROUP_SET.replace("<PLAYER>", player.getName()).replace("<GROUP>", group.get().getName()), false);
         // Should be pretty much impossible to get here, unless the database isn't connected.
@@ -116,6 +119,7 @@ public class PlayerCommand {
         if (targetPlayer == null || !targetPlayer.hasPlayedBefore()) return new CommandResponse(PermissifyConstants.INVALID_PLAYER, false);
         plugin.getPermissifyAPI().getDatabaseHandler().get().addPermission(targetPlayer.getUniqueId(), args[0]);
         if (targetPlayer.isOnline()) targetPlayer.getPlayer().addAttachment(plugin, args[0], true);
+        plugin.getPermissifyAPI().getDatabaseHandler().get().updateCache(targetPlayer.getUniqueId());
         return new CommandResponse(PermissifyConstants.PERMISSION_ADDED_PLAYER
                 .replace("<PLAYER>", targetPlayer.getName()).replace("<PERMISSION>", args[0]), true);
     }
@@ -131,6 +135,7 @@ public class PlayerCommand {
         if (targetPlayer == null || !targetPlayer.hasPlayedBefore()) return new CommandResponse(PermissifyConstants.INVALID_PLAYER, false);
         plugin.getPermissifyAPI().getDatabaseHandler().get().removePermission(targetPlayer.getUniqueId(), args[0]);
         if (targetPlayer.isOnline()) targetPlayer.getPlayer().addAttachment(plugin, args[0], false);
+        plugin.getPermissifyAPI().getDatabaseHandler().get().updateCache(targetPlayer.getUniqueId());
         return new CommandResponse(PermissifyConstants.PERMISSION_REMOVED_PLAYER
                 .replace("<PLAYER>", targetPlayer.getName()).replace("<PERMISSION>", args[0]), true);
     }

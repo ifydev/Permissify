@@ -40,8 +40,6 @@ public abstract class DatabaseHandler {
 
     @Getter protected Map<UUID, Map<String, Boolean>> cachedPermissions = new HashMap<>();
     @Getter protected List<PermissionGroup> cachedGroups = new ArrayList<>();
-    @Getter protected List<String> groupNames = new ArrayList<>();  // This is probably redundant, but it allows for not loading
-                                                                    // all the groups, and not making tons of queries
     protected List<UUID> superAdmins = new ArrayList<>();
     protected final Optional<ConnectionInformation> connectionInformation;
     protected String chatFormat = "{group} {username}: {message}";
