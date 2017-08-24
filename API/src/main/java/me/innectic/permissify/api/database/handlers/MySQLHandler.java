@@ -66,6 +66,59 @@ public class MySQLHandler extends DatabaseHandler {
     public void initialize() {
         // Make sure that the cache is empty
         this.cachedPermissions = new HashMap<>();
+        // Make sure the database needed actually exists.
+        if (!connectionInformation.isPresent()) return;
+
+        try {
+            String connectionURL = "jdbc:mysql://" + connectionInformation.get().getUrl() + ":" + connectionInformation.get().getPort();
+            Optional<Connection> connection = Optional.ofNullable(DriverManager.getConnection(connectionURL, connectionInformation.get().getUsername(), connectionInformation.get().getPassword()));
+            if (!connection.isPresent()) return;
+            String database = connectionInformation.get().getDatabase();
+            // TODO: This should all be prepared statements, but that breaks for some reason
+            PreparedStatement databaseStatement = connection.get().prepareStatement("CREATE DATABASE IF NOT EXISTS " + database);
+            databaseStatement.execute();
+            databaseStatement.close();
+
+            PreparedStatement formattingStatement = connection.get().prepareStatement("CREATE TABLE IF NOT EXISTS " + database + ".formatting (`format` VARCHAR(400) NOT NULL, formatter VARCHAR(200) NOT NULL)");
+            formattingStatement.execute();
+            formattingStatement.close();
+
+            PreparedStatement groupMembersStatement = connection.get().prepareStatement("CREATE TABLE IF NOT EXISTS " + database + ".groupMembers (uuid VARCHAR(767) NOT NULL, `group` VARCHAR(700) NOT NULL, `primary` TINYINT NOT NULL)");
+            groupMembersStatement.execute();
+            groupMembersStatement.close();
+
+            PreparedStatement groupPermissionsStatement = connection.get().prepareStatement("CREATE TABLE IF NOT EXISTS " + database +".groupPermissions (groupName VARCHAR(767) NOT NULL, permission VARCHAR(767) NOT NULL)");
+            groupPermissionsStatement.execute();
+            groupPermissionsStatement.close();
+
+            PreparedStatement groupsStatement = connection.get().prepareStatement("CREATE TABLE IF NOT EXISTS " + database + ".groups (name VARCHAR(100) NOT NULL UNIQUE, prefix VARCHAR(100) NOT NULL, suffix VARCHAR(100) NOT NULL, chatcolor VARCHAR(4) NOT NULL, defaultGroup TINYINT NOT NULL)");
+            groupsStatement.execute();
+            groupsStatement.close();
+
+            PreparedStatement playerPermissionsStatement = connection.get().prepareStatement("CREATE TABLE IF NOT EXISTS " + database + ".playerPermissions (uuid VARCHAR(767) NOT NULL, permission VARCHAR(767) NOT NULL, granted TINYINT NOT NULL)");
+            playerPermissionsStatement.execute();
+            playerPermissionsStatement.close();
+
+            PreparedStatement superAdminStatement = connection.get().prepareStatement("CREATE TABLE IF NOT EXISTS " + database + ".superAdmin (uuid VARCHAR(767) NOT NULL)");
+            superAdminStatement.execute();
+            superAdminStatement.close();
+
+            PreparedStatement defaultChatFormat = connection.get().prepareStatement("INSERT INTO " + database + ".formatting (`format`, formatter) VALUES (?,?)");
+            defaultChatFormat.setString(1, "{group} {username}: {message}");
+            defaultChatFormat.setString(2, "chat");
+            defaultChatFormat.execute();
+            defaultChatFormat.close();
+
+            PreparedStatement defaultWhisperFormat = connection.get().prepareStatement("INSERT INTO " + database + ".formatting (`format`, formatter) VALUES (?,?)");
+            defaultWhisperFormat.setString(1, "{senderGroup} {username} > {receiverGroup} {to}: {message}");
+            defaultWhisperFormat.setString(2, "whisper");
+            defaultWhisperFormat.execute();
+            defaultWhisperFormat.close();
+
+            connection.get().close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override

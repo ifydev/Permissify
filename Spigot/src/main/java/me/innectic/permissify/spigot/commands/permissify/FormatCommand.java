@@ -69,12 +69,14 @@ public class FormatCommand {
 
     private CommandResponse handleDisableFormat(CommandSender sender, String[] args) {
         PermissifyMain.getInstance().getConfig().set("handleChat", false);
+        PermissifyMain.getInstance().saveConfig();
         PermissifyMain.getInstance().setHandleChat(false);
         return new CommandResponse(PermissifyConstants.TOGGLED_CHAT_HANDLE.replace("<STATE>", "Disabled"), true);
     }
 
     private CommandResponse handleEnableFormat(CommandSender sender, String[] args) {
         PermissifyMain.getInstance().getConfig().set("handleChat", true);
+        PermissifyMain.getInstance().saveConfig();
         PermissifyMain.getInstance().setHandleChat(true);
         return new CommandResponse(PermissifyConstants.TOGGLED_CHAT_HANDLE.replace("<STATE>", "Enabled"), true);
     }

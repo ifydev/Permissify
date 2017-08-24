@@ -26,6 +26,7 @@ package me.innectic.permissify.spigot.commands.permissify;
 
 import me.innectic.permissify.api.PermissifyConstants;
 import me.innectic.permissify.api.database.DatabaseHandler;
+import me.innectic.permissify.api.permission.PermissionGroup;
 import me.innectic.permissify.api.util.ArgumentUtil;
 import me.innectic.permissify.spigot.PermissifyMain;
 import me.innectic.permissify.spigot.commands.CommandResponse;
@@ -51,8 +52,8 @@ public class CacheCommand {
             return new CommandResponse(PermissifyConstants.UNABLE_OTHER.replace("<REASON>", "No database handler"), false);
         // Show information about the current cache
         DatabaseHandler handler = PermissifyMain.getInstance().getPermissifyAPI().getDatabaseHandler().get();
-        String cacheInformation = String.format("Cached groups: %d, cached permissions: %d", handler.getCachedGroups().size(),
-                handler.getCachedPermissions().size());
+        String cacheInformation = String.format("Cached groups: %d, cached permissions: %d, default group: %s", handler.getCachedGroups().size(),
+                handler.getCachedPermissions().size(), handler.getDefaultGroup().map(PermissionGroup::getName).orElse("NONE"));
         return new CommandResponse(cacheInformation, false);
     }
 

@@ -58,10 +58,13 @@ public class PermissifyAPI {
             e.printStackTrace();
         }
         if (!databaseHandler.isPresent()) throw new Exception("No data handler present.");
-        boolean connected = databaseHandler.get().connect();
-        if (connected) System.out.println("Connected to the database.");
-        else System.out.println("Unable to connect to the database.");
-        databaseHandler.ifPresent(handler -> handler.clear(new ArrayList<>()));
+        databaseHandler.ifPresent(handler -> {
+            handler.initialize();
+            handler.clear(new ArrayList<>());
+            boolean connected = handler.connect();
+            if (connected) System.out.println("Connected to the database.");
+            else System.out.println("Unable to connect to the database.");
+        });
     }
 
     public static Optional<PermissifyAPI> get() {
