@@ -79,10 +79,6 @@ public class MySQLHandler extends DatabaseHandler {
             databaseStatement.execute();
             databaseStatement.close();
 
-            PreparedStatement formattingStatement = connection.get().prepareStatement("CREATE TABLE IF NOT EXISTS " + database + ".formatting (`format` VARCHAR(400) NOT NULL, formatter VARCHAR(200) NOT NULL)");
-            formattingStatement.execute();
-            formattingStatement.close();
-
             PreparedStatement groupMembersStatement = connection.get().prepareStatement("CREATE TABLE IF NOT EXISTS " + database + ".groupMembers (uuid VARCHAR(767) NOT NULL, `group` VARCHAR(700) NOT NULL, `primary` TINYINT NOT NULL)");
             groupMembersStatement.execute();
             groupMembersStatement.close();
@@ -103,17 +99,24 @@ public class MySQLHandler extends DatabaseHandler {
             superAdminStatement.execute();
             superAdminStatement.close();
 
-            PreparedStatement defaultChatFormat = connection.get().prepareStatement("INSERT INTO " + database + ".formatting (`format`, formatter) VALUES (?,?)");
-            defaultChatFormat.setString(1, "{group} {username}: {message}");
-            defaultChatFormat.setString(2, "chat");
-            defaultChatFormat.execute();
-            defaultChatFormat.close();
+            ResultSet results = connection.get().getMetaData().getTables(database, null, "formatting", new String[]{"TABLE"});
+            if (results.next()) {
+                PreparedStatement formattingStatement = connection.get().prepareStatement("CREATE TABLE IF NOT EXISTS " + database + ".formatting (`format` VARCHAR(400) NOT NULL, formatter VARCHAR(200) NOT NULL)");
+                formattingStatement.execute();
+                formattingStatement.close();
 
-            PreparedStatement defaultWhisperFormat = connection.get().prepareStatement("INSERT INTO " + database + ".formatting (`format`, formatter) VALUES (?,?)");
-            defaultWhisperFormat.setString(1, "{senderGroup} {username} > {receiverGroup} {to}: {message}");
-            defaultWhisperFormat.setString(2, "whisper");
-            defaultWhisperFormat.execute();
-            defaultWhisperFormat.close();
+                PreparedStatement defaultChatFormat = connection.get().prepareStatement("INSERT INTO " + database + ".formatting (`format`, formatter) VALUES (?,?)");
+                defaultChatFormat.setString(1, "{group} {username}: {message}");
+                defaultChatFormat.setString(2, "chat");
+                defaultChatFormat.execute();
+                defaultChatFormat.close();
+
+                PreparedStatement defaultWhisperFormat = connection.get().prepareStatement("INSERT INTO " + database + ".formatting (`format`, formatter) VALUES (?,?)");
+                defaultWhisperFormat.setString(1, "{senderGroup} {username} > {receiverGroup} {to}: {message}");
+                defaultWhisperFormat.setString(2, "whisper");
+                defaultWhisperFormat.execute();
+                defaultWhisperFormat.close();
+            }
 
             connection.get().close();
         } catch (SQLException e) {
