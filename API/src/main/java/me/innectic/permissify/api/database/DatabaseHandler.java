@@ -39,7 +39,7 @@ import java.util.*;
  */
 public abstract class DatabaseHandler {
 
-    @Getter protected Map<UUID, Map<String, Boolean>> cachedPermissions = new HashMap<>();
+    @Getter protected Map<UUID, List<Permission>> cachedPermissions = new HashMap<>();
     @Getter protected List<PermissionGroup> cachedGroups = new ArrayList<>();
     @Getter protected Optional<PermissionGroup> defaultGroup = Optional.empty();
     @Getter protected final Optional<ConnectionInformation> connectionInformation;

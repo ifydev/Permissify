@@ -216,10 +216,12 @@ public class SQLHandler extends DatabaseHandler {
     @Override
     public void addPermission(UUID uuid, String... permissions) {
         // Put the permissions into the cache
-        Map<String, Boolean> playerPermissions = cachedPermissions.getOrDefault(uuid, new HashMap<>());
+        List<Permission> playerPermissions = cachedPermissions.getOrDefault(uuid, new ArrayList<>());
 
         for (String permission : permissions) {
-            playerPermissions.put(permission, true);
+            Permission perm = new Permission(permission, true);
+            playerPermissions.add(perm);
+
             Optional<Connection> connection = getConnection();
             if (!connection.isPresent()) {
                 PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.empty()));
@@ -245,8 +247,8 @@ public class SQLHandler extends DatabaseHandler {
     public void removePermission(UUID uuid, String... permissions) {
         for (String permission : permissions) {
             // Remove from cache
-            Map<String, Boolean> playerPermissions = cachedPermissions.getOrDefault(uuid, new HashMap<>());
-            playerPermissions.remove(permission);
+            List<Permission> playerPermissions = cachedPermissions.getOrDefault(uuid, new ArrayList<>());
+            playerPermissions.removeIf(perm -> perm.getPermission().equals(permission));
             cachedPermissions.put(uuid, playerPermissions);
             // Attempt to remove from MySQL
             Optional<Connection> connection = getConnection();
@@ -280,9 +282,9 @@ public class SQLHandler extends DatabaseHandler {
     public boolean hasPermission(UUID uuid, String permission) {
         // Check the cache first
         if (cachedPermissions.containsKey(uuid))
-            return cachedPermissions.get(uuid).entrySet().stream()
-                    .filter(entry -> entry.getKey().equals(permission))
-                    .allMatch(entry -> entry.getValue().equals(true));
+            return cachedPermissions.get(uuid).stream()
+                    .filter(entry -> entry.getPermission().equals(permission))
+                    .allMatch(Permission::isGranted);
         // Cache didn't have it, see if the database does.
         Optional<Connection> connection = getConnection();
         if (!connection.isPresent()) {
@@ -313,8 +315,7 @@ public class SQLHandler extends DatabaseHandler {
     public List<Permission> getPermissions(UUID uuid) {
         if (cachedPermissions.containsKey(uuid)) {
             System.out.println("Found cached permissions for " + uuid);
-            return cachedPermissions.get(uuid).entrySet().stream()
-                    .map(entry -> new Permission(entry.getKey(), entry.getValue())).collect(Collectors.toList());
+            return cachedPermissions.get(uuid);
         }
         System.out.println("No cache for " + uuid + " found. Getting.");
         Optional<Connection> connection = getConnection();
@@ -336,6 +337,7 @@ public class SQLHandler extends DatabaseHandler {
             results.close();
             statement.close();
             connection.get().close();
+            cachedPermissions.put(uuid, permissions);
             return permissions;
         } catch (SQLException e) {
             PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.of(e)));
