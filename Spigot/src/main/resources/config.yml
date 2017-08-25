@@ -6,3 +6,4 @@ connection:
   database: permissify
   username: permissify
   password: magicalpassword
+  file: test.db

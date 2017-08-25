@@ -38,7 +38,7 @@ import java.util.Optional;
 @AllArgsConstructor
 public enum HandlerType {
 
-    MYSQL(MySQLHandler.class, "MySQL");
+    MYSQL(SQLHandler.class, "MySQL"), SQLITE(SQLHandler.class, "SQLite");
 
     @Getter private Class<? extends DatabaseHandler> handler;
     @Getter private String displayName;

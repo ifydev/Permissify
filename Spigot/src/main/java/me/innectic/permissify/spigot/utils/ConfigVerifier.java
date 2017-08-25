@@ -28,9 +28,11 @@ import me.innectic.permissify.spigot.PermissifyMain;
 import me.innectic.permissify.api.database.ConnectionInformation;
 import me.innectic.permissify.api.database.handlers.FullHandler;
 import me.innectic.permissify.api.database.handlers.HandlerType;
-import me.innectic.permissify.api.database.handlers.MySQLHandler;
+import me.innectic.permissify.api.database.handlers.SQLHandler;
 import me.innectic.permissify.api.util.VerifyConfig;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -57,19 +59,32 @@ public class ConfigVerifier implements VerifyConfig {
         if (plugin.getConfig().get("handleChat") == null) return Optional.empty();
 
         Optional<ConnectionInformation> connectionInformation = Optional.empty();
-        if (type.get().getHandler() == MySQLHandler.class) {
-            if (plugin.getConfig().getString("connection.host") == null) return Optional.empty();
-            if (plugin.getConfig().getString("connection.database") == null) return Optional.empty();
-            if (plugin.getConfig().getString("connection.port") == null) return Optional.empty();
-            if (plugin.getConfig().getString("connection.username") == null) return Optional.empty();
-            if (plugin.getConfig().getString("connection.password") == null) return Optional.empty();
+        if (type.get().getHandler() == SQLHandler.class) {
+            if (type.get().getDisplayName().equalsIgnoreCase("mysql")) {
+                if (plugin.getConfig().getString("connection.host") == null) return Optional.empty();
+                if (plugin.getConfig().getString("connection.database") == null) return Optional.empty();
+                if (plugin.getConfig().getString("connection.port") == null) return Optional.empty();
+                if (plugin.getConfig().getString("connection.username") == null) return Optional.empty();
+                if (plugin.getConfig().getString("connection.password") == null) return Optional.empty();
 
-            connectionInformation = Optional.of(new ConnectionInformation(
-                    plugin.getConfig().getString("connection.host"),
-                    plugin.getConfig().getString("connection.database"),
-                    plugin.getConfig().getInt("connection.port"),
-                    plugin.getConfig().getString("connection.username"),
-                    plugin.getConfig().getString("connection.password")));
+                connectionInformation = Optional.of(new ConnectionInformation(
+                        plugin.getConfig().getString("connection.host"),
+                        plugin.getConfig().getString("connection.database"),
+                        plugin.getConfig().getInt("connection.port"),
+                        plugin.getConfig().getString("connection.username"),
+                        plugin.getConfig().getString("connection.password"),
+                        new HashMap<>())
+                );
+            } else if (type.get().getDisplayName().equalsIgnoreCase("sqlite")) {
+                if (plugin.getConfig().getString("connection.file") == null) return Optional.empty();
+
+                Map<String, Object> sqliteMeta = new HashMap<>();
+                sqliteMeta.put("file", plugin.getDataFolder() + "/" + plugin.getConfig().getString("connection.file") + ".db");
+                Map<String, Object> meta = new HashMap<>();
+                meta.put("sqlite", sqliteMeta);
+
+                connectionInformation = Optional.of(new ConnectionInformation("", "", 0, "", "", meta));
+            }
         }
         return Optional.of(new FullHandler(type, connectionInformation));
     }

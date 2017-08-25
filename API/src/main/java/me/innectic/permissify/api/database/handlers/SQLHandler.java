@@ -40,10 +40,24 @@ import java.util.stream.Collectors;
  * @author Innectic
  * @since 6/8/2017
  */
-public class MySQLHandler extends DatabaseHandler {
+public class SQLHandler extends DatabaseHandler {
 
-    public MySQLHandler(ConnectionInformation connectionInformation) {
+    private final String baseConnectionURL;
+    private boolean isUsingSqlite = false;
+
+    public SQLHandler(ConnectionInformation connectionInformation) {
         super(connectionInformation);
+        String type = "mysql";
+        String databaseUrl = "//" + connectionInformation.getUrl() + ":" + connectionInformation.getPort();
+
+        if(connectionInformation.getMeta().containsKey("sqlite")) {
+            type = "sqlite";
+            // TODO: It would be nice to give this types...
+            Map sqliteData = (Map) connectionInformation.getMeta().get("sqlite");
+            databaseUrl = (String) sqliteData.get("file");
+            isUsingSqlite = true;
+        }
+        baseConnectionURL = "jdbc:" + type + ":" + databaseUrl;
     }
 
     /**
@@ -54,7 +68,8 @@ public class MySQLHandler extends DatabaseHandler {
     private Optional<Connection> getConnection() {
         if (!connectionInformation.isPresent()) return Optional.empty();
         try {
-            String connectionURL = "jdbc:mysql://" + connectionInformation.get().getUrl() + ":" + connectionInformation.get().getPort() + "/" + connectionInformation.get().getDatabase();
+            if (isUsingSqlite) return Optional.ofNullable(DriverManager.getConnection(baseConnectionURL));
+            String connectionURL = baseConnectionURL + "/" + connectionInformation.get().getDatabase();
             return Optional.ofNullable(DriverManager.getConnection(connectionURL, connectionInformation.get().getUsername(), connectionInformation.get().getPassword()));
         } catch (SQLException e) {
             PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.of(e)));
@@ -70,48 +85,52 @@ public class MySQLHandler extends DatabaseHandler {
         if (!connectionInformation.isPresent()) return;
 
         try {
-            String connectionURL = "jdbc:mysql://" + connectionInformation.get().getUrl() + ":" + connectionInformation.get().getPort();
-            Optional<Connection> connection = Optional.ofNullable(DriverManager.getConnection(connectionURL, connectionInformation.get().getUsername(), connectionInformation.get().getPassword()));
+            Optional<Connection> connection;
+            if (isUsingSqlite) connection = Optional.ofNullable(DriverManager.getConnection(baseConnectionURL));
+            else connection = Optional.ofNullable(DriverManager.getConnection(baseConnectionURL, connectionInformation.get().getUsername(), connectionInformation.get().getPassword()));
             if (!connection.isPresent()) return;
             String database = connectionInformation.get().getDatabase();
+            if (!database.equals("")) database += ".";
             // TODO: This should all be prepared statements, but that breaks for some reason
-            PreparedStatement databaseStatement = connection.get().prepareStatement("CREATE DATABASE IF NOT EXISTS " + database);
-            databaseStatement.execute();
-            databaseStatement.close();
+            if (!isUsingSqlite) {
+                PreparedStatement databaseStatement = connection.get().prepareStatement("CREATE DATABASE IF NOT EXISTS " + database);
+                databaseStatement.execute();
+                databaseStatement.close();
+            }
 
-            PreparedStatement groupMembersStatement = connection.get().prepareStatement("CREATE TABLE IF NOT EXISTS " + database + ".groupMembers (uuid VARCHAR(767) NOT NULL, `group` VARCHAR(700) NOT NULL, `primary` TINYINT NOT NULL)");
+            PreparedStatement groupMembersStatement = connection.get().prepareStatement("CREATE TABLE IF NOT EXISTS " + database + "groupMembers (uuid VARCHAR(767) NOT NULL, `group` VARCHAR(700) NOT NULL, `primary` TINYINT NOT NULL)");
             groupMembersStatement.execute();
             groupMembersStatement.close();
 
-            PreparedStatement groupPermissionsStatement = connection.get().prepareStatement("CREATE TABLE IF NOT EXISTS " + database +".groupPermissions (groupName VARCHAR(767) NOT NULL, permission VARCHAR(767) NOT NULL)");
+            PreparedStatement groupPermissionsStatement = connection.get().prepareStatement("CREATE TABLE IF NOT EXISTS " + database +"groupPermissions (groupName VARCHAR(767) NOT NULL, permission VARCHAR(767) NOT NULL)");
             groupPermissionsStatement.execute();
             groupPermissionsStatement.close();
 
-            PreparedStatement groupsStatement = connection.get().prepareStatement("CREATE TABLE IF NOT EXISTS " + database + ".groups (name VARCHAR(100) NOT NULL UNIQUE, prefix VARCHAR(100) NOT NULL, suffix VARCHAR(100) NOT NULL, chatcolor VARCHAR(4) NOT NULL, defaultGroup TINYINT NOT NULL)");
+            PreparedStatement groupsStatement = connection.get().prepareStatement("CREATE TABLE IF NOT EXISTS " + database + "groups (name VARCHAR(100) NOT NULL UNIQUE, prefix VARCHAR(100) NOT NULL, suffix VARCHAR(100) NOT NULL, chatcolor VARCHAR(4) NOT NULL, defaultGroup TINYINT NOT NULL)");
             groupsStatement.execute();
             groupsStatement.close();
 
-            PreparedStatement playerPermissionsStatement = connection.get().prepareStatement("CREATE TABLE IF NOT EXISTS " + database + ".playerPermissions (uuid VARCHAR(767) NOT NULL, permission VARCHAR(767) NOT NULL, granted TINYINT NOT NULL)");
+            PreparedStatement playerPermissionsStatement = connection.get().prepareStatement("CREATE TABLE IF NOT EXISTS " + database + "playerPermissions (uuid VARCHAR(767) NOT NULL, permission VARCHAR(767) NOT NULL, granted TINYINT NOT NULL)");
             playerPermissionsStatement.execute();
             playerPermissionsStatement.close();
 
-            PreparedStatement superAdminStatement = connection.get().prepareStatement("CREATE TABLE IF NOT EXISTS " + database + ".superAdmin (uuid VARCHAR(767) NOT NULL)");
+            PreparedStatement superAdminStatement = connection.get().prepareStatement("CREATE TABLE IF NOT EXISTS " + database + "superAdmin (uuid VARCHAR(767) NOT NULL)");
             superAdminStatement.execute();
             superAdminStatement.close();
 
-            ResultSet results = connection.get().getMetaData().getTables(database, null, "formatting", new String[]{"TABLE"});
-            if (results.next()) {
-                PreparedStatement formattingStatement = connection.get().prepareStatement("CREATE TABLE IF NOT EXISTS " + database + ".formatting (`format` VARCHAR(400) NOT NULL, formatter VARCHAR(200) NOT NULL)");
+            if (!hasFormattingTable(connection.get(), database)) {
+                System.out.println("Creating");
+                PreparedStatement formattingStatement = connection.get().prepareStatement("CREATE TABLE IF NOT EXISTS " + database + "formatting (`format` VARCHAR(400) NOT NULL, formatter VARCHAR(200) NOT NULL)");
                 formattingStatement.execute();
                 formattingStatement.close();
 
-                PreparedStatement defaultChatFormat = connection.get().prepareStatement("INSERT INTO " + database + ".formatting (`format`, formatter) VALUES (?,?)");
+                PreparedStatement defaultChatFormat = connection.get().prepareStatement("INSERT INTO " + database + "formatting (`format`, formatter) VALUES (?,?)");
                 defaultChatFormat.setString(1, "{group} {username}: {message}");
                 defaultChatFormat.setString(2, "chat");
                 defaultChatFormat.execute();
                 defaultChatFormat.close();
 
-                PreparedStatement defaultWhisperFormat = connection.get().prepareStatement("INSERT INTO " + database + ".formatting (`format`, formatter) VALUES (?,?)");
+                PreparedStatement defaultWhisperFormat = connection.get().prepareStatement("INSERT INTO " + database + "formatting (`format`, formatter) VALUES (?,?)");
                 defaultWhisperFormat.setString(1, "{senderGroup} {username} > {receiverGroup} {to}: {message}");
                 defaultWhisperFormat.setString(2, "whisper");
                 defaultWhisperFormat.execute();
@@ -732,5 +751,19 @@ public class MySQLHandler extends DatabaseHandler {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+    }
+
+    private boolean hasFormattingTable(Connection connection, String database) {
+        try {
+            if (isUsingSqlite) {
+                PreparedStatement statement = connection.prepareStatement("SELECT name FROM sqlite_master WHERE type='table' AND name=?");
+                statement.setString(1, "formatting");
+                return statement.executeQuery().next();
+            }
+            return connection.getMetaData().getTables(database, null, "formatting", new String[]{"TABLE"}).next();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 }

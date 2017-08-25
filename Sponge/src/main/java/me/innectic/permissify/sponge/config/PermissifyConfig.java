@@ -8,6 +8,7 @@ import ninja.leaping.configurate.hocon.HoconConfigurationLoader;
 import ninja.leaping.configurate.loader.ConfigurationLoader;
 
 import java.io.IOException;
+import java.util.HashMap;
 
 /**
  * @author Innectic
@@ -52,7 +53,7 @@ public class PermissifyConfig {
             String password = checkNode(configuration.getNode("connection.password", ""), "", "The password for the database").getString();
             String database = checkNode(configuration.getNode("connection.database", ""), "", "The database to connect to").getString();
             int port = checkNode(configuration.getNode("connection.port", ""), "", "The port to connect to").getInt();
-            connectionInformation = new ConnectionInformation(host, database, port, username, password);
+            connectionInformation = new ConnectionInformation(host, database, port, username, password, new HashMap<>());
         });
     }
 
