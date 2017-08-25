@@ -52,9 +52,10 @@ public class CacheCommand {
             return new CommandResponse(PermissifyConstants.UNABLE_OTHER.replace("<REASON>", "No database handler"), false);
         // Show information about the current cache
         DatabaseHandler handler = PermissifyMain.getInstance().getPermissifyAPI().getDatabaseHandler().get();
-        String cacheInformation = String.format("Cached groups: %d, cached permissions: %d, default group: %s", handler.getCachedGroups().size(),
-                handler.getCachedPermissions().size(), handler.getDefaultGroup().map(PermissionGroup::getName).orElse("NONE"));
-        return new CommandResponse(cacheInformation, false);
+        String response = PermissifyConstants.CACHE_INFORMATION.replace("<GROUPS>", Integer.toString(handler.getCachedGroups().size()))
+                .replace("<PERMISSIONS>", Integer.toString(handler.getCachedPermissions().size()))
+                .replace("<DEFAULT>", handler.getDefaultGroup().map(PermissionGroup::getName).orElse(PermissifyConstants.EMPTY_DEFAULT_GROUP_NAME));
+        return new CommandResponse(response, false);
     }
 
     private CommandResponse handleCachePurge(CommandSender sender, String[] args) {
