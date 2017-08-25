@@ -46,9 +46,6 @@ import java.util.stream.Collectors;
  */
 public class PlayerCommand {
 
-    // TODO: All of these should be unified to the same format:
-    // [player] [args...]
-
     public CommandResponse handleAddPlayerToGroup(CommandSender sender, String[] args) {
         PermissifyMain plugin = PermissifyMain.getInstance();
         if (!plugin.getPermissifyAPI().getDatabaseHandler().isPresent())
@@ -115,13 +112,13 @@ public class PlayerCommand {
         if (!PermissionUtil.hasPermissionOrSuperAdmin((Player) sender, PermissifyConstants.PERMISSIFY_PLAYER_PERMISSION_ADD))
             return new CommandResponse(PermissifyConstants.INSUFFICIENT_PERMISSIONS, false);
         if (args.length < 2) return new CommandResponse(PermissifyConstants.NOT_ENOUGH_ARGUMENTS_PLAYER_ADD_PERMISSION, false);
-        OfflinePlayer targetPlayer = Bukkit.getPlayer(args[1]);
+        OfflinePlayer targetPlayer = Bukkit.getPlayer(args[0]);
         if (targetPlayer == null || !targetPlayer.hasPlayedBefore()) return new CommandResponse(PermissifyConstants.INVALID_PLAYER, false);
-        plugin.getPermissifyAPI().getDatabaseHandler().get().addPermission(targetPlayer.getUniqueId(), args[0]);
-        if (targetPlayer.isOnline()) targetPlayer.getPlayer().addAttachment(plugin, args[0], true);
+        plugin.getPermissifyAPI().getDatabaseHandler().get().addPermission(targetPlayer.getUniqueId(), args[1]);
+        if (targetPlayer.isOnline()) targetPlayer.getPlayer().addAttachment(plugin, args[1], true);
         plugin.getPermissifyAPI().getDatabaseHandler().get().updateCache(targetPlayer.getUniqueId());
         return new CommandResponse(PermissifyConstants.PERMISSION_ADDED_PLAYER
-                .replace("<PLAYER>", targetPlayer.getName()).replace("<PERMISSION>", args[0]), true);
+                .replace("<PLAYER>", targetPlayer.getName()).replace("<PERMISSION>", args[1]), true);
     }
 
     public CommandResponse handleRemovePermission(CommandSender sender, String[] args) {
@@ -131,13 +128,13 @@ public class PlayerCommand {
         if (!PermissionUtil.hasPermissionOrSuperAdmin((Player) sender, PermissifyConstants.PERMISSIFY_PLAYER_PERMISSION_REMOVE))
             return new CommandResponse(PermissifyConstants.INSUFFICIENT_PERMISSIONS, false);
         if (args.length < 2) return new CommandResponse(PermissifyConstants.NOT_ENOUGH_ARGUMENTS_PLAYER_REMOVE_PERMISSION, false);
-        OfflinePlayer targetPlayer = Bukkit.getPlayer(args[1]);
+        OfflinePlayer targetPlayer = Bukkit.getPlayer(args[0]);
         if (targetPlayer == null || !targetPlayer.hasPlayedBefore()) return new CommandResponse(PermissifyConstants.INVALID_PLAYER, false);
-        plugin.getPermissifyAPI().getDatabaseHandler().get().removePermission(targetPlayer.getUniqueId(), args[0]);
-        if (targetPlayer.isOnline()) targetPlayer.getPlayer().addAttachment(plugin, args[0], false);
+        plugin.getPermissifyAPI().getDatabaseHandler().get().removePermission(targetPlayer.getUniqueId(), args[1]);
+        if (targetPlayer.isOnline()) targetPlayer.getPlayer().addAttachment(plugin, args[1], false);
         plugin.getPermissifyAPI().getDatabaseHandler().get().updateCache(targetPlayer.getUniqueId());
         return new CommandResponse(PermissifyConstants.PERMISSION_REMOVED_PLAYER
-                .replace("<PLAYER>", targetPlayer.getName()).replace("<PERMISSION>", args[0]), true);
+                .replace("<PLAYER>", targetPlayer.getName()).replace("<PERMISSION>", args[1]), true);
     }
 
     public CommandResponse handleListGroups(CommandSender sender, String[] args) {
