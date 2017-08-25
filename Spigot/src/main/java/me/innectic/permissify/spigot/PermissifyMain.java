@@ -121,11 +121,13 @@ public class PermissifyMain extends JavaPlugin {
         playerCommand = new PlayerCommand();
         formatCommand = new FormatCommand();
         cacheCommand = new CacheCommand();
+
         getCommand("permissify").setExecutor(new PermissifyCommand());
     }
 
     private void registerListeners() {
         PluginManager pluginManager = Bukkit.getPluginManager();
+
         pluginManager.registerEvents(new PlayerJoin(), this);
         pluginManager.registerEvents(new PlayerChat(), this);
         pluginManager.registerEvents(new PreProcess(), this);

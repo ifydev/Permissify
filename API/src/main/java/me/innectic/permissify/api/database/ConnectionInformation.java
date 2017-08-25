@@ -27,6 +27,8 @@ package me.innectic.permissify.api.database;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+import java.util.Map;
+
 /**
  * @author Innectic
  * @since 6/8/2017
@@ -40,4 +42,5 @@ public class ConnectionInformation {
     @Getter private int port;
     @Getter private String username;
     @Getter private String password;
+    @Getter private Map<String, Object> meta;
 }
