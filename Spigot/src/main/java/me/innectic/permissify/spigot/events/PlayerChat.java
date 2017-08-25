@@ -49,7 +49,9 @@ public class PlayerChat implements Listener {
         if (!plugin.getPermissifyAPI().getDatabaseHandler().isPresent()) return;
         Player player = e.getPlayer();
         if (player == null) return;
-        Optional<PermissionGroup> group = plugin.getPermissifyAPI().getDatabaseHandler().get().getGroups().stream().filter(permissionGroup -> permissionGroup.hasPlayer(player.getUniqueId())).findFirst();
+        Optional<PermissionGroup> group = plugin.getPermissifyAPI().getDatabaseHandler().get().getGroups().stream()
+                .filter(permissionGroup -> permissionGroup.hasPlayer(player.getUniqueId()))
+                .filter(permissionGroup -> permissionGroup.isPrimaryGroup(player.getUniqueId())).findFirst();
         group.ifPresent(permissionGroup -> {
             e.setCancelled(true);
             Bukkit.broadcastMessage(ColorUtil.makeReadable(ChatFormatter.formatChat(player.getUniqueId(), player.getName(), e.getMessage())));

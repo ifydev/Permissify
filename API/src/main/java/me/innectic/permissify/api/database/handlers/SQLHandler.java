@@ -119,7 +119,6 @@ public class SQLHandler extends DatabaseHandler {
             superAdminStatement.close();
 
             if (!hasFormattingTable(connection.get(), database)) {
-                System.out.println("Creating");
                 PreparedStatement formattingStatement = connection.get().prepareStatement("CREATE TABLE IF NOT EXISTS " + database + "formatting (`format` VARCHAR(400) NOT NULL, formatter VARCHAR(200) NOT NULL)");
                 formattingStatement.execute();
                 formattingStatement.close();
@@ -358,11 +357,12 @@ public class SQLHandler extends DatabaseHandler {
         }
 
         try {
-            PreparedStatement statement = connection.get().prepareStatement("INSERT INTO groups (name,prefix,suffix,chatcolor) VALUES (?,?,?,?)");
+            PreparedStatement statement = connection.get().prepareStatement("INSERT INTO groups (name,prefix,suffix,chatcolor,defaultGroup) VALUES (?,?,?,?,?)");
             statement.setString(1, name);
             statement.setString(2, prefix);
             statement.setString(3, suffix);
             statement.setString(4, chatColor);
+            statement.setBoolean(5, false);
             // Cleanup
             statement.execute();
             statement.close();
@@ -417,9 +417,10 @@ public class SQLHandler extends DatabaseHandler {
             return false;
         }
         try {
-            PreparedStatement statement = connection.get().prepareStatement("INSERT INTO groupMembers (uuid,`group`) VALUES (?,?)");
+            PreparedStatement statement = connection.get().prepareStatement("INSERT INTO groupMembers (uuid,`group`,`primary`) VALUES (?,?,?)");
             statement.setString(1, uuid.toString());
             statement.setString(2, group.getName());
+            statement.setBoolean(3, false);
             statement.execute();
             statement.close();
             connection.get().close();
