@@ -24,8 +24,12 @@
  */
 package me.innectic.permissify.spigot.utils;
 
+import me.innectic.permissify.api.permission.Permission;
+import me.innectic.permissify.api.permission.PermissionGroup;
 import me.innectic.permissify.spigot.PermissifyMain;
 import org.bukkit.entity.Player;
+
+import java.util.List;
 
 /**
  * @author Innectic
@@ -37,5 +41,20 @@ public class PermissionUtil {
         return player.hasPermission(permission) ||
                 (PermissifyMain.getInstance().getPermissifyAPI().getDatabaseHandler().map(handler ->
                         handler.isSuperAdmin(player.getUniqueId())).orElse(false));
+    }
+
+    public static void applyPermissions(Player player) {
+        PermissifyMain.getInstance().getPermissifyAPI().getDatabaseHandler().ifPresent(handler -> {
+            // Check if the player should be in a default group.
+            if (handler.getDefaultGroup().isPresent() && !handler.getDefaultGroup().get().hasPlayer(player.getUniqueId())) {
+                handler.addPlayerToGroup(player.getUniqueId(), handler.getDefaultGroup().get());
+                handler.setPrimaryGroup(handler.getDefaultGroup().get(), player.getUniqueId());
+            }
+            handler.updateCache(player.getUniqueId());
+            List<Permission> permissions = handler.getPermissions(player.getUniqueId());
+            // Add the permissions to the player
+            handler.getGroups(player.getUniqueId()).stream().map(PermissionGroup::getPermissions).forEach(permissions::addAll);
+            permissions.forEach(permission -> player.addAttachment(PermissifyMain.getInstance(), permission.getPermission(), permission.isGranted()));
+        });
     }
 }

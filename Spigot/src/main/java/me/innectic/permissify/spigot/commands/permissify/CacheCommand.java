@@ -62,6 +62,7 @@ public class CacheCommand {
         if (!PermissifyMain.getInstance().getPermissifyAPI().getDatabaseHandler().isPresent())
             return new CommandResponse(PermissifyConstants.UNABLE_OTHER.replace("<REASON>", "No database handler"), false);
         PermissifyMain.getInstance().getPermissifyAPI().getDatabaseHandler().get().clear(Bukkit.getOnlinePlayers().stream().map(Player::getUniqueId).collect(Collectors.toList()));
+        Bukkit.getScheduler().runTaskAsynchronously(PermissifyMain.getInstance(), () -> Bukkit.getOnlinePlayers().forEach(PermissionUtil::applyPermissions));
         return new CommandResponse(PermissifyConstants.CACHE_PURGED, true);
     }
 }

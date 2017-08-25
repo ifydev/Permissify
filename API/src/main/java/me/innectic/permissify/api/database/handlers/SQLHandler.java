@@ -211,6 +211,7 @@ public class SQLHandler extends DatabaseHandler {
                 PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.of(e)));
             }
         } else PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.empty()));
+        onlinePlayers.forEach(this::getPermissions);
     }
 
     @Override
@@ -313,11 +314,7 @@ public class SQLHandler extends DatabaseHandler {
 
     @Override
     public List<Permission> getPermissions(UUID uuid) {
-        if (cachedPermissions.containsKey(uuid)) {
-            System.out.println("Found cached permissions for " + uuid);
-            return cachedPermissions.get(uuid);
-        }
-        System.out.println("No cache for " + uuid + " found. Getting.");
+        if (cachedPermissions.containsKey(uuid)) return cachedPermissions.get(uuid);
         Optional<Connection> connection = getConnection();
         List<Permission> permissions = new ArrayList<>();
 

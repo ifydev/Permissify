@@ -27,6 +27,7 @@ package me.innectic.permissify.spigot.events;
 import me.innectic.permissify.api.permission.Permission;
 import me.innectic.permissify.api.permission.PermissionGroup;
 import me.innectic.permissify.spigot.PermissifyMain;
+import me.innectic.permissify.spigot.utils.PermissionUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -47,18 +48,7 @@ public class PlayerJoin implements Listener {
             Player player = e.getPlayer();
             if (player == null) return;
             // Set the permissions of the player
-            PermissifyMain.getInstance().getPermissifyAPI().getDatabaseHandler().ifPresent(handler -> {
-                // Check if the player should be in a default group.
-                if (handler.getDefaultGroup().isPresent() && !handler.getDefaultGroup().get().hasPlayer(player.getUniqueId())) {
-                    handler.addPlayerToGroup(player.getUniqueId(), handler.getDefaultGroup().get());
-                    handler.setPrimaryGroup(handler.getDefaultGroup().get(), player.getUniqueId());
-                }
-                handler.updateCache(player.getUniqueId());
-                List<Permission> permissions = handler.getPermissions(player.getUniqueId());
-                // Add the permissions to the player
-                handler.getGroups(player.getUniqueId()).stream().map(PermissionGroup::getPermissions).forEach(permissions::addAll);
-                permissions.forEach(permission -> player.addAttachment(PermissifyMain.getInstance(), permission.getPermission(), permission.isGranted()));
-            });
+            PermissionUtil.applyPermissions(player);
         });
     }
 }
