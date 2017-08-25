@@ -68,6 +68,7 @@ public class PermissifyConstants {
     public static final String GROUP_LIST = PERMISSIFY_PREFIX + "&e&lRegistered groups: <GROUPS>";
     public static final String PLAYER_GROUP_LIST = PERMISSIFY_PREFIX + "&e&lGroups for <PLAYER>: <GROUPS>";
     public static final String CACHE_PURGED = PERMISSIFY_PREFIX + "&e&lCache has been purged!";
+    public static final String CACHE_INFORMATION = PERMISSIFY_PREFIX + "&e&lCached groups: <GROUPS>, cached permissions: <PERMISSIONS>, default group: <DEFAULT>";
 
     public static final String PERMISSION_ADDED_GROUP = PERMISSIFY_PREFIX + "&e&lPermission <PERMISSION> has been added to <GROUP>!";
     public static final String PERMISSION_REMOVED_GROUP = PERMISSIFY_PREFIX + "&e&lPermission <PERMISSION> has been removed from <GROUP>!";
