@@ -64,6 +64,7 @@ public class PermissifyCommand implements CommandExecutor {
                 Player player = (Player) sender;
                 if (!PermissionUtil.hasPermissionOrSuperAdmin(player, PermissifyConstants.PERMISSIFY_BASIC)) {
                     player.sendMessage(ColorUtil.makeReadable(PermissifyConstants.INSUFFICIENT_PERMISSIONS));
+                    return;
                 }
                 if (args.length >= 1 && args[0].equalsIgnoreCase("help")) {
                     int page = 0;
