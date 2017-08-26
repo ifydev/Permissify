@@ -51,7 +51,6 @@ public class PermissionGroup {
     public void removePermission(String permission) {
         Optional<Permission> perm = permissions.stream().filter(groupPermission -> groupPermission.getPermission().equals(permission)).findFirst();
         perm.ifPresent(groupPermission -> groupPermission.setGranted(false));
-        // TODO: Remove permissions from the player
     }
 
     /**
