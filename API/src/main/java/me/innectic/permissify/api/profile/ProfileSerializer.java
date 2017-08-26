@@ -9,18 +9,17 @@ import java.util.Optional;
  * @author Innectic
  * @since 8/26/2017
  */
-@AllArgsConstructor
 public class ProfileSerializer {
-    private final String profileName;
 
     /**
      * Serialize a permissify profile into a permissify profile file
      *
      * @param profile       the profile to serialize
      * @param baseDirectory the base of the directory to store the profiles in
+     * @param profileName   the name of the profile
      * @return              if the profile was successfully stored
      */
-    public boolean serialize(PermissifyProfile profile, String baseDirectory) {
+    public boolean serialize(PermissifyProfile profile, String baseDirectory, String profileName) {
         try {
             FileOutputStream outputStream = new FileOutputStream(baseDirectory + "/profiles/" + profileName + ".permissify");
             ObjectOutputStream out = new ObjectOutputStream(outputStream);
