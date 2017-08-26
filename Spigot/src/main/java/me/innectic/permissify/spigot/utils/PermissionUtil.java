@@ -44,6 +44,7 @@ public class PermissionUtil {
     }
 
     public static void applyPermissions(Player player) {
+        player.getEffectivePermissions().clear();
         PermissifyMain.getInstance().getPermissifyAPI().getDatabaseHandler().ifPresent(handler -> {
             // Check if the player should be in a default group.
             if (handler.getDefaultGroup().isPresent() && !handler.getDefaultGroup().get().hasPlayer(player.getUniqueId())) {
