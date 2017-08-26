@@ -28,6 +28,7 @@ import lombok.Getter;
 import lombok.Setter;
 import me.innectic.permissify.api.permission.Permission;
 import me.innectic.permissify.api.permission.PermissionGroup;
+import me.innectic.permissify.api.profile.PermissifyProfile;
 
 import java.util.*;
 
@@ -43,7 +44,7 @@ public abstract class DatabaseHandler {
     @Getter protected List<PermissionGroup> cachedGroups = new ArrayList<>();
     @Getter protected Optional<PermissionGroup> defaultGroup = Optional.empty();
     @Getter protected final Optional<ConnectionInformation> connectionInformation;
-    protected List<UUID> superAdmins = new ArrayList<>();
+    @Getter protected List<UUID> superAdmins = new ArrayList<>();
     protected String chatFormat = "{group} {username}: {message}";
     protected String whisperFormat = "{senderGroup} {username} > {receiverGroup} {to}: {message}";
 
@@ -68,7 +69,19 @@ public abstract class DatabaseHandler {
      *
      * @param onlinePlayers the current players online who will need permissions.
      */
-    public abstract void clear(List<UUID> onlinePlayers);
+    public abstract void reload(List<UUID> onlinePlayers);
+
+    /**
+     * Drop all values from the handler.
+     */
+    public abstract void drop();
+
+    /**
+     * Load a profile into the handler.
+     *
+     * @param profile the profile to load
+     */
+    public abstract void loadProfile(PermissifyProfile profile);
 
     /**
      * Add a permission to a player

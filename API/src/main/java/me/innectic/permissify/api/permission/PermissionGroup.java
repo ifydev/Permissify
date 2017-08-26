@@ -36,7 +36,7 @@ import java.util.*;
  * @since 6/14/2017
  */
 @RequiredArgsConstructor
-public class PermissionGroup {
+public class PermissionGroup implements Serializable {
     @Getter private final String name;
     @Getter private final String chatColor;
     @Getter private final String prefix;

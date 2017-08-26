@@ -1,6 +1,28 @@
+/*
+*
+* This file is part of Permissify, licensed under the MIT License (MIT).
+* Copyright (c) Innectic
+* Copyright (c) contributors
+*
+* Permission is hereby granted, free of charge, to any person obtaining a copy
+* of this software and associated documentation files (the "Software"), to deal
+* in the Software without restriction, including without limitation the rights
+* to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+* copies of the Software, and to permit persons to whom the Software is
+* furnished to do so, subject to the following conditions:
+*
+* The above copyright notice and this permission notice shall be included in all
+* copies or substantial portions of the Software.
+*
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+* SOFTWARE.
+ */
 package me.innectic.permissify.api.profile;
-
-import lombok.AllArgsConstructor;
 
 import java.io.*;
 import java.util.Optional;
@@ -36,17 +58,16 @@ public class ProfileSerializer {
     /**
      * Deserialize a permissify profile file into a real permissify profile
      *
-     * @param profile the profile file
-     * @return        the profile, fulfilled if done, empty otherwise.
+     * @param profile       the profile file
+     * @param baseDirectory the base directory that files are located in
+     * @return              the profile, fulfilled if done, empty otherwise.
      */
-    public Optional<PermissifyProfile> deserialize(String profile) {
+    public Optional<PermissifyProfile> deserialize(String profile, String baseDirectory) {
         Optional<PermissifyProfile> deserialized = Optional.empty();
         try {
-            long start = System.currentTimeMillis();
-            FileInputStream inputStream = new FileInputStream(profile);
+            FileInputStream inputStream = new FileInputStream(baseDirectory + "/profiles/" + profile + ".permissify");
             ObjectInputStream input = new ObjectInputStream(inputStream);
             deserialized = Optional.of((PermissifyProfile) input.readObject());
-            long end = System.currentTimeMillis();
         } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
         }

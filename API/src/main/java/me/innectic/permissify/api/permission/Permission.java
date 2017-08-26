@@ -28,12 +28,14 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.io.Serializable;
+
 /**
  * @author Innectic
  * @since 6/8/2017
  */
 @AllArgsConstructor
-public class Permission {
+public class Permission implements Serializable {
     @Getter private String permission;
     @Getter @Setter private boolean granted;
 }
