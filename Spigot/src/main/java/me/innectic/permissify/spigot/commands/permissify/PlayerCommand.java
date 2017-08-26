@@ -29,12 +29,14 @@ import me.innectic.permissify.spigot.commands.CommandResponse;
 import me.innectic.permissify.api.PermissifyConstants;
 import me.innectic.permissify.api.permission.Permission;
 import me.innectic.permissify.api.permission.PermissionGroup;
+import me.innectic.permissify.spigot.utils.MiscUtil;
 import me.innectic.permissify.spigot.utils.PermissionUtil;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.permissions.PermissionAttachment;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -113,10 +115,29 @@ public class PlayerCommand {
         if (!PermissionUtil.hasPermissionOrSuperAdmin(sender, PermissifyConstants.PERMISSIFY_PLAYER_PERMISSION_ADD))
             return new CommandResponse(PermissifyConstants.INSUFFICIENT_PERMISSIONS, false);
         if (args.length < 2) return new CommandResponse(PermissifyConstants.NOT_ENOUGH_ARGUMENTS_PLAYER_ADD_PERMISSION, false);
+
         OfflinePlayer targetPlayer = Bukkit.getPlayer(args[0]);
         if (targetPlayer == null || !targetPlayer.hasPlayedBefore()) return new CommandResponse(PermissifyConstants.INVALID_PLAYER, false);
+
         plugin.getPermissifyAPI().getDatabaseHandler().get().addPermission(targetPlayer.getUniqueId(), args[1]);
         if (targetPlayer.isOnline()) targetPlayer.getPlayer().addAttachment(plugin, args[1], true);
+
+        if (args.length >= 3) {
+            // Timed permission.
+            if (!MiscUtil.isInt(args[2])) return new CommandResponse(PermissifyConstants.INVALID_ARGUMENT.replace("<ARGUMENT>", args[2]), false);
+            int time = Integer.parseInt(args[2]);
+            Bukkit.getScheduler().runTaskLater(plugin, () -> {
+                targetPlayer.getPlayer().addAttachment(plugin, args[1], false);
+                if (!plugin.getPermissifyAPI().getDatabaseHandler().isPresent()) return;
+                plugin.getPermissifyAPI().getDatabaseHandler().get().removePermission(targetPlayer.getUniqueId(), args[1]);
+                plugin.getPermissifyAPI().getDatabaseHandler().get().updateCache(targetPlayer.getUniqueId());
+            }, time * 1000);
+            return new CommandResponse(PermissifyConstants.PERMISSION_ADDED_PLAYER_TIMED
+                    .replace("<PLAYER>", targetPlayer.getName())
+                    .replace("<PERMISSION>", args[1])
+                    .replace("<SECONDS>", args[2]), true);
+        }
+
         plugin.getPermissifyAPI().getDatabaseHandler().get().updateCache(targetPlayer.getUniqueId());
         return new CommandResponse(PermissifyConstants.PERMISSION_ADDED_PLAYER
                 .replace("<PLAYER>", targetPlayer.getName()).replace("<PERMISSION>", args[1]), true);
