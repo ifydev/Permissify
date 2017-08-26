@@ -47,14 +47,13 @@ public class PreProcess implements Listener {
 
     private Set<String> validWhisperCommands = new HashSet<>(Arrays.asList("/msg", "/whisper", "/tell"));
 
-    // @Return: Should this command's output not look like permissify ever touches it?
-
     @EventHandler
     public void onCommandPreProcess(PlayerCommandPreprocessEvent e) {
+        if (!PermissifyMain.getInstance().isHandleChat()) return;
+        if (!PermissifyMain.getInstance().getPermissifyAPI().getDatabaseHandler().isPresent()) return;
         String command = e.getMessage();
         if (!validWhisperCommands.contains(command)) return;
         e.setCancelled(true);
-        if (!PermissifyMain.getInstance().getPermissifyAPI().getDatabaseHandler().isPresent()) return;
         // We don't care about the command at the beginning
         String[] arguments = ArgumentUtil.getRemainingArgs(1, command.split(" "));
         Player player = Bukkit.getPlayer(arguments[0]);

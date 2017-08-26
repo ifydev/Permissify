@@ -63,7 +63,6 @@ public class PermissionGroup {
         Optional<Permission> perm = permissions.stream().filter(groupPermission -> groupPermission.getPermission().equals(permission)).findFirst();
         if (perm.isPresent()) perm.get().setGranted(true);
         else permissions.add(new Permission(permission, true));
-        // TODO: Add permissions to the player
     }
 
     public boolean hasPermission(String permission) {

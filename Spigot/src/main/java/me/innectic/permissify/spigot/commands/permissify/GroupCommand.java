@@ -38,10 +38,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -86,8 +83,14 @@ public class GroupCommand {
         if (!plugin.getPermissifyAPI().getDatabaseHandler().isPresent())
             return new CommandResponse(PermissifyConstants.UNABLE_TO_REMOVE.replace("<TYPE>", "group").replace("<REASON>", "No database handler"), false);
         if (args.length < 1) return new CommandResponse(PermissifyConstants.NOT_ENOUGH_ARGUMENTS_GROUP_REMOVE, false);
+        Optional<PermissionGroup> group = plugin.getPermissifyAPI().getDatabaseHandler().get().getGroup(args[0]);
+        if (!group.isPresent()) return new CommandResponse(PermissifyConstants.INVALID_GROUP.replace("<GROUP>", args[0]), false);
+        List<UUID> playersInGroup = group.get().getPlayers().entrySet().stream().map(Map.Entry::getKey).collect(Collectors.toList());
         boolean removed = plugin.getPermissifyAPI().getDatabaseHandler().get().deleteGroup(args[0]);
-        if (removed) return new CommandResponse(PermissifyConstants.GROUP_REMOVED.replace("<GROUP>", args[0]), false);
+        if (removed) {
+            Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> playersInGroup.stream().map(Bukkit::getPlayer).filter(Objects::nonNull).forEach(PermissionUtil::applyPermissions));
+            return new CommandResponse(PermissifyConstants.GROUP_REMOVED.replace("<GROUP>", args[0]), false);
+        }
         return new CommandResponse(PermissifyConstants.UNABLE_TO_REMOVE.replace("<TYPE>", "group").replace("<REASON>", "Unable to connect to database"), false);
     }
 
@@ -106,9 +109,10 @@ public class GroupCommand {
             if (!plugin.getPermissifyAPI().getDatabaseHandler().isPresent()) return;
             Optional<PermissionGroup> group = plugin.getPermissifyAPI().getDatabaseHandler().get().getGroups()
                     .stream().filter(permissionGroup -> permissionGroup.getName().equals(args[0])).findFirst();
-            group.ifPresent(permissionGroup -> Arrays.stream(remaining).forEach(permission ->
-                    permissionGroup.getPlayers().keySet().stream().map(Bukkit::getPlayer)
-                            .filter(Objects::nonNull).forEach(player -> player.addAttachment(plugin, permission, true))));
+            group.ifPresent(permissionGroup -> {
+                Arrays.stream(remaining).forEach(permissionGroup::addPermission);
+                Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> permissionGroup.getPlayers().entrySet().stream().map(Map.Entry::getKey).map(Bukkit::getPlayer).filter(Objects::nonNull).forEach(PermissionUtil::applyPermissions));
+            });
         });
         return new CommandResponse(PermissifyConstants.PERMISSION_ADDED_GROUP.replace("<PERMISSION>",
                 String.join(", ", ArgumentUtil.getRemainingArgs(1, args)).replace("<GROUP>", args[0])), true);
@@ -129,9 +133,11 @@ public class GroupCommand {
             Optional<PermissionGroup> group = plugin.getPermissifyAPI().getDatabaseHandler().get().getGroups()
                     .stream().filter(permissionGroup -> permissionGroup.getName().equals(args[0])).findFirst();
             group.ifPresent(permissionGroup -> {
-                for (String permission : remaining)
-                permissionGroup.getPlayers().keySet().stream().map(Bukkit::getPlayer).filter(Objects::nonNull)
-                        .forEach(player -> player.addAttachment(plugin, permission, false));
+                for (String permission : remaining) {
+                    permissionGroup.removePermission(permission);
+                }
+                Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> permissionGroup.getPlayers().keySet().stream().map(Bukkit::getPlayer).filter(Objects::nonNull).forEach(PermissionUtil::applyPermissions));
+
             });
         });
         return new CommandResponse(PermissifyConstants.PERMISSION_REMOVED_GROUP.replace("<PERMISSION>",
