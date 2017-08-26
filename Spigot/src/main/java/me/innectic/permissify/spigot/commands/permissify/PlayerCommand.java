@@ -30,6 +30,7 @@ import me.innectic.permissify.api.PermissifyConstants;
 import me.innectic.permissify.api.permission.Permission;
 import me.innectic.permissify.api.permission.PermissionGroup;
 import me.innectic.permissify.spigot.utils.PermissionUtil;
+import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
@@ -163,7 +164,7 @@ public class PlayerCommand {
         if (args.length < 1) return new CommandResponse(PermissifyConstants.NOT_ENOUGH_ARGUMENTS_PLAYER_LIST_PERMISSIONS, false);
         OfflinePlayer targetPlayer = Bukkit.getPlayer(args[0]);
         if (targetPlayer == null) return new CommandResponse(PermissifyConstants.INVALID_PLAYER, false);
-        // This sucks, can probably be cleanup up.
+        // This sucks, can probably be cleaned up.
         List<PermissionGroup> groups = plugin.getPermissifyAPI().getDatabaseHandler().get().getGroups().stream()
                 .filter(permissionGroup -> permissionGroup.hasPlayer(targetPlayer.getUniqueId()))
                 .collect(Collectors.toList());
