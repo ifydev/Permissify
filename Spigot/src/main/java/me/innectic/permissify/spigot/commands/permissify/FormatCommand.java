@@ -39,7 +39,7 @@ import org.bukkit.entity.Player;
 public class FormatCommand {
 
     public CommandResponse handleSetFormat(CommandSender sender, String[] args) {
-        if (!PermissionUtil.hasPermissionOrSuperAdmin((Player) sender, PermissifyConstants.PERMISSIFY_FORMAT))
+        if (!PermissionUtil.hasPermissionOrSuperAdmin(sender, PermissifyConstants.PERMISSIFY_FORMAT))
             return new CommandResponse(PermissifyConstants.INSUFFICIENT_PERMISSIONS, false);
         if (args.length < 1) return new CommandResponse(PermissifyConstants.NOT_ENOUGH_ARGUMENTS_SET_FORMAT, false);
         if (args[0].equalsIgnoreCase("chat")) return handleSetChatFormat(sender, ArgumentUtil.getRemainingArgs(1, args));

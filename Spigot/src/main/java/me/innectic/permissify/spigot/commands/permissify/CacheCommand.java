@@ -45,7 +45,7 @@ import java.util.stream.Collectors;
 public class CacheCommand {
 
     public CommandResponse handleCache(CommandSender sender, String[] args) {
-        if (!PermissionUtil.hasPermissionOrSuperAdmin((Player) sender, PermissifyConstants.PERMISSIFY_CACHE))
+        if (!PermissionUtil.hasPermissionOrSuperAdmin(sender, PermissifyConstants.PERMISSIFY_CACHE))
             return new CommandResponse(PermissifyConstants.INSUFFICIENT_PERMISSIONS, false);
         if (args.length >= 1 && args[0].equalsIgnoreCase("purge")) return handleCachePurge(sender, ArgumentUtil.getRemainingArgs(1, args));
         if (!PermissifyMain.getInstance().getPermissifyAPI().getDatabaseHandler().isPresent())

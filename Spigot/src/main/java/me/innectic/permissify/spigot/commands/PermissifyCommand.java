@@ -53,87 +53,86 @@ public class PermissifyCommand implements CommandExecutor {
                 return;
             }
             if (sender instanceof ConsoleCommandSender) {
-                if (args.length < 2 || (args.length >= 2 && !args[0].equalsIgnoreCase("superadmin"))) {
-                    sendResponse(PermissifyConstants.CONSOLE_INVALID_COMMAND, sender);
+                if (args.length >= 2 && args[0].equalsIgnoreCase("superadmin")) {
+                    Player player = Bukkit.getPlayer(args[1]);
+                    if (player == null) return;
+                    plugin.getPermissifyAPI().getDatabaseHandler().get().addSuperAdmin(player.getUniqueId());
                     return;
                 }
-                Player player = Bukkit.getPlayer(args[1]);
-                if (player == null) return;
-                plugin.getPermissifyAPI().getDatabaseHandler().get().addSuperAdmin(player.getUniqueId());
-            } else if (sender instanceof Player) {
-                Player player = (Player) sender;
-                if (!PermissionUtil.hasPermissionOrSuperAdmin(player, PermissifyConstants.PERMISSIFY_BASIC)) {
-                    player.sendMessage(ColorUtil.makeReadable(PermissifyConstants.INSUFFICIENT_PERMISSIONS));
+            }
+
+            if (!PermissionUtil.hasPermissionOrSuperAdmin(sender, PermissifyConstants.PERMISSIFY_BASIC)) {
+                sender.sendMessage(ColorUtil.makeReadable(PermissifyConstants.INSUFFICIENT_PERMISSIONS));
+                return;
+            }
+
+            if (args.length >= 1 && args[0].equalsIgnoreCase("help")) {
+                int page = 0;
+                if (args.length >= 2) {
+                    try {
+                        page = Integer.parseInt(args[1]);
+                    } catch (NumberFormatException ignored) {}
+                }
+                page -= 1;
+                if (page < 0) page = 0;
+                sendHelp(sender, page);
+                return;
+            } else if (args.length >= 1 && args[0].equalsIgnoreCase("cache")) {
+                CommandResponse response = plugin.getCacheCommand().handleCache(sender, ArgumentUtil.getRemainingArgs(1, args));
+                sendResponse(response, sender);
+                return;
+            }
+            if (args.length < 2) {
+                sendHelp(sender);
+                return;
+            }
+            if (args[0].equalsIgnoreCase("group")) {
+                CommandResponse response;
+                if (args[1].equalsIgnoreCase("create") || args[1].equalsIgnoreCase("add"))
+                    response = plugin.getGroupCommand().handleAddGroup(sender, ArgumentUtil.getRemainingArgs(2, args));
+                else if (args[1].equalsIgnoreCase("remove") || args[1].equalsIgnoreCase("delete"))
+                    response = plugin.getGroupCommand().handleDeleteGroup(sender, ArgumentUtil.getRemainingArgs(2, args));
+                else if (args[1].equalsIgnoreCase("addpermission"))
+                    response = plugin.getGroupCommand().handlePermissionAdd(sender, ArgumentUtil.getRemainingArgs(2, args));
+                else if (args[1].equalsIgnoreCase("removepermission"))
+                    response = plugin.getGroupCommand().handlePermissionRemove(sender, ArgumentUtil.getRemainingArgs(2, args));
+                else if (args[1].equalsIgnoreCase("list"))
+                    response = plugin.getGroupCommand().handleListGroups(sender, ArgumentUtil.getRemainingArgs(2, args));
+                else if (args[1].equalsIgnoreCase("listpermissions"))
+                    response = plugin.getGroupCommand().handleListPermissions(sender, ArgumentUtil.getRemainingArgs(2, args));
+                else if (args[1].equalsIgnoreCase("default"))
+                    response = plugin.getGroupCommand().handleSetDefault(sender, ArgumentUtil.getRemainingArgs(2, args));
+                else {
+                    sendHelp(sender);
                     return;
                 }
-                if (args.length >= 1 && args[0].equalsIgnoreCase("help")) {
-                    int page = 0;
-                    if (args.length >= 2) {
-                        try {
-                            page = Integer.parseInt(args[1]);
-                        } catch (NumberFormatException ignored) {}
-                    }
-                    page -= 1;
-                    if (page < 0) page = 0;
-                    sendHelp(player, page);
-                    return;
-                } else if (args.length >= 1 && args[0].equalsIgnoreCase("cache")) {
-                    CommandResponse response = plugin.getCacheCommand().handleCache(sender, ArgumentUtil.getRemainingArgs(1, args));
-                    sendResponse(response, player);
+                sendResponse(response, sender);
+            } else if (args[0].equalsIgnoreCase("player")) {
+                CommandResponse response;
+                if (args.length < 3) {
+                    sendResponse(PermissifyConstants.NOT_ENOUGH_ARGUMENTS_PLAYER, sender);
                     return;
                 }
-                if (args.length < 2) {
-                    sendHelp(player);
+                if (args[1].equalsIgnoreCase("addpermission"))
+                    response = plugin.getPlayerCommand().handleAddPermission(sender, ArgumentUtil.getRemainingArgs(2, args));
+                else if (args[1].equalsIgnoreCase("removepermission"))
+                    response = plugin.getPlayerCommand().handleRemovePermission(sender, ArgumentUtil.getRemainingArgs(2, args));
+                else if (args[1].equalsIgnoreCase("addgroup"))
+                    response = plugin.getPlayerCommand().handleAddPlayerToGroup(sender, ArgumentUtil.getRemainingArgs(2, args));
+                else if (args[1].equalsIgnoreCase("listpermissions"))
+                    response = plugin.getPlayerCommand().handleListPermissions(sender, ArgumentUtil.getRemainingArgs(2, args));
+                else if (args[1].equalsIgnoreCase("listgroups"))
+                    response = plugin.getPlayerCommand().handleListGroups(sender, ArgumentUtil.getRemainingArgs(2, args));
+                else if (args[1].equalsIgnoreCase("removegroup")) response = plugin.getPlayerCommand().handleRemovePlayerFromGroup(sender, ArgumentUtil.getRemainingArgs(2, args));
+                else if (args[1].equalsIgnoreCase("setmain")) response = plugin.getPlayerCommand().handleSetMainGroup(sender, ArgumentUtil.getRemainingArgs(2, args));
+                else {
+                    sendHelp(sender);
                     return;
                 }
-                if (args[0].equalsIgnoreCase("group")) {
-                    CommandResponse response;
-                    if (args[1].equalsIgnoreCase("create") || args[1].equalsIgnoreCase("add"))
-                        response = plugin.getGroupCommand().handleAddGroup(player, ArgumentUtil.getRemainingArgs(2, args));
-                    else if (args[1].equalsIgnoreCase("remove") || args[1].equalsIgnoreCase("delete"))
-                        response = plugin.getGroupCommand().handleDeleteGroup(player, ArgumentUtil.getRemainingArgs(2, args));
-                    else if (args[1].equalsIgnoreCase("addpermission"))
-                        response = plugin.getGroupCommand().handlePermissionAdd(player, ArgumentUtil.getRemainingArgs(2, args));
-                    else if (args[1].equalsIgnoreCase("removepermission"))
-                        response = plugin.getGroupCommand().handlePermissionRemove(player, ArgumentUtil.getRemainingArgs(2, args));
-                    else if (args[1].equalsIgnoreCase("list"))
-                        response = plugin.getGroupCommand().handleListGroups(player, ArgumentUtil.getRemainingArgs(2, args));
-                    else if (args[1].equalsIgnoreCase("listpermissions"))
-                        response = plugin.getGroupCommand().handleListPermissions(player, ArgumentUtil.getRemainingArgs(2, args));
-                    else if (args[1].equalsIgnoreCase("default"))
-                        response = plugin.getGroupCommand().handleSetDefault(player, ArgumentUtil.getRemainingArgs(2, args));
-                    else {
-                        sendHelp(player);
-                        return;
-                    }
-                    sendResponse(response, sender);
-                } else if (args[0].equalsIgnoreCase("player")) {
-                    CommandResponse response;
-                    if (args.length < 3) {
-                        sendResponse(PermissifyConstants.NOT_ENOUGH_ARGUMENTS_PLAYER, player);
-                        return;
-                    }
-                    if (args[1].equalsIgnoreCase("addpermission"))
-                        response = plugin.getPlayerCommand().handleAddPermission(sender, ArgumentUtil.getRemainingArgs(2, args));
-                    else if (args[1].equalsIgnoreCase("removepermission"))
-                        response = plugin.getPlayerCommand().handleRemovePermission(sender, ArgumentUtil.getRemainingArgs(2, args));
-                    else if (args[1].equalsIgnoreCase("addgroup"))
-                        response = plugin.getPlayerCommand().handleAddPlayerToGroup(sender, ArgumentUtil.getRemainingArgs(2, args));
-                    else if (args[1].equalsIgnoreCase("listpermissions"))
-                        response = plugin.getPlayerCommand().handleListPermissions(sender, ArgumentUtil.getRemainingArgs(2, args));
-                    else if (args[1].equalsIgnoreCase("listgroups"))
-                        response = plugin.getPlayerCommand().handleListGroups(sender, ArgumentUtil.getRemainingArgs(2, args));
-                    else if (args[1].equalsIgnoreCase("removegroup")) response = plugin.getPlayerCommand().handleRemovePlayerFromGroup(sender, ArgumentUtil.getRemainingArgs(2, args));
-                    else if (args[1].equalsIgnoreCase("setmain")) response = plugin.getPlayerCommand().handleSetMainGroup(sender, ArgumentUtil.getRemainingArgs(2, args));
-                    else {
-                        sendHelp(player);
-                        return;
-                    }
-                    sendResponse(response, player);
-                } else if (args[0].equalsIgnoreCase("format")) {
-                    CommandResponse response = plugin.getFormatCommand().handleSetFormat(sender, ArgumentUtil.getRemainingArgs(1, args));
-                    sender.sendMessage(ColorUtil.makeReadable(response.getResponse()));
-                }
+                sendResponse(response, sender);
+            } else if (args[0].equalsIgnoreCase("format")) {
+                CommandResponse response = plugin.getFormatCommand().handleSetFormat(sender, ArgumentUtil.getRemainingArgs(1, args));
+                sender.sendMessage(ColorUtil.makeReadable(response.getResponse()));
             }
         });
         return false;
