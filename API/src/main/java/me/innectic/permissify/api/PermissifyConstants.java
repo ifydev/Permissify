@@ -75,6 +75,7 @@ public class PermissifyConstants {
     public static final String PERMISSION_REMOVED_GROUP = PERMISSIFY_PREFIX + "&e&lPermission <PERMISSION> has been removed from <GROUP>!";
 
     public static final String PERMISSION_ADDED_PLAYER = PERMISSIFY_PREFIX + "&e&lPermission <PERMISSION> has been added to <PLAYER>!";
+    public static final String PERMISSION_ADDED_PLAYER_TIMED = PERMISSIFY_PREFIX + "&e&lPermission <PERMISSION> has been added to <PLAYER>, and will expire in <SECONDS>!";
     public static final String PERMISSION_REMOVED_PLAYER = PERMISSIFY_PREFIX + "&e&lPermission <PERMISSION> has been removed from <PLAYER>!";
     public static final String PLAYER_ADDED_TO_GROUP = PERMISSIFY_PREFIX + "&e&lAdded <PLAYER> to <GROUP>";
     public static final String PLAYER_REMOVED_FROM_GROUP = PERMISSIFY_PREFIX + "&e&lRemoved <PLAYER> from <GROUP>";
@@ -139,7 +140,7 @@ public class PermissifyConstants {
             "&a&l/permissify group create [name] [prefix] [suffix] [chatcolor]",
             "&a&l/permissify group remove [name]"
     ), Arrays.asList(
-            "&a&l/permissify group addpermission [group] [permissions...]",
+            "&a&l/permissify group addpermission [group] [permissions...] [(optional) lifespan]",
             "&a&l/permissify group removepermission [group] [permissions...]",
             "&a&l/permissify group listpermissions [group]",
             "&a&l/permissify group list",
