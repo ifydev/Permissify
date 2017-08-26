@@ -30,6 +30,7 @@ import me.innectic.permissify.api.database.DatabaseHandler;
 import me.innectic.permissify.api.permission.Permission;
 import me.innectic.permissify.api.database.ConnectionInformation;
 import me.innectic.permissify.api.permission.PermissionGroup;
+import me.innectic.permissify.api.profile.PermissifyProfile;
 import me.innectic.permissify.api.util.FormatterType;
 
 import java.sql.*;
@@ -156,7 +157,7 @@ public class SQLHandler extends DatabaseHandler {
     }
 
     @Override
-    public void clear(List<UUID> onlinePlayers) {
+    public void reload(List<UUID> onlinePlayers) {
         cachedGroups = new ArrayList<>();
         cachedPermissions = new HashMap<>();
         superAdmins = new ArrayList<>();
@@ -212,6 +213,45 @@ public class SQLHandler extends DatabaseHandler {
             }
         } else PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.empty()));
         onlinePlayers.forEach(this::getPermissions);
+    }
+
+    @Override
+    public void drop() {
+        cachedGroups = new ArrayList<>();
+        cachedPermissions = new HashMap<>();
+        superAdmins = new ArrayList<>();
+        chatFormat = "";
+        whisperFormat = "";
+    }
+
+    @Override
+    public void loadProfile(PermissifyProfile profile) {
+        // Load player permissions
+        profile.getPlayerPermissions().forEach((uuid, permissions) -> permissions.forEach(permission -> {
+            if (!permission.isGranted()) addPermission(uuid, permission.getPermission());
+            else removePermission(uuid, permission.getPermission());
+        }));
+        // Create groups
+        profile.getGroups().forEach(group -> {
+            createGroup(group.getName(), group.getPrefix(), group.getSuffix(), group.getChatColor());
+            Optional<PermissionGroup> created = getGroup(group.getName());
+            if (!created.isPresent()) {
+                System.out.println("Profile group was never created?");
+                return;
+            }
+            // Add permissions to the group
+            group.getPermissions().forEach(permission -> {
+                if (permission.isGranted()) created.get().addPermission(permission.getPermission());
+                else created.get().removePermission(permission.getPermission());
+            });
+            // Add the players to the group
+            group.getPlayers().forEach(created.get()::addPlayer);
+        });
+        // Set the other misc things.
+        chatFormat = profile.getChatFormat();
+        whisperFormat = profile.getWhisperFormat();
+        superAdmins = profile.getSuperAdmins();
+        defaultGroup = Optional.ofNullable(profile.getDefaultGroup());
     }
 
     @Override

@@ -59,6 +59,7 @@ public class PermissifyConstants {
     public static final String PERMISSIFY_FORMAT = "permissify.format";
     public static final String PERMISSIFY_CACHE = "permissify.cache";
     public static final String PERMISSIFY_ADMIN = "permissify.admin";
+    public static final String PERMISSIFY_PROFILE = "permissify.profile";
 
     public static final String INSUFFICIENT_PERMISSIONS = PERMISSIFY_PREFIX + "&c&lInsufficient permissions!";
 
@@ -99,10 +100,17 @@ public class PermissifyConstants {
     public static final String NOT_ENOUGH_ARGUMENTS_PLAYER_LIST_GROUP = PERMISSIFY_PREFIX + "&c&lNot enough arguments! &e&l/permissify player listgroup [player]";
     public static final String NOT_ENOUGH_ARGUMENTS_SET_FORMAT = PERMISSIFY_PREFIX + "&c&lNot enough arguments! &e&l/permissify format [whisper|chat|disable|enable] [format?...]";
     public static final String NOT_ENOUGH_ARGUMENTS_SET_MAIN_GROUP = PERMISSIFY_PREFIX + "&c&lNot enough arguments! &e&l/permissify player setmain [player] [group]";
+    public static final String NOT_ENOUGH_ARGUMENTS_PROFILE = PERMISSIFY_PREFIX + "&c&lNot enough arguments! &e&l/permissify profile [save|load] [profile]";
+    public static final String NOT_ENOUGH_ARGUMENTS_PROFILE_SAVE = PERMISSIFY_PREFIX + "&c&lNot enough arguments! &e&l/permissify profile save [fileName]";
+    public static final String NOT_ENOUGH_ARGUMENTS_PROFILE_LOAD = PERMISSIFY_PREFIX + "&c&lNot enough arguments! &e&l/permissify profile load [source]";
+
+    public static final String PROFILE_SAVED = PERMISSIFY_PREFIX + "&e&lSaved profile '<PROFILE>'.";
+    public static final String PROFILE_NOT_SAVED = PERMISSIFY_PREFIX + "&c&lUnable to save profile '<PROFILE>'";
+    public static final String PROFILE_LOADED = PERMISSIFY_PREFIX + "&e&lLoaded profile '<PROFILE>' in <TIME> ms.";
+    public static final String PROFILE_NOT_LOADED = PERMISSIFY_PREFIX + "&c&lUnable to load profile '<PROFILE>'";
 
     public static final String INVALID_CHATCOLOR = PERMISSIFY_PREFIX + "&c&lInvalid chat color <COLOR>";
     public static final String INVALID_GROUP = PERMISSIFY_PREFIX + "&c&lInvalid group '<GROUP>'!";
-    public static final String CONSOLE_INVALID_COMMAND = PERMISSIFY_PREFIX + "&c&lOnly one console command available: /permissify superadmin [username]";
     public static final String INVALID_PLAYER = PERMISSIFY_PREFIX + "&c&lInvalid player!";
     public static final String INVALID_ARGUMENT = PERMISSIFY_PREFIX + "&c&lInvalid argument: <ARGUMENT>";
 

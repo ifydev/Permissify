@@ -28,6 +28,7 @@ import lombok.Getter;
 import me.innectic.permissify.api.database.ConnectionInformation;
 import me.innectic.permissify.api.database.DatabaseHandler;
 import me.innectic.permissify.api.database.handlers.HandlerType;
+import me.innectic.permissify.api.profile.ProfileSerializer;
 import me.innectic.permissify.api.util.DisplayUtil;
 
 import java.lang.reflect.InvocationTargetException;
@@ -44,6 +45,7 @@ public class PermissifyAPI {
 
     @Getter private Optional<DatabaseHandler> databaseHandler;
     @Getter private DisplayUtil displayUtil;
+    @Getter private ProfileSerializer serializer;
 
     /**
      * Initialize Permissify's API
@@ -51,6 +53,7 @@ public class PermissifyAPI {
     public void initialize(HandlerType type, Optional<ConnectionInformation> connectionInformation, DisplayUtil displayUtil) throws Exception {
         instance = Optional.of(this);
         this.displayUtil = displayUtil;
+        serializer = new ProfileSerializer();
 
         try {
             databaseHandler = Optional.of(type.getHandler().getConstructor(ConnectionInformation.class).newInstance(connectionInformation.orElse(null)));
@@ -60,7 +63,7 @@ public class PermissifyAPI {
         if (!databaseHandler.isPresent()) throw new Exception("No data handler present.");
         databaseHandler.ifPresent(handler -> {
             handler.initialize();
-            handler.clear(new ArrayList<>());
+            handler.reload(new ArrayList<>());
             boolean connected = handler.connect();
             if (connected) System.out.println("Connected to the database.");
             else System.out.println("Unable to connect to the database.");
