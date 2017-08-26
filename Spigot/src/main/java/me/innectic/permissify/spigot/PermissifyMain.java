@@ -27,14 +27,11 @@ package me.innectic.permissify.spigot;
 import lombok.Getter;
 import lombok.Setter;
 import me.innectic.permissify.spigot.commands.PermissifyCommand;
-import me.innectic.permissify.spigot.commands.permissify.CacheCommand;
-import me.innectic.permissify.spigot.commands.permissify.FormatCommand;
+import me.innectic.permissify.spigot.commands.permissify.*;
 import me.innectic.permissify.spigot.events.PlayerChat;
 import me.innectic.permissify.spigot.events.PlayerJoin;
 import me.innectic.permissify.api.PermissifyAPI;
 import me.innectic.permissify.api.database.handlers.FullHandler;
-import me.innectic.permissify.spigot.commands.permissify.GroupCommand;
-import me.innectic.permissify.spigot.commands.permissify.PlayerCommand;
 import me.innectic.permissify.spigot.events.PreProcess;
 import me.innectic.permissify.spigot.utils.ConfigVerifier;
 import me.innectic.permissify.spigot.utils.DisplayUtil;
@@ -59,6 +56,7 @@ public class PermissifyMain extends JavaPlugin {
     @Getter private PlayerCommand playerCommand;
     @Getter private FormatCommand formatCommand;
     @Getter private CacheCommand cacheCommand;
+    @Getter private ProfileCommand profileCommand;
 
     @Getter @Setter private boolean handleChat = false;
 
@@ -121,6 +119,7 @@ public class PermissifyMain extends JavaPlugin {
         playerCommand = new PlayerCommand();
         formatCommand = new FormatCommand();
         cacheCommand = new CacheCommand();
+        profileCommand = new ProfileCommand();
 
         getCommand("permissify").setExecutor(new PermissifyCommand());
     }

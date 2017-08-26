@@ -28,6 +28,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
+import java.io.Serializable;
 import java.util.*;
 
 /**
@@ -35,7 +36,7 @@ import java.util.*;
  * @since 6/14/2017
  */
 @RequiredArgsConstructor
-public class PermissionGroup {
+public class PermissionGroup implements Serializable {
     @Getter private final String name;
     @Getter private final String chatColor;
     @Getter private final String prefix;
@@ -51,7 +52,6 @@ public class PermissionGroup {
     public void removePermission(String permission) {
         Optional<Permission> perm = permissions.stream().filter(groupPermission -> groupPermission.getPermission().equals(permission)).findFirst();
         perm.ifPresent(groupPermission -> groupPermission.setGranted(false));
-        // TODO: Remove permissions from the player
     }
 
     /**
@@ -63,7 +63,6 @@ public class PermissionGroup {
         Optional<Permission> perm = permissions.stream().filter(groupPermission -> groupPermission.getPermission().equals(permission)).findFirst();
         if (perm.isPresent()) perm.get().setGranted(true);
         else permissions.add(new Permission(permission, true));
-        // TODO: Add permissions to the player
     }
 
     public boolean hasPermission(String permission) {

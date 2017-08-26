@@ -7,7 +7,7 @@ and most importantly, *no errors caused by the plugin*.
 
 # Builds
 
-// TODO: Get this plugin to a state where builds can actually happen
+You can download the latest version of Permissify from the [releases](https://github.com/Innectic/Permissify/releases) page.
 
 # Contributing
 
