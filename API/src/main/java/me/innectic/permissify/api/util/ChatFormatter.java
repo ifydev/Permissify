@@ -52,12 +52,16 @@ public class ChatFormatter {
         DatabaseHandler handler = PermissifyAPI.get().get().getDatabaseHandler().get();
 
         Optional<PermissionGroup> group = handler.getPrimaryGroup(uuid);
-        if (!group.isPresent()) return username + ": " + message;
+        if (!group.isPresent()) return username + ": " + message; // TODO: Should be configurable
+        String prefix = group.map(PermissionGroup::getPrefix).orElse("");
+        String name = group.map(PermissionGroup::getName).orElse("");
+        String suffix = group.map(PermissionGroup::getSuffix).orElse("");
+        String chatColor = "&" + group.map(PermissionGroup::getChatColor);
+
         String formatter = handler.getChatFormat(false);
-        String finalGroup = group.get().getPrefix() + group.get().getName() + group.get().getSuffix();
-        String color = "&" + group.get().getChatColor();
+        String finalGroup = prefix + name + suffix;
         return formatter.replace("{group}", finalGroup)
-                .replace("{username}", username).replace("{message}", color + message);
+                .replace("{username}", username).replace("{message}", chatColor + message);
     }
 
     /**
