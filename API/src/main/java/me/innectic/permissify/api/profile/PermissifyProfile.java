@@ -50,7 +50,7 @@ public class PermissifyProfile {
 
     @Override
     public String toString() {
-        return "PermissifyProfile {" +
+        return "PermissifyProfile [" +
                 "groups=" + groups +
                 ", playerPermissions=" + playerPermissions +
                 ", defaultGroup=" + defaultGroup +
@@ -58,6 +58,6 @@ public class PermissifyProfile {
                 ", whisperFormat=" + whisperFormat +
                 ", superAdmins=" + superAdmins +
                 ", version=" + version +
-                " }";
+                " ]";
     }
 }

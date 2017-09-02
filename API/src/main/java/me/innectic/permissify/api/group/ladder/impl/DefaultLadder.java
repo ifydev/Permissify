@@ -21,8 +21,7 @@
 * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 * SOFTWARE.
- */
-package me.innectic.permissify.api.group.ladder.impl;
+ */package me.innectic.permissify.api.group.ladder.impl;
 
 import me.innectic.permissify.api.group.ladder.AbstractLadder;
 import me.innectic.permissify.api.group.ladder.LadderLevel;

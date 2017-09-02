@@ -92,4 +92,17 @@ public class PermissionGroup {
     public void setPrimaryGroup(UUID uuid, boolean isPrimary) {
         players.put(uuid, isPrimary);
     }
+
+    @Override
+    public String toString() {
+        return "PermissionGroup [" +
+                "name=" + name +
+                ", chatColor=" + chatColor +
+                ", prefix=" + prefix +
+                ", suffix=" + suffix +
+                ", ladder=" + ladder +
+                ", permissions=" + permissions +
+                ", players=" + players +
+                " ]";
+    }
 }

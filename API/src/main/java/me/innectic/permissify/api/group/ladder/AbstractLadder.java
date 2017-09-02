@@ -26,7 +26,6 @@ package me.innectic.permissify.api.group.ladder;
 
 import lombok.Getter;
 
-import java.io.Serializable;
 import java.util.*;
 
 /**
@@ -48,4 +47,12 @@ public abstract class AbstractLadder {
     }
 
     public abstract void registerLadders();
+
+    @Override
+    public String toString() {
+        return "AbstractLadder [" +
+                "players=" + players +
+                ", levels=" + levels +
+                "]";
+    }
 }

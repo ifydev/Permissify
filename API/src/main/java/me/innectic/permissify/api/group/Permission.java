@@ -38,4 +38,12 @@ import java.io.Serializable;
 public class Permission {
     @Getter private String permission;
     @Getter @Setter private boolean granted;
+
+    @Override
+    public String toString() {
+        return "Permission [" +
+                "permission=" + permission +
+                ", granted=" + granted +
+                "]";
+    }
 }

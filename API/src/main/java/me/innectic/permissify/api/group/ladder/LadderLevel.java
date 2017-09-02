@@ -27,7 +27,6 @@ package me.innectic.permissify.api.group.ladder;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
-import java.io.Serializable;
 import java.util.Optional;
 
 /**
@@ -35,7 +34,15 @@ import java.util.Optional;
  * @since 9/1/2017
  */
 @AllArgsConstructor
-public class LadderLevel implements Serializable {
+public class LadderLevel {
     @Getter private int power;
     @Getter private Optional<String> displayName;
+
+    @Override
+    public String toString() {
+        return "LadderLevel [" +
+                "power=" + power +
+                ", displayName=" + displayName +
+                "]";
+    }
 }

@@ -66,7 +66,7 @@ public class ProfileCommand {
         if (!PermissifyMain.getInstance().getPermissifyAPI().getDatabaseHandler().isPresent())
             return new CommandResponse(PermissifyConstants.UNABLE_TO_SET.replace("<REASON>", "No database handler"), false);
 
-        boolean saved = saveProfile(args[0] + "-" + Long.toString(System.currentTimeMillis()) + "-pre-load");
+        boolean saved = saveProfile(args[0] + "-pre-load");
         if (!saved) return new CommandResponse(PermissifyConstants.PROFILE_NOT_SAVED.replace("<PROFILE>", args[0]), false);
 
         DatabaseHandler handler = PermissifyMain.getInstance().getPermissifyAPI().getDatabaseHandler().get();
