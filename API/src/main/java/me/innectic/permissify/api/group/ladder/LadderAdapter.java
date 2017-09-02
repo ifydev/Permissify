@@ -34,22 +34,22 @@ import java.lang.reflect.Type;
 public class LadderAdapter implements JsonSerializer<AbstractLadder>, JsonDeserializer<AbstractLadder> {
 
     @Override
-    public JsonElement serialize(AbstractLadder src, Type typeOfSrc, JsonSerializationContext context) {
+    public JsonElement serialize(AbstractLadder ladder, Type type, JsonSerializationContext context) {
         JsonObject result = new JsonObject();
-        result.add("type", new JsonPrimitive(src.getClass().getSimpleName()));
-        result.add("data", context.serialize(src, src.getClass()));
+        result.add("type", new JsonPrimitive(ladder.getClass().getSimpleName()));
+        result.add("data", context.serialize(ladder, ladder.getClass()));
         return result;
     }
 
     @Override
-    public AbstractLadder deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
+    public AbstractLadder deserialize(JsonElement json, Type type, JsonDeserializationContext context) throws JsonParseException {
         JsonObject jsonObject = json.getAsJsonObject();
-        String type = jsonObject.get("type").getAsString();
+        String typeName = jsonObject.get("type").getAsString();
         JsonElement element = jsonObject.get("data");
         try {
             return context.deserialize(element, Class.forName("me.innectic.permissify.api.group.ladder.impl." + type));
         } catch (ClassNotFoundException e) {
-            throw new JsonParseException("Unknown element type: " + type, e);
+            throw new JsonParseException("Unknown element: " + typeName, e);
         }
     }
 }

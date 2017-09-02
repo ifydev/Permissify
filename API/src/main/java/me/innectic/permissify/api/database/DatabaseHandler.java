@@ -43,6 +43,7 @@ public abstract class DatabaseHandler {
     @Getter protected Map<UUID, List<Permission>> cachedPermissions = new HashMap<>();
     @Getter protected Map<String, PermissionGroup> cachedGroups = new HashMap<>();
     @Getter protected Optional<PermissionGroup> defaultGroup = Optional.empty();
+    @Getter protected Map<String, AbstractLadder> cachedLadders = new HashMap<>();
     @Getter protected final Optional<ConnectionInformation> connectionInformation;
     @Getter protected List<UUID> superAdmins = new ArrayList<>();
     // Revisit: Maybe different default formatters?
@@ -71,6 +72,21 @@ public abstract class DatabaseHandler {
      * @param onlinePlayers the current players online who will need permissions.
      */
     public abstract void reload(List<UUID> onlinePlayers);
+
+    /**
+     * Load all groups
+     */
+    protected abstract void loadGroups();
+
+    /**
+     * Load all ladders
+     */
+    protected abstract void loadLadders();
+
+    /**
+     * Load all super admins
+     */
+    protected abstract void loadSuperAdmins();
 
     /**
      * Drop all values from the handler.
@@ -240,6 +256,13 @@ public abstract class DatabaseHandler {
      */
     public abstract boolean isSuperAdmin(UUID uuid);
 
+    /***
+     * Remove a superadmin.
+     *
+     * @param uuid the uuid of the player to remove
+     */
+    public abstract void removeSuperAdmin(UUID uuid);
+
     /**
      * Set the format for chat messages
      *
@@ -277,6 +300,19 @@ public abstract class DatabaseHandler {
      */
     public abstract void setDefaultGroup(PermissionGroup group);
 
+    /**
+     * Set the ladder of a group.
+     *
+     * @param group  the name of the group
+     * @param ladder the ladder to add to the group
+     */
     public abstract void setGroupLadder(String group, AbstractLadder ladder);
+
+    /**
+     * Get the current ladder of a group.
+     *
+     * @param group the name of the group to get the ladder from
+     * @return      the ladder, if present.
+     */
     public abstract Optional<AbstractLadder> getGroupLadder(String group);
 }
