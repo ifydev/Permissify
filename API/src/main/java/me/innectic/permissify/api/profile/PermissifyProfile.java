@@ -39,11 +39,25 @@ import java.util.UUID;
  * @since 8/26/2017
  */
 @AllArgsConstructor
-public class PermissifyProfile implements Serializable {
+public class PermissifyProfile {
     @Getter private final Map<String, PermissionGroup> groups;
     @Getter private Map<UUID, List<Permission>> playerPermissions;
     @Getter private PermissionGroup defaultGroup;
     @Getter private String chatFormat;
     @Getter private String whisperFormat;
     @Getter private List<UUID> superAdmins;
+    @Getter private int version;
+
+    @Override
+    public String toString() {
+        return "PermissifyProfile [" +
+                "groups=" + groups +
+                ", playerPermissions=" + playerPermissions +
+                ", defaultGroup=" + defaultGroup +
+                ", chatFormat=" + chatFormat +
+                ", whisperFormat=" + whisperFormat +
+                ", superAdmins=" + superAdmins +
+                ", version=" + version +
+                " ]";
+    }
 }

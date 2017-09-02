@@ -39,9 +39,6 @@ public class DefaultLadder extends AbstractLadder {
 
     @Override
     public void registerLadders() {
-        // Default ladders will only have 2 levels: default, admin. I don't care about display differences.
-        // TODO: Should I actually care about having names for the default ladders?
-
         this.levels.add(new LadderLevel(0, Optional.empty()));
         this.levels.add(new LadderLevel(1, Optional.empty()));
     }

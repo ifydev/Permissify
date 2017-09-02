@@ -26,15 +26,14 @@ package me.innectic.permissify.api.group.ladder;
 
 import lombok.Getter;
 
-import java.io.Serializable;
 import java.util.*;
 
 /**
  * @author Innectic
  * @since 9/1/2017
  */
-public abstract class AbstractLadder implements Serializable {
-    @Getter protected Map<UUID, LadderLevel> players = new HashMap<>();
+public abstract class AbstractLadder {
+    @Getter protected Map<UUID, Integer> players = new HashMap<>();
     @Getter protected List<LadderLevel> levels = new ArrayList<>();
 
     public final void reset() {
@@ -42,10 +41,28 @@ public abstract class AbstractLadder implements Serializable {
         registerLadders();
     }
 
-    public final void drop() {
+    private void drop() {
         players = new HashMap<>();
         levels = new ArrayList<>();
     }
 
     public abstract void registerLadders();
+
+    public final void addPlayer(UUID uuid, int position) {
+        players.put(uuid, position);
+        // TODO: Apply extra permissions
+    }
+
+    public final void removePlayer(UUID uuid) {
+        if (players.containsKey(uuid)) players.remove(uuid);
+        // TODO: Remove extra permissions
+    }
+
+    @Override
+    public String toString() {
+        return "AbstractLadder [" +
+                "players=" + players +
+                ", levels=" + levels +
+                "]";
+    }
 }

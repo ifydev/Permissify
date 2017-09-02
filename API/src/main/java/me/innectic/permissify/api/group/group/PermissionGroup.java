@@ -39,7 +39,7 @@ import java.util.*;
  * @since 6/14/2017
  */
 @RequiredArgsConstructor
-public class PermissionGroup implements Serializable {
+public class PermissionGroup {
     @Getter private final String name;
     @Getter private final String chatColor;
     @Getter private final String prefix;
@@ -91,5 +91,18 @@ public class PermissionGroup implements Serializable {
 
     public void setPrimaryGroup(UUID uuid, boolean isPrimary) {
         players.put(uuid, isPrimary);
+    }
+
+    @Override
+    public String toString() {
+        return "PermissionGroup [" +
+                "name=" + name +
+                ", chatColor=" + chatColor +
+                ", prefix=" + prefix +
+                ", suffix=" + suffix +
+                ", ladder=" + ladder +
+                ", permissions=" + permissions +
+                ", players=" + players +
+                " ]";
     }
 }

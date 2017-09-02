@@ -24,7 +24,18 @@
  */
 package me.innectic.permissify.api.profile;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import me.innectic.permissify.api.group.ladder.AbstractLadder;
+import me.innectic.permissify.api.group.ladder.LadderAdapter;
+import me.innectic.permissify.api.group.ladder.impl.DefaultLadder;
+
 import java.io.*;
+import java.lang.reflect.Type;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Optional;
 
 /**
@@ -32,6 +43,14 @@ import java.util.Optional;
  * @since 8/26/2017
  */
 public class ProfileSerializer {
+
+    private final Gson gson;
+
+    public ProfileSerializer() {
+        GsonBuilder gsonBuilder = new GsonBuilder();
+        gsonBuilder.registerTypeAdapter(AbstractLadder.class, new LadderAdapter());
+        gson = gsonBuilder.create();
+    }
 
     /**
      * Serialize a permissify profile into a permissify profile file
@@ -42,12 +61,10 @@ public class ProfileSerializer {
      * @return              if the profile was successfully stored
      */
     public boolean serialize(PermissifyProfile profile, String baseDirectory, String profileName) {
+        String json = gson.toJson(profile);
+        Path file = Paths.get(baseDirectory + "/profiles/" + profileName + ".permissify");
         try {
-            FileOutputStream outputStream = new FileOutputStream(baseDirectory + "/profiles/" + profileName + ".permissify");
-            ObjectOutputStream out = new ObjectOutputStream(outputStream);
-            out.writeObject(profile);
-            out.close();
-            outputStream.close();
+            Files.write(file, json.getBytes());
         } catch (IOException e) {
             e.printStackTrace();
             return false;
@@ -65,10 +82,9 @@ public class ProfileSerializer {
     public Optional<PermissifyProfile> deserialize(String profile, String baseDirectory) {
         Optional<PermissifyProfile> deserialized = Optional.empty();
         try {
-            FileInputStream inputStream = new FileInputStream(baseDirectory + "/profiles/" + profile + ".permissify");
-            ObjectInputStream input = new ObjectInputStream(inputStream);
-            deserialized = Optional.of((PermissifyProfile) input.readObject());
-        } catch (IOException | ClassNotFoundException e) {
+            Reader reader = new FileReader(new File(baseDirectory + "/profiles/" + profile + ".permissify"));
+            deserialized = Optional.ofNullable(gson.fromJson(reader, PermissifyProfile.class));
+        } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
         return deserialized;
