@@ -45,6 +45,7 @@ public abstract class DatabaseHandler {
     @Getter protected Optional<PermissionGroup> defaultGroup = Optional.empty();
     @Getter protected final Optional<ConnectionInformation> connectionInformation;
     @Getter protected List<UUID> superAdmins = new ArrayList<>();
+    // Revisit: Maybe different default formatters?
     protected String chatFormat = "{group} {username}: {message}";
     protected String whisperFormat = "{senderGroup} {username} > {receiverGroup} {to}: {message}";
 

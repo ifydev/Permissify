@@ -37,6 +37,8 @@ import java.util.List;
 public class PermissifyConstants {
     // TODO: Create a language formatter to allow for translating.
 
+    public static final int PERMISSIFY_PROFILE_VERSION = 2;
+
     // Chat messages
     private static final String PERMISSIFY_PREFIX = "&a&lPermissify> ";
 

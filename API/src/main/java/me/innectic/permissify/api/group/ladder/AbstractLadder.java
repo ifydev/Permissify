@@ -33,7 +33,7 @@ import java.util.*;
  * @author Innectic
  * @since 9/1/2017
  */
-public abstract class AbstractLadder implements Serializable {
+public abstract class AbstractLadder {
     @Getter protected Map<UUID, LadderLevel> players = new HashMap<>();
     @Getter protected List<LadderLevel> levels = new ArrayList<>();
 
