@@ -22,42 +22,24 @@
 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 * SOFTWARE.
  */
-package me.innectic.permissify.api.profile;
+package me.innectic.permissify.api.group.ladder.impl;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import me.innectic.permissify.api.group.Permission;
-import me.innectic.permissify.api.group.group.PermissionGroup;
+import me.innectic.permissify.api.group.ladder.AbstractLadder;
+import me.innectic.permissify.api.group.ladder.LadderLevel;
 
-import java.io.Serializable;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.Optional;
 
 /**
  * @author Innectic
- * @since 8/26/2017
+ * @since 9/1/2017
+ *
+ * Default ladder that will be used within groups if none is specified.
  */
-@AllArgsConstructor
-public class PermissifyProfile {
-    @Getter private final Map<String, PermissionGroup> groups;
-    @Getter private Map<UUID, List<Permission>> playerPermissions;
-    @Getter private PermissionGroup defaultGroup;
-    @Getter private String chatFormat;
-    @Getter private String whisperFormat;
-    @Getter private List<UUID> superAdmins;
-    @Getter private int version;
+public class DefaultLadder extends AbstractLadder {
 
     @Override
-    public String toString() {
-        return "PermissifyProfile [" +
-                "groups=" + groups +
-                ", playerPermissions=" + playerPermissions +
-                ", defaultGroup=" + defaultGroup +
-                ", chatFormat=" + chatFormat +
-                ", whisperFormat=" + whisperFormat +
-                ", superAdmins=" + superAdmins +
-                ", version=" + version +
-                " ]";
+    public void registerLadders() {
+        this.levels.add(new LadderLevel(0, Optional.empty()));
+        this.levels.add(new LadderLevel(1, Optional.empty()));
     }
 }

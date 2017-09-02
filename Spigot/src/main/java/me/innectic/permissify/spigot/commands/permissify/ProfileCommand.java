@@ -66,7 +66,7 @@ public class ProfileCommand {
         if (!PermissifyMain.getInstance().getPermissifyAPI().getDatabaseHandler().isPresent())
             return new CommandResponse(PermissifyConstants.UNABLE_TO_SET.replace("<REASON>", "No database handler"), false);
 
-        boolean saved = saveProfile(args[0] + "-" + Long.toString(System.currentTimeMillis()) + "-pre-load");
+        boolean saved = saveProfile(args[0] + "-pre-load");
         if (!saved) return new CommandResponse(PermissifyConstants.PROFILE_NOT_SAVED.replace("<PROFILE>", args[0]), false);
 
         DatabaseHandler handler = PermissifyMain.getInstance().getPermissifyAPI().getDatabaseHandler().get();
@@ -98,7 +98,8 @@ public class ProfileCommand {
         long start = System.currentTimeMillis();
         PermissifyProfile profile = new PermissifyProfile(handler.getGroups(), handler.getCachedPermissions(),
                 handler.getDefaultGroup().isPresent() ? handler.getDefaultGroup().get() : null,
-                handler.getChatFormat(false), handler.getWhisperFormat(false), handler.getSuperAdmins());
+                handler.getChatFormat(false), handler.getWhisperFormat(false), handler.getSuperAdmins(),
+                PermissifyConstants.PERMISSIFY_PROFILE_VERSION);
         long end = System.currentTimeMillis();
         System.out.println("Generated profile in " + (end - start) + " ms.");
 

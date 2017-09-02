@@ -22,42 +22,27 @@
 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 * SOFTWARE.
  */
-package me.innectic.permissify.api.profile;
+package me.innectic.permissify.api.group.ladder;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import me.innectic.permissify.api.group.Permission;
-import me.innectic.permissify.api.group.group.PermissionGroup;
 
-import java.io.Serializable;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.Optional;
 
 /**
  * @author Innectic
- * @since 8/26/2017
+ * @since 9/1/2017
  */
 @AllArgsConstructor
-public class PermissifyProfile {
-    @Getter private final Map<String, PermissionGroup> groups;
-    @Getter private Map<UUID, List<Permission>> playerPermissions;
-    @Getter private PermissionGroup defaultGroup;
-    @Getter private String chatFormat;
-    @Getter private String whisperFormat;
-    @Getter private List<UUID> superAdmins;
-    @Getter private int version;
+public class LadderLevel {
+    @Getter private int power;
+    @Getter private Optional<String> displayName;
 
     @Override
     public String toString() {
-        return "PermissifyProfile [" +
-                "groups=" + groups +
-                ", playerPermissions=" + playerPermissions +
-                ", defaultGroup=" + defaultGroup +
-                ", chatFormat=" + chatFormat +
-                ", whisperFormat=" + whisperFormat +
-                ", superAdmins=" + superAdmins +
-                ", version=" + version +
-                " ]";
+        return "LadderLevel [" +
+                "power=" + power +
+                ", displayName=" + displayName +
+                "]";
     }
 }

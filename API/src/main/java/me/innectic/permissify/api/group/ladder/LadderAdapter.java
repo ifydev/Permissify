@@ -22,20 +22,34 @@
 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 * SOFTWARE.
  */
-package me.innectic.permissify.api.permission;
+package me.innectic.permissify.api.group.ladder;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.Setter;
-
-import java.io.Serializable;
+import com.google.gson.*;
+import java.lang.reflect.Type;
 
 /**
  * @author Innectic
- * @since 6/8/2017
+ * @since 8/26/2017
  */
-@AllArgsConstructor
-public class Permission implements Serializable {
-    @Getter private String permission;
-    @Getter @Setter private boolean granted;
+public class LadderAdapter implements JsonSerializer<AbstractLadder>, JsonDeserializer<AbstractLadder> {
+
+    @Override
+    public JsonElement serialize(AbstractLadder ladder, Type type, JsonSerializationContext context) {
+        JsonObject result = new JsonObject();
+        result.add("type", new JsonPrimitive(ladder.getClass().getSimpleName()));
+        result.add("data", context.serialize(ladder, ladder.getClass()));
+        return result;
+    }
+
+    @Override
+    public AbstractLadder deserialize(JsonElement json, Type type, JsonDeserializationContext context) throws JsonParseException {
+        JsonObject jsonObject = json.getAsJsonObject();
+        String typeName = jsonObject.get("type").getAsString();
+        JsonElement element = jsonObject.get("data");
+        try {
+            return context.deserialize(element, Class.forName("me.innectic.permissify.api.group.ladder.impl." + type));
+        } catch (ClassNotFoundException e) {
+            throw new JsonParseException("Unknown element: " + typeName, e);
+        }
+    }
 }

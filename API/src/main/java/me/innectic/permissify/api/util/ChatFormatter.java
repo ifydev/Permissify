@@ -26,9 +26,8 @@ package me.innectic.permissify.api.util;
 
 import me.innectic.permissify.api.PermissifyAPI;
 import me.innectic.permissify.api.database.DatabaseHandler;
-import me.innectic.permissify.api.permission.PermissionGroup;
+import me.innectic.permissify.api.group.group.PermissionGroup;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -53,15 +52,15 @@ public class ChatFormatter {
 
         Optional<PermissionGroup> group = handler.getPrimaryGroup(uuid);
         if (!group.isPresent()) return username + ": " + message; // TODO: Should be configurable
-        String prefix = group.map(PermissionGroup::getPrefix).orElse("");
-        String name = group.map(PermissionGroup::getName).orElse("");
-        String suffix = group.map(PermissionGroup::getSuffix).orElse("");
-        String chatColor = "&" + group.map(PermissionGroup::getChatColor);
+        String groupPrefix = group.map(PermissionGroup::getPrefix).orElse("");
+        String groupName = group.map(PermissionGroup::getName).orElse("");
+        String groupSuffix = group.map(PermissionGroup::getSuffix).orElse("");
+        String messageColor = "&" + group.map(PermissionGroup::getChatColor).orElse("");
 
         String formatter = handler.getChatFormat(false);
-        String finalGroup = prefix + name + suffix;
+        String finalGroup = groupPrefix + groupName + groupSuffix;
         return formatter.replace("{group}", finalGroup)
-                .replace("{username}", username).replace("{message}", chatColor + message);
+                .replace("{username}", username).replace("{message}", messageColor + message);
     }
 
     /**

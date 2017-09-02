@@ -22,11 +22,14 @@
 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 * SOFTWARE.
  */
-package me.innectic.permissify.api.permission;
+package me.innectic.permissify.api.group.group;
 
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import me.innectic.permissify.api.group.Permission;
+import me.innectic.permissify.api.group.ladder.AbstractLadder;
 
 import java.io.Serializable;
 import java.util.*;
@@ -36,11 +39,12 @@ import java.util.*;
  * @since 6/14/2017
  */
 @RequiredArgsConstructor
-public class PermissionGroup implements Serializable {
+public class PermissionGroup {
     @Getter private final String name;
     @Getter private final String chatColor;
     @Getter private final String prefix;
     @Getter private final String suffix;
+    @NonNull @Getter @Setter private AbstractLadder ladder;
     @Getter private List<Permission> permissions = new ArrayList<>();
     @Getter private Map<UUID, Boolean> players = new HashMap<>();
 
@@ -87,5 +91,18 @@ public class PermissionGroup implements Serializable {
 
     public void setPrimaryGroup(UUID uuid, boolean isPrimary) {
         players.put(uuid, isPrimary);
+    }
+
+    @Override
+    public String toString() {
+        return "PermissionGroup [" +
+                "name=" + name +
+                ", chatColor=" + chatColor +
+                ", prefix=" + prefix +
+                ", suffix=" + suffix +
+                ", ladder=" + ladder +
+                ", permissions=" + permissions +
+                ", players=" + players +
+                " ]";
     }
 }

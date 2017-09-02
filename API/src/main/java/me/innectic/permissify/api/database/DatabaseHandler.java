@@ -25,9 +25,9 @@
 package me.innectic.permissify.api.database;
 
 import lombok.Getter;
-import lombok.Setter;
-import me.innectic.permissify.api.permission.Permission;
-import me.innectic.permissify.api.permission.PermissionGroup;
+import me.innectic.permissify.api.group.Permission;
+import me.innectic.permissify.api.group.group.PermissionGroup;
+import me.innectic.permissify.api.group.ladder.AbstractLadder;
 import me.innectic.permissify.api.profile.PermissifyProfile;
 
 import java.util.*;
@@ -41,10 +41,12 @@ import java.util.*;
 public abstract class DatabaseHandler {
 
     @Getter protected Map<UUID, List<Permission>> cachedPermissions = new HashMap<>();
-    @Getter protected List<PermissionGroup> cachedGroups = new ArrayList<>();
+    @Getter protected Map<String, PermissionGroup> cachedGroups = new HashMap<>();
     @Getter protected Optional<PermissionGroup> defaultGroup = Optional.empty();
+    @Getter protected Map<String, AbstractLadder> cachedLadders = new HashMap<>();
     @Getter protected final Optional<ConnectionInformation> connectionInformation;
     @Getter protected List<UUID> superAdmins = new ArrayList<>();
+    // Revisit: Maybe different default formatters?
     protected String chatFormat = "{group} {username}: {message}";
     protected String whisperFormat = "{senderGroup} {username} > {receiverGroup} {to}: {message}";
 
@@ -70,6 +72,21 @@ public abstract class DatabaseHandler {
      * @param onlinePlayers the current players online who will need permissions.
      */
     public abstract void reload(List<UUID> onlinePlayers);
+
+    /**
+     * Load all groups
+     */
+    protected abstract void loadGroups();
+
+    /**
+     * Load all ladders
+     */
+    protected abstract void loadLadders();
+
+    /**
+     * Load all super admins
+     */
+    protected abstract void loadSuperAdmins();
 
     /**
      * Drop all values from the handler.
@@ -165,7 +182,7 @@ public abstract class DatabaseHandler {
      *
      * @return the registered permission groups
      */
-    public abstract List<PermissionGroup> getGroups();
+    public abstract Map<String, PermissionGroup> getGroups();
 
     /**
      * Get all permission groups a player is in.
@@ -239,6 +256,13 @@ public abstract class DatabaseHandler {
      */
     public abstract boolean isSuperAdmin(UUID uuid);
 
+    /***
+     * Remove a superadmin.
+     *
+     * @param uuid the uuid of the player to remove
+     */
+    public abstract void removeSuperAdmin(UUID uuid);
+
     /**
      * Set the format for chat messages
      *
@@ -275,4 +299,20 @@ public abstract class DatabaseHandler {
      * @param group the new group to become the default.
      */
     public abstract void setDefaultGroup(PermissionGroup group);
+
+    /**
+     * Set the ladder of a group.
+     *
+     * @param group  the name of the group
+     * @param ladder the ladder to add to the group
+     */
+    public abstract void setGroupLadder(String group, AbstractLadder ladder);
+
+    /**
+     * Get the current ladder of a group.
+     *
+     * @param group the name of the group to get the ladder from
+     * @return      the ladder, if present.
+     */
+    public abstract Optional<AbstractLadder> getGroupLadder(String group);
 }

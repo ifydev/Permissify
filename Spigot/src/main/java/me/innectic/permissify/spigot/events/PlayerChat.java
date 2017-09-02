@@ -24,7 +24,6 @@
  */
 package me.innectic.permissify.spigot.events;
 
-import me.innectic.permissify.api.permission.PermissionGroup;
 import me.innectic.permissify.api.util.ChatFormatter;
 import me.innectic.permissify.spigot.PermissifyMain;
 import me.innectic.permissify.spigot.utils.ColorUtil;
@@ -33,8 +32,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
-
-import java.util.Optional;
 
 /**
  * @author Innectic

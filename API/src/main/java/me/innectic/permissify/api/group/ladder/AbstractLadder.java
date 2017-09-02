@@ -22,42 +22,47 @@
 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 * SOFTWARE.
  */
-package me.innectic.permissify.api.profile;
+package me.innectic.permissify.api.group.ladder;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
-import me.innectic.permissify.api.group.Permission;
-import me.innectic.permissify.api.group.group.PermissionGroup;
 
-import java.io.Serializable;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * @author Innectic
- * @since 8/26/2017
+ * @since 9/1/2017
  */
-@AllArgsConstructor
-public class PermissifyProfile {
-    @Getter private final Map<String, PermissionGroup> groups;
-    @Getter private Map<UUID, List<Permission>> playerPermissions;
-    @Getter private PermissionGroup defaultGroup;
-    @Getter private String chatFormat;
-    @Getter private String whisperFormat;
-    @Getter private List<UUID> superAdmins;
-    @Getter private int version;
+public abstract class AbstractLadder {
+    @Getter protected Map<UUID, Integer> players = new HashMap<>();
+    @Getter protected List<LadderLevel> levels = new ArrayList<>();
+
+    public final void reset() {
+        drop();
+        registerLadders();
+    }
+
+    private void drop() {
+        players = new HashMap<>();
+        levels = new ArrayList<>();
+    }
+
+    public abstract void registerLadders();
+
+    public final void addPlayer(UUID uuid, int position) {
+        players.put(uuid, position);
+        // TODO: Apply extra permissions
+    }
+
+    public final void removePlayer(UUID uuid) {
+        if (players.containsKey(uuid)) players.remove(uuid);
+        // TODO: Remove extra permissions
+    }
 
     @Override
     public String toString() {
-        return "PermissifyProfile [" +
-                "groups=" + groups +
-                ", playerPermissions=" + playerPermissions +
-                ", defaultGroup=" + defaultGroup +
-                ", chatFormat=" + chatFormat +
-                ", whisperFormat=" + whisperFormat +
-                ", superAdmins=" + superAdmins +
-                ", version=" + version +
-                " ]";
+        return "AbstractLadder [" +
+                "players=" + players +
+                ", levels=" + levels +
+                "]";
     }
 }
