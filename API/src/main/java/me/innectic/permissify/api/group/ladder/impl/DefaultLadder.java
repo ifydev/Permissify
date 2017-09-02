@@ -22,32 +22,27 @@
 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 * SOFTWARE.
  */
-package me.innectic.permissify.spigot.events;
+package me.innectic.permissify.api.group.ladder.impl;
 
-import me.innectic.permissify.api.util.ChatFormatter;
-import me.innectic.permissify.spigot.PermissifyMain;
-import me.innectic.permissify.spigot.utils.ColorUtil;
-import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
-import org.bukkit.event.player.AsyncPlayerChatEvent;
+import me.innectic.permissify.api.group.ladder.AbstractLadder;
+import me.innectic.permissify.api.group.ladder.LadderLevel;
+
+import java.util.Optional;
 
 /**
  * @author Innectic
- * @since 6/26/2017
+ * @since 9/1/2017
+ *
+ * Default ladder that will be used within groups if none is specified.
  */
-public class PlayerChat implements Listener {
+public class DefaultLadder extends AbstractLadder {
 
-    @EventHandler
-    public void onPlayerChat(AsyncPlayerChatEvent e) {
-        PermissifyMain plugin = PermissifyMain.getInstance();
-        if (!plugin.isHandleChat()) return;
-        if (!plugin.getPermissifyAPI().getDatabaseHandler().isPresent()) return;
-        Player player = e.getPlayer();
-        if (player == null) return;
-        e.setCancelled(true);
-        String formatted = ChatFormatter.formatChat(player.getUniqueId(), player.getName(), e.getMessage());
-        Bukkit.broadcastMessage(ColorUtil.makeReadable(formatted));
+    @Override
+    public void registerLadders() {
+        // Default ladders will only have 2 levels: default, admin. I don't care about display differences.
+        // TODO: Should I actually care about having names for the default ladders?
+
+        this.levels.add(new LadderLevel(0, Optional.empty()));
+        this.levels.add(new LadderLevel(1, Optional.empty()));
     }
 }

@@ -27,16 +27,13 @@ package me.innectic.permissify.spigot.commands.permissify;
 import me.innectic.permissify.spigot.PermissifyMain;
 import me.innectic.permissify.spigot.commands.CommandResponse;
 import me.innectic.permissify.api.PermissifyConstants;
-import me.innectic.permissify.api.permission.Permission;
-import me.innectic.permissify.api.permission.PermissionGroup;
+import me.innectic.permissify.api.group.Permission;
+import me.innectic.permissify.api.group.group.PermissionGroup;
 import me.innectic.permissify.spigot.utils.MiscUtil;
 import me.innectic.permissify.spigot.utils.PermissionUtil;
-import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
-import org.bukkit.permissions.PermissionAttachment;
 
 import java.util.ArrayList;
 import java.util.List;

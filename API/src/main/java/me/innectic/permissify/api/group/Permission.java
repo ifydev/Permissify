@@ -22,7 +22,7 @@
 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 * SOFTWARE.
  */
-package me.innectic.permissify.api.permission;
+package me.innectic.permissify.api.group;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

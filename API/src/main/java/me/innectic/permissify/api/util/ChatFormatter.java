@@ -26,9 +26,8 @@ package me.innectic.permissify.api.util;
 
 import me.innectic.permissify.api.PermissifyAPI;
 import me.innectic.permissify.api.database.DatabaseHandler;
-import me.innectic.permissify.api.permission.PermissionGroup;
+import me.innectic.permissify.api.group.group.PermissionGroup;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 

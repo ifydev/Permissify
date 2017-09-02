@@ -28,15 +28,14 @@ import me.innectic.permissify.api.database.DatabaseHandler;
 import me.innectic.permissify.spigot.PermissifyMain;
 import me.innectic.permissify.spigot.commands.CommandResponse;
 import me.innectic.permissify.api.PermissifyConstants;
-import me.innectic.permissify.api.permission.Permission;
-import me.innectic.permissify.api.permission.PermissionGroup;
+import me.innectic.permissify.api.group.Permission;
+import me.innectic.permissify.api.group.group.PermissionGroup;
 import me.innectic.permissify.api.util.ArgumentUtil;
 import me.innectic.permissify.spigot.utils.ColorUtil;
 import me.innectic.permissify.spigot.utils.PermissionUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
 
 import java.util.*;
 import java.util.stream.Collectors;

@@ -22,32 +22,20 @@
 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 * SOFTWARE.
  */
-package me.innectic.permissify.spigot.events;
+package me.innectic.permissify.api.group.ladder;
 
-import me.innectic.permissify.api.util.ChatFormatter;
-import me.innectic.permissify.spigot.PermissifyMain;
-import me.innectic.permissify.spigot.utils.ColorUtil;
-import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
-import org.bukkit.event.player.AsyncPlayerChatEvent;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+
+import java.io.Serializable;
+import java.util.Optional;
 
 /**
  * @author Innectic
- * @since 6/26/2017
+ * @since 9/1/2017
  */
-public class PlayerChat implements Listener {
-
-    @EventHandler
-    public void onPlayerChat(AsyncPlayerChatEvent e) {
-        PermissifyMain plugin = PermissifyMain.getInstance();
-        if (!plugin.isHandleChat()) return;
-        if (!plugin.getPermissifyAPI().getDatabaseHandler().isPresent()) return;
-        Player player = e.getPlayer();
-        if (player == null) return;
-        e.setCancelled(true);
-        String formatted = ChatFormatter.formatChat(player.getUniqueId(), player.getName(), e.getMessage());
-        Bukkit.broadcastMessage(ColorUtil.makeReadable(formatted));
-    }
+@AllArgsConstructor
+public class LadderLevel implements Serializable {
+    @Getter private int power;
+    @Getter private Optional<String> displayName;
 }

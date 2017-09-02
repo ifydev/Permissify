@@ -22,11 +22,12 @@
 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 * SOFTWARE.
  */
-package me.innectic.permissify.api.permission;
+package me.innectic.permissify.api.group.group;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import lombok.Setter;
+import me.innectic.permissify.api.group.Permission;
+import me.innectic.permissify.api.group.ladder.AbstractLadder;
 
 import java.io.Serializable;
 import java.util.*;
@@ -43,6 +44,7 @@ public class PermissionGroup implements Serializable {
     @Getter private final String suffix;
     @Getter private List<Permission> permissions = new ArrayList<>();
     @Getter private Map<UUID, Boolean> players = new HashMap<>();
+    @Getter private AbstractLadder ladder;  // TODO: Ask the database for the ladder
 
     /**
      * Remove a permission from the group

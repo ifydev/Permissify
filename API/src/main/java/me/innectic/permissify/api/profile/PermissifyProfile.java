@@ -26,8 +26,8 @@ package me.innectic.permissify.api.profile;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import me.innectic.permissify.api.permission.Permission;
-import me.innectic.permissify.api.permission.PermissionGroup;
+import me.innectic.permissify.api.group.Permission;
+import me.innectic.permissify.api.group.group.PermissionGroup;
 
 import java.io.Serializable;
 import java.util.List;

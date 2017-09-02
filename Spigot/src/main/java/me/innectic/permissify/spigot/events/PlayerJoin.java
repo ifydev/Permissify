@@ -24,8 +24,6 @@
  */
 package me.innectic.permissify.spigot.events;
 
-import me.innectic.permissify.api.permission.Permission;
-import me.innectic.permissify.api.permission.PermissionGroup;
 import me.innectic.permissify.spigot.PermissifyMain;
 import me.innectic.permissify.spigot.utils.PermissionUtil;
 import org.bukkit.Bukkit;
@@ -33,8 +31,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
-import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * @author Innectic

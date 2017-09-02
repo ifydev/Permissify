@@ -26,7 +26,7 @@ package me.innectic.permissify.spigot.commands.permissify;
 
 import me.innectic.permissify.api.PermissifyConstants;
 import me.innectic.permissify.api.database.DatabaseHandler;
-import me.innectic.permissify.api.permission.PermissionGroup;
+import me.innectic.permissify.api.group.group.PermissionGroup;
 import me.innectic.permissify.api.util.ArgumentUtil;
 import me.innectic.permissify.spigot.PermissifyMain;
 import me.innectic.permissify.spigot.commands.CommandResponse;
