@@ -37,6 +37,7 @@ import org.bukkit.command.CommandSender;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -165,9 +166,10 @@ public class PlayerCommand {
         if (args.length < 1) return new CommandResponse(PermissifyConstants.NOT_ENOUGH_ARGUMENTS_PLAYER_LIST_GROUP, false);
         OfflinePlayer targetPlayer = Bukkit.getPlayer(args[0]);
         if (targetPlayer == null || !targetPlayer.hasPlayedBefore()) return new CommandResponse(PermissifyConstants.INVALID_PLAYER, false);
-        List<String> groups = plugin.getPermissifyAPI().getDatabaseHandler().get().getGroups().stream()
-                .filter(permissionGroup -> permissionGroup.hasPlayer(targetPlayer.getUniqueId()))
-                .map(PermissionGroup::getName)
+        List<String> groups = plugin.getPermissifyAPI().getDatabaseHandler().get().getGroups().entrySet().stream()
+                .filter(permissionGroup -> permissionGroup.getValue().hasPlayer(targetPlayer.getUniqueId()))
+                .filter(entry -> entry.getValue().hasPlayer(targetPlayer.getUniqueId()))
+                .map(Map.Entry::getKey)
                 .collect(Collectors.toList());
         return new CommandResponse(PermissifyConstants.PLAYER_GROUP_LIST.replace("<PLAYER>", targetPlayer.getName())
                 .replace("<GROUPS>", String.join(", ", groups)), true);
@@ -183,9 +185,7 @@ public class PlayerCommand {
         OfflinePlayer targetPlayer = Bukkit.getPlayer(args[0]);
         if (targetPlayer == null) return new CommandResponse(PermissifyConstants.INVALID_PLAYER, false);
         // This sucks, can probably be cleaned up.
-        List<PermissionGroup> groups = plugin.getPermissifyAPI().getDatabaseHandler().get().getGroups().stream()
-                .filter(permissionGroup -> permissionGroup.hasPlayer(targetPlayer.getUniqueId()))
-                .collect(Collectors.toList());
+        List<PermissionGroup> groups = plugin.getPermissifyAPI().getDatabaseHandler().get().getGroups(targetPlayer.getUniqueId());
         List<String> permissions = new ArrayList<>();
         groups.forEach(group -> permissions.addAll(group.getPermissions().stream().map(Permission::getPermission).collect(Collectors.toList())));
         permissions.addAll(plugin.getPermissifyAPI().getDatabaseHandler().get().getPermissions(targetPlayer.getUniqueId())

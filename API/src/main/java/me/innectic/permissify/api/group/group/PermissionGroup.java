@@ -25,6 +25,7 @@
 package me.innectic.permissify.api.group.group;
 
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import me.innectic.permissify.api.group.Permission;
@@ -43,9 +44,9 @@ public class PermissionGroup implements Serializable {
     @Getter private final String chatColor;
     @Getter private final String prefix;
     @Getter private final String suffix;
+    @NonNull @Getter @Setter private AbstractLadder ladder;
     @Getter private List<Permission> permissions = new ArrayList<>();
     @Getter private Map<UUID, Boolean> players = new HashMap<>();
-    @Getter @Setter private AbstractLadder ladder;  // TODO: Ask the database for the ladder
 
     /**
      * Remove a permission from the group

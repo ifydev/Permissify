@@ -41,7 +41,7 @@ import java.util.*;
 public abstract class DatabaseHandler {
 
     @Getter protected Map<UUID, List<Permission>> cachedPermissions = new HashMap<>();
-    @Getter protected List<PermissionGroup> cachedGroups = new ArrayList<>();
+    @Getter protected Map<String, PermissionGroup> cachedGroups = new HashMap<>();
     @Getter protected Optional<PermissionGroup> defaultGroup = Optional.empty();
     @Getter protected final Optional<ConnectionInformation> connectionInformation;
     @Getter protected List<UUID> superAdmins = new ArrayList<>();
@@ -165,7 +165,7 @@ public abstract class DatabaseHandler {
      *
      * @return the registered permission groups
      */
-    public abstract List<PermissionGroup> getGroups();
+    public abstract Map<String, PermissionGroup> getGroups();
 
     /**
      * Get all permission groups a player is in.
@@ -276,6 +276,6 @@ public abstract class DatabaseHandler {
      */
     public abstract void setDefaultGroup(PermissionGroup group);
 
-    public abstract void setGroupLadder(PermissionGroup group, AbstractLadder ladder);
-    public abstract Optional<AbstractLadder> getGroupLadder(PermissionGroup group);
+    public abstract void setGroupLadder(String group, AbstractLadder ladder);
+    public abstract Optional<AbstractLadder> getGroupLadder(String group);
 }

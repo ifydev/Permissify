@@ -106,8 +106,7 @@ public class GroupCommand {
         String[] remaining = ArgumentUtil.getRemainingArgs(1, args);
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
             if (!plugin.getPermissifyAPI().getDatabaseHandler().isPresent()) return;
-            Optional<PermissionGroup> group = plugin.getPermissifyAPI().getDatabaseHandler().get().getGroups()
-                    .stream().filter(permissionGroup -> permissionGroup.getName().equals(args[0])).findFirst();
+            Optional<PermissionGroup> group = plugin.getPermissifyAPI().getDatabaseHandler().get().getGroup(args[0]);
             group.ifPresent(permissionGroup -> {
                 Arrays.stream(remaining).forEach(permissionGroup::addPermission);
                 Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> permissionGroup.getPlayers().entrySet().stream().map(Map.Entry::getKey).map(Bukkit::getPlayer).filter(Objects::nonNull).forEach(PermissionUtil::applyPermissions));
@@ -129,8 +128,7 @@ public class GroupCommand {
         String[] remaining = ArgumentUtil.getRemainingArgs(1, args);
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
             if (!plugin.getPermissifyAPI().getDatabaseHandler().isPresent()) return;
-            Optional<PermissionGroup> group = plugin.getPermissifyAPI().getDatabaseHandler().get().getGroups()
-                    .stream().filter(permissionGroup -> permissionGroup.getName().equals(args[0])).findFirst();
+            Optional<PermissionGroup> group = plugin.getPermissifyAPI().getDatabaseHandler().get().getGroup(args[0]);
             group.ifPresent(permissionGroup -> {
                 for (String permission : remaining) {
                     permissionGroup.removePermission(permission);
@@ -150,8 +148,7 @@ public class GroupCommand {
         if (!plugin.getPermissifyAPI().getDatabaseHandler().isPresent())
             return new CommandResponse(PermissifyConstants.UNABLE_TO_LIST.replace("<REASON>", "No database handler"), false);
         if (args.length < 1) return new CommandResponse(PermissifyConstants.NOT_ENOUGH_ARGUMENTS_GROUP_PERMISSION_LIST, false);
-        Optional<PermissionGroup> group = plugin.getPermissifyAPI().getDatabaseHandler().get().getGroups().stream()
-                .filter(permissionGroup -> permissionGroup.getName().equals(args[0])).findFirst();
+        Optional<PermissionGroup> group = plugin.getPermissifyAPI().getDatabaseHandler().get().getGroup(args[0]);
         if (!group.isPresent()) return new CommandResponse(PermissifyConstants.INVALID_GROUP.replace("<GROUP>", args[0]), false);
         List<String> groupPermissions = group.get().getPermissions().stream().map(Permission::getPermission).collect(Collectors.toList());
         return new CommandResponse(PermissifyConstants.GROUP_PERMISSIONS.replace("<GROUP>", group.get().getName())
@@ -164,9 +161,8 @@ public class GroupCommand {
             return new CommandResponse(PermissifyConstants.INSUFFICIENT_PERMISSIONS, false);
         if (!plugin.getPermissifyAPI().getDatabaseHandler().isPresent())
             return new CommandResponse(PermissifyConstants.UNABLE_TO_LIST.replace("<REASON>", "No database handler"), false);
-        List<PermissionGroup> groups = plugin.getPermissifyAPI().getDatabaseHandler().get().getGroups();
-        List<String> groupNames = groups.stream().map(PermissionGroup::getName).collect(Collectors.toList());
-        return new CommandResponse(PermissifyConstants.GROUP_LIST.replace("<GROUPS>", String.join(", ", groupNames)), true);
+        Map<String, PermissionGroup> groups = plugin.getPermissifyAPI().getDatabaseHandler().get().getGroups();
+        return new CommandResponse(PermissifyConstants.GROUP_LIST.replace("<GROUPS>", String.join(", ", groups.keySet())), true);
     }
 
     public CommandResponse handleSetDefault(CommandSender sender, String[] args) {

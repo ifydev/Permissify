@@ -40,7 +40,7 @@ import java.util.UUID;
  */
 @AllArgsConstructor
 public class PermissifyProfile implements Serializable {
-    @Getter private final List<PermissionGroup> groups;
+    @Getter private final Map<String, PermissionGroup> groups;
     @Getter private Map<UUID, List<Permission>> playerPermissions;
     @Getter private PermissionGroup defaultGroup;
     @Getter private String chatFormat;
