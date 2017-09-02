@@ -30,6 +30,7 @@ import me.innectic.permissify.api.database.DatabaseHandler;
 import me.innectic.permissify.api.group.Permission;
 import me.innectic.permissify.api.database.ConnectionInformation;
 import me.innectic.permissify.api.group.group.PermissionGroup;
+import me.innectic.permissify.api.group.ladder.AbstractLadder;
 import me.innectic.permissify.api.profile.PermissifyProfile;
 import me.innectic.permissify.api.util.FormatterType;
 
@@ -791,6 +792,20 @@ public class SQLHandler extends DatabaseHandler {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+    }
+
+    @Override
+    public void setGroupLadder(PermissionGroup group, AbstractLadder ladder) {
+        // TODO: Make this method less expensive
+        group.setLadder(ladder);
+        this.cachedGroups.removeIf(pGroup -> pGroup.getName().equals(group.getName())); // TODO:  Groups should have their own equals thing
+        this.cachedGroups.add(group);
+    }
+
+    @Override
+    public Optional<AbstractLadder> getGroupLadder(PermissionGroup group) {
+        // TODO: Actually commit this to the database
+        return Optional.ofNullable(group.getLadder());
     }
 
     private boolean hasFormattingTable(Connection connection, String database) {

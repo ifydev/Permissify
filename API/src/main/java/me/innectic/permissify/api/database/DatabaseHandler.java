@@ -27,6 +27,7 @@ package me.innectic.permissify.api.database;
 import lombok.Getter;
 import me.innectic.permissify.api.group.Permission;
 import me.innectic.permissify.api.group.group.PermissionGroup;
+import me.innectic.permissify.api.group.ladder.AbstractLadder;
 import me.innectic.permissify.api.profile.PermissifyProfile;
 
 import java.util.*;
@@ -274,4 +275,7 @@ public abstract class DatabaseHandler {
      * @param group the new group to become the default.
      */
     public abstract void setDefaultGroup(PermissionGroup group);
+
+    public abstract void setGroupLadder(PermissionGroup group, AbstractLadder ladder);
+    public abstract Optional<AbstractLadder> getGroupLadder(PermissionGroup group);
 }
