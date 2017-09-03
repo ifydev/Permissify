@@ -29,7 +29,6 @@ import me.innectic.permissify.api.database.DatabaseHandler;
 import me.innectic.permissify.api.profile.PermissifyProfile;
 import me.innectic.permissify.api.util.ArgumentUtil;
 import me.innectic.permissify.spigot.PermissifyMain;
-import me.innectic.permissify.spigot.commands.CommandResponse;
 import me.innectic.permissify.spigot.utils.PermissionUtil;
 import org.bukkit.command.CommandSender;
 
@@ -42,34 +41,34 @@ import java.util.logging.Logger;
  */
 public class ProfileCommand {
 
-    public CommandResponse handleProfile(CommandSender sender, String[] args) {
+    public String handleProfile(CommandSender sender, String[] args) {
         if (!PermissionUtil.hasPermissionOrSuperAdmin(sender, PermissifyConstants.PERMISSIFY_PROFILE))
-            return new CommandResponse(PermissifyConstants.INSUFFICIENT_PERMISSIONS, false);
+            return PermissifyConstants.INSUFFICIENT_PERMISSIONS;
 
-        if (args.length < 1) return new CommandResponse(PermissifyConstants.NOT_ENOUGH_ARGUMENTS_PROFILE, false);
+        if (args.length < 1) return PermissifyConstants.NOT_ENOUGH_ARGUMENTS_PROFILE;
         if (args[0].equalsIgnoreCase("save")) return handleSaveProfile(sender, ArgumentUtil.getRemainingArgs(1, args));
         else if (args[0].equalsIgnoreCase("load")) return handleLoadProfile(sender, ArgumentUtil.getRemainingArgs(1, args));
-        return new CommandResponse(PermissifyConstants.INVALID_ARGUMENT.replace("<ARGUMENT>", args[0]), true);
+        return PermissifyConstants.INVALID_ARGUMENT.replace("<ARGUMENT>", args[0]);
     }
 
-    private CommandResponse handleSaveProfile(CommandSender sender, String[] args) {
-        if (args.length < 1) return new CommandResponse(PermissifyConstants.NOT_ENOUGH_ARGUMENTS_PROFILE_SAVE, false);
+    private String handleSaveProfile(CommandSender sender, String[] args) {
+        if (args.length < 1) return PermissifyConstants.NOT_ENOUGH_ARGUMENTS_PROFILE_SAVE;
         if (!PermissifyMain.getInstance().getPermissifyAPI().getDatabaseHandler().isPresent())
-            return new CommandResponse(PermissifyConstants.UNABLE_TO_SET.replace("<REASON>", "No database handler"), false);
+            return PermissifyConstants.UNABLE_TO_SET.replace("<REASON>", "No database handler");
 
         boolean saved = saveProfile(args[0]);
-        if (saved) return new CommandResponse(PermissifyConstants.PROFILE_SAVED.replace("<PROFILE>", args[0]), true);
-        return new CommandResponse(PermissifyConstants.PROFILE_NOT_SAVED.replace("<PROFILE>", args[0]), false);
+        if (saved) return PermissifyConstants.PROFILE_SAVED.replace("<PROFILE>", args[0]);
+        return PermissifyConstants.PROFILE_NOT_SAVED.replace("<PROFILE>", args[0]);
     }
 
-    private CommandResponse handleLoadProfile(CommandSender sender, String[] args) {
-        if (args.length < 1) return new CommandResponse(PermissifyConstants.NOT_ENOUGH_ARGUMENTS_PROFILE_LOAD, false);
+    private String handleLoadProfile(CommandSender sender, String[] args) {
+        if (args.length < 1) return PermissifyConstants.NOT_ENOUGH_ARGUMENTS_PROFILE_LOAD;
         if (!PermissifyMain.getInstance().getPermissifyAPI().getDatabaseHandler().isPresent())
-            return new CommandResponse(PermissifyConstants.UNABLE_TO_SET.replace("<REASON>", "No database handler"), false);
+            return PermissifyConstants.UNABLE_TO_SET.replace("<REASON>", "No database handler");
         Logger logger = PermissifyMain.getInstance().getPermissifyAPI().getLogger();
 
         boolean saved = saveProfile(args[0] + "-pre-load");
-        if (!saved) return new CommandResponse(PermissifyConstants.PROFILE_NOT_SAVED.replace("<PROFILE>", args[0]), false);
+        if (!saved) return PermissifyConstants.PROFILE_NOT_SAVED.replace("<PROFILE>", args[0]);
 
         DatabaseHandler handler = PermissifyMain.getInstance().getPermissifyAPI().getDatabaseHandler().get();
 
@@ -79,7 +78,7 @@ public class ProfileCommand {
         Optional<PermissifyProfile> profile = PermissifyMain.getInstance().getPermissifyAPI().getSerializer().deserialize(args[0], baseDir);
         long end = System.currentTimeMillis();
         logger.info("Loaded profile in " + (end - originalStart) + " ms.");
-        if (!profile.isPresent()) return new CommandResponse(PermissifyConstants.PROFILE_NOT_LOADED.replace("<PROFILE>", args[0]), false);
+        if (!profile.isPresent()) return PermissifyConstants.PROFILE_NOT_LOADED.replace("<PROFILE>", args[0]);
 
         long start = System.currentTimeMillis();
         handler.drop();
@@ -87,8 +86,8 @@ public class ProfileCommand {
         end = System.currentTimeMillis();
         logger.info("Parsed profile in " + (end - start) + " ms.");
 
-        return new CommandResponse(PermissifyConstants.PROFILE_LOADED.replace("<PROFILE>", args[0])
-                .replace("<TIME>", Long.toString(end - originalStart)), true);
+        return PermissifyConstants.PROFILE_LOADED.replace("<PROFILE>", args[0])
+                .replace("<TIME>", Long.toString(end - originalStart));
     }
 
     private boolean saveProfile(String name) {

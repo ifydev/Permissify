@@ -25,7 +25,6 @@
 package me.innectic.permissify.spigot.commands.permissify;
 
 import me.innectic.permissify.spigot.PermissifyMain;
-import me.innectic.permissify.spigot.commands.CommandResponse;
 import me.innectic.permissify.api.PermissifyConstants;
 import me.innectic.permissify.api.group.Permission;
 import me.innectic.permissify.api.group.group.PermissionGroup;
@@ -47,150 +46,183 @@ import java.util.stream.Collectors;
  */
 public class PlayerCommand {
 
-    public CommandResponse handleAddPlayerToGroup(CommandSender sender, String[] args) {
+    public String handleAddPlayerToGroup(CommandSender sender, String[] args) {
         PermissifyMain plugin = PermissifyMain.getInstance();
+
         if (!plugin.getPermissifyAPI().getDatabaseHandler().isPresent())
-            return new CommandResponse(PermissifyConstants.UNABLE_TO_ADD.replace("<REASON>", "No database handler."), false);
+            return PermissifyConstants.UNABLE_TO_ADD.replace("<REASON>", "No database handler.");
+
         if (!PermissionUtil.hasPermissionOrSuperAdmin(sender, PermissifyConstants.PERMISSIFY_PLAYER_GROUP_ADD))
-            return new CommandResponse(PermissifyConstants.INSUFFICIENT_PERMISSIONS, false);
-        if (args.length < 2) return new CommandResponse(PermissifyConstants.NOT_ENOUGH_ARGUMENTS_PLAYER_ADD_GROUP, false);
+            return PermissifyConstants.INSUFFICIENT_PERMISSIONS;
+
+        if (args.length < 2) return PermissifyConstants.NOT_ENOUGH_ARGUMENTS_PLAYER_ADD_GROUP;
+
         OfflinePlayer targetPlayer = Bukkit.getPlayer(args[0]);
-        if (targetPlayer == null || !targetPlayer.hasPlayedBefore()) return new CommandResponse(PermissifyConstants.INVALID_PLAYER, false);
+        if (targetPlayer == null || !targetPlayer.hasPlayedBefore()) return PermissifyConstants.INVALID_PLAYER;
+
         Optional<PermissionGroup> group = plugin.getPermissifyAPI().getDatabaseHandler().get().getGroup(args[1]);
-        if (!group.isPresent()) return new CommandResponse(PermissifyConstants.INVALID_GROUP.replace("<GROUP>", args[1]), false);
+        if (!group.isPresent()) return PermissifyConstants.INVALID_GROUP.replace("<GROUP>", args[1]);
+
         plugin.getPermissifyAPI().getDatabaseHandler().get().addPlayerToGroup(targetPlayer.getUniqueId(), group.get());
         if (targetPlayer.isOnline()) group.get().getPermissions().forEach(permission ->
-                targetPlayer.getPlayer().addAttachment(plugin, permission.getPermission(), true));
+                targetPlayer.getPlayer().addAttachment(plugin, permission.getPermission(), permission.isGranted()));
+
         plugin.getPermissifyAPI().getDatabaseHandler().get().updateCache(targetPlayer.getUniqueId());
-        return new CommandResponse(PermissifyConstants.PLAYER_ADDED_TO_GROUP
-                .replace("<PLAYER>", targetPlayer.getName()).replace("<GROUP>", group.get().getName()), true);
+        return PermissifyConstants.PLAYER_ADDED_TO_GROUP
+                .replace("<PLAYER>", targetPlayer.getName()).replace("<GROUP>", group.get().getName());
     }
 
-    public CommandResponse handleRemovePlayerFromGroup(CommandSender sender, String[] args) {
+    public String handleRemovePlayerFromGroup(CommandSender sender, String[] args) {
         PermissifyMain plugin = PermissifyMain.getInstance();
         if (!plugin.getPermissifyAPI().getDatabaseHandler().isPresent())
-            return new CommandResponse(PermissifyConstants.UNABLE_TO_REMOVE.replace("<REASON>", "No database handler."), false);
+            return PermissifyConstants.UNABLE_TO_REMOVE.replace("<REASON>", "No database handler.");
+
         if (!PermissionUtil.hasPermissionOrSuperAdmin(sender, PermissifyConstants.PERMISSIFY_PLAYER_GROUP_REMOVE))
-            return new CommandResponse(PermissifyConstants.INSUFFICIENT_PERMISSIONS, false);
-        if (args.length < 2) return new CommandResponse(PermissifyConstants.NOT_ENOUGH_ARGUMENTS_PLAYER_REMOVE_GROUP, false);
+            return PermissifyConstants.INSUFFICIENT_PERMISSIONS;
+
+        if (args.length < 2) return PermissifyConstants.NOT_ENOUGH_ARGUMENTS_PLAYER_REMOVE_GROUP;
+
         OfflinePlayer targetPlayer = Bukkit.getPlayer(args[0]);
-        if (targetPlayer == null || !targetPlayer.hasPlayedBefore()) return new CommandResponse(PermissifyConstants.INVALID_PLAYER, false);
+        if (targetPlayer == null || !targetPlayer.hasPlayedBefore()) return PermissifyConstants.INVALID_PLAYER;
+
         Optional<PermissionGroup> group = plugin.getPermissifyAPI().getDatabaseHandler().get().getGroup(args[1]);
-        if (!group.isPresent()) return new CommandResponse(PermissifyConstants.INVALID_GROUP.replace("<GROUP>", args[1]), false);
+        if (!group.isPresent()) return PermissifyConstants.INVALID_GROUP.replace("<GROUP>", args[1]);
         plugin.getPermissifyAPI().getDatabaseHandler().get().removePlayerFromGroup(targetPlayer.getUniqueId(), group.get());
+
         if (targetPlayer.isOnline()) group.get().getPermissions().forEach(permission ->
                 targetPlayer.getPlayer().addAttachment(plugin, permission.getPermission(), false));
         plugin.getPermissifyAPI().getDatabaseHandler().get().updateCache(targetPlayer.getUniqueId());
-        return new CommandResponse(PermissifyConstants.PLAYER_REMOVED_FROM_GROUP
-                .replace("<PLAYER>", targetPlayer.getName()).replace("<GROUP>", group.get().getName()), true);
+        return PermissifyConstants.PLAYER_REMOVED_FROM_GROUP
+                .replace("<PLAYER>", targetPlayer.getName()).replace("<GROUP>", group.get().getName());
     }
 
-    public CommandResponse handleSetMainGroup(CommandSender sender, String[] args) {
+    public String handleSetMainGroup(CommandSender sender, String[] args) {
         PermissifyMain plugin = PermissifyMain.getInstance();
         if (!plugin.getPermissifyAPI().getDatabaseHandler().isPresent())
-            return new CommandResponse(PermissifyConstants.UNABLE_TO_SET.replace("<REASON>", "No database handler."), false);
+            return PermissifyConstants.UNABLE_TO_SET.replace("<REASON>", "No database handler.");
+
         if (!PermissionUtil.hasPermissionOrSuperAdmin(sender, PermissifyConstants.PERMISSIFY_PLAYER_SET_MAIN_GROUP))
-            return new CommandResponse(PermissifyConstants.INSUFFICIENT_PERMISSIONS, false);
-        if (args.length < 2) return new CommandResponse(PermissifyConstants.NOT_ENOUGH_ARGUMENTS_SET_MAIN_GROUP, false);
+            return PermissifyConstants.INSUFFICIENT_PERMISSIONS;
+
+        if (args.length < 2) return PermissifyConstants.NOT_ENOUGH_ARGUMENTS_SET_MAIN_GROUP;
+
         OfflinePlayer player = Bukkit.getPlayer(args[0]);
-        if (player == null || !player.hasPlayedBefore()) return new CommandResponse(PermissifyConstants.INVALID_PLAYER, false);
+        if (player == null || !player.hasPlayedBefore()) return PermissifyConstants.INVALID_PLAYER;
         Optional<PermissionGroup> group = plugin.getPermissifyAPI().getDatabaseHandler().get().getGroup(args[1]);
-        if (!group.isPresent()) return new CommandResponse(PermissifyConstants.INVALID_GROUP.replace("<GROUP>", args[1]), false);
+
+        if (!group.isPresent()) return PermissifyConstants.INVALID_GROUP.replace("<GROUP>", args[1]);
         if (!group.get().getPlayers().containsKey(player.getUniqueId()))
-            return new CommandResponse(PermissifyConstants.PLAYER_NOT_IN_GROUP.replace("<PLAYER>", player.getName()).replace("<GROUP>", group.get().getName()), false);
+            return PermissifyConstants.PLAYER_NOT_IN_GROUP.replace("<PLAYER>", player.getName()).replace("<GROUP>", group.get().getName());
+
         boolean groupSet = plugin.getPermissifyAPI().getDatabaseHandler().get().setPrimaryGroup(group.get(), player.getUniqueId());
         plugin.getPermissifyAPI().getDatabaseHandler().get().updateCache(player.getUniqueId());
+
         if (groupSet)
-            return new CommandResponse(PermissifyConstants.MAIN_GROUP_SET.replace("<PLAYER>", player.getName()).replace("<GROUP>", group.get().getName()), false);
+            return PermissifyConstants.MAIN_GROUP_SET.replace("<PLAYER>", player.getName()).replace("<GROUP>", group.get().getName());
         // Should be pretty much impossible to get here, unless the database isn't connected.
-        return new CommandResponse(PermissifyConstants.PLAYER_NOT_IN_GROUP.replace("<PLAYER>", player.getName()).replace("<GROUP>", group.get().getName()), false);
+        return PermissifyConstants.PLAYER_NOT_IN_GROUP.replace("<PLAYER>", player.getName()).replace("<GROUP>", group.get().getName());
     }
 
-    public CommandResponse handleAddPermission(CommandSender sender, String[] args) {
+    public String handleAddPermission(CommandSender sender, String[] args) {
         PermissifyMain plugin = PermissifyMain.getInstance();
         if (!plugin.getPermissifyAPI().getDatabaseHandler().isPresent())
-            return new CommandResponse(PermissifyConstants.UNABLE_TO_ADD.replace("<REASON>", "No database handler."), false);
+            return PermissifyConstants.UNABLE_TO_ADD.replace("<REASON>", "No database handler.");
+
         if (!PermissionUtil.hasPermissionOrSuperAdmin(sender, PermissifyConstants.PERMISSIFY_PLAYER_PERMISSION_ADD))
-            return new CommandResponse(PermissifyConstants.INSUFFICIENT_PERMISSIONS, false);
-        if (args.length < 2) return new CommandResponse(PermissifyConstants.NOT_ENOUGH_ARGUMENTS_PLAYER_ADD_PERMISSION, false);
+            return PermissifyConstants.INSUFFICIENT_PERMISSIONS;
+
+        if (args.length < 2) return PermissifyConstants.NOT_ENOUGH_ARGUMENTS_PLAYER_ADD_PERMISSION;
 
         OfflinePlayer targetPlayer = Bukkit.getPlayer(args[0]);
-        if (targetPlayer == null || !targetPlayer.hasPlayedBefore()) return new CommandResponse(PermissifyConstants.INVALID_PLAYER, false);
+        if (targetPlayer == null || !targetPlayer.hasPlayedBefore()) return PermissifyConstants.INVALID_PLAYER;
 
         plugin.getPermissifyAPI().getDatabaseHandler().get().addPermission(targetPlayer.getUniqueId(), args[1]);
         if (targetPlayer.isOnline()) targetPlayer.getPlayer().addAttachment(plugin, args[1], true);
 
         if (args.length >= 3) {
             // Timed permission.
-            if (!MiscUtil.isInt(args[2])) return new CommandResponse(PermissifyConstants.INVALID_ARGUMENT.replace("<ARGUMENT>", args[2]), false);
+            if (!MiscUtil.isInt(args[2])) return PermissifyConstants.INVALID_ARGUMENT.replace("<ARGUMENT>", args[2]);
             int time = Integer.parseInt(args[2]);
+
             Bukkit.getScheduler().runTaskLater(plugin, () -> {
                 targetPlayer.getPlayer().addAttachment(plugin, args[1], false);
                 if (!plugin.getPermissifyAPI().getDatabaseHandler().isPresent()) return;
                 plugin.getPermissifyAPI().getDatabaseHandler().get().removePermission(targetPlayer.getUniqueId(), args[1]);
                 plugin.getPermissifyAPI().getDatabaseHandler().get().updateCache(targetPlayer.getUniqueId());
             }, time * 1000);
-            return new CommandResponse(PermissifyConstants.PERMISSION_ADDED_PLAYER_TIMED
+
+            return PermissifyConstants.PERMISSION_ADDED_PLAYER_TIMED
                     .replace("<PLAYER>", targetPlayer.getName())
                     .replace("<PERMISSION>", args[1])
-                    .replace("<SECONDS>", args[2]), true);
+                    .replace("<SECONDS>", args[2]);
         }
 
         plugin.getPermissifyAPI().getDatabaseHandler().get().updateCache(targetPlayer.getUniqueId());
-        return new CommandResponse(PermissifyConstants.PERMISSION_ADDED_PLAYER
-                .replace("<PLAYER>", targetPlayer.getName()).replace("<PERMISSION>", args[1]), true);
+        return PermissifyConstants.PERMISSION_ADDED_PLAYER
+                .replace("<PLAYER>", targetPlayer.getName()).replace("<PERMISSION>", args[1]);
     }
 
-    public CommandResponse handleRemovePermission(CommandSender sender, String[] args) {
+    public String handleRemovePermission(CommandSender sender, String[] args) {
         PermissifyMain plugin = PermissifyMain.getInstance();
         if (!plugin.getPermissifyAPI().getDatabaseHandler().isPresent())
-            return new CommandResponse(PermissifyConstants.UNABLE_TO_ADD.replace("<REASON>", "No database handler."), false);
+            return PermissifyConstants.UNABLE_TO_ADD.replace("<REASON>", "No database handler.");
+
         if (!PermissionUtil.hasPermissionOrSuperAdmin(sender, PermissifyConstants.PERMISSIFY_PLAYER_PERMISSION_REMOVE))
-            return new CommandResponse(PermissifyConstants.INSUFFICIENT_PERMISSIONS, false);
-        if (args.length < 2) return new CommandResponse(PermissifyConstants.NOT_ENOUGH_ARGUMENTS_PLAYER_REMOVE_PERMISSION, false);
+            return PermissifyConstants.INSUFFICIENT_PERMISSIONS;
+
+        if (args.length < 2) return PermissifyConstants.NOT_ENOUGH_ARGUMENTS_PLAYER_REMOVE_PERMISSION;
+
         OfflinePlayer targetPlayer = Bukkit.getPlayer(args[0]);
-        if (targetPlayer == null || !targetPlayer.hasPlayedBefore()) return new CommandResponse(PermissifyConstants.INVALID_PLAYER, false);
+        if (targetPlayer == null || !targetPlayer.hasPlayedBefore()) return PermissifyConstants.INVALID_PLAYER;
         plugin.getPermissifyAPI().getDatabaseHandler().get().removePermission(targetPlayer.getUniqueId(), args[1]);
         if (targetPlayer.isOnline()) targetPlayer.getPlayer().addAttachment(plugin, args[1], false);
+
         plugin.getPermissifyAPI().getDatabaseHandler().get().updateCache(targetPlayer.getUniqueId());
-        return new CommandResponse(PermissifyConstants.PERMISSION_REMOVED_PLAYER
-                .replace("<PLAYER>", targetPlayer.getName()).replace("<PERMISSION>", args[1]), true);
+        return PermissifyConstants.PERMISSION_REMOVED_PLAYER
+                .replace("<PLAYER>", targetPlayer.getName()).replace("<PERMISSION>", args[1]);
     }
 
-    public CommandResponse handleListGroups(CommandSender sender, String[] args) {
+    public String handleListGroups(CommandSender sender, String[] args) {
         PermissifyMain plugin = PermissifyMain.getInstance();
         if (!plugin.getPermissifyAPI().getDatabaseHandler().isPresent())
-            return new CommandResponse(PermissifyConstants.UNABLE_TO_LIST.replace("<REASON>", "No database handler."), false);
+            return PermissifyConstants.UNABLE_TO_LIST.replace("<REASON>", "No database handler.");
+
         if (!PermissionUtil.hasPermissionOrSuperAdmin(sender, PermissifyConstants.PERMISSIFY_PLAYER_GROUP_LIST))
-            return new CommandResponse(PermissifyConstants.INSUFFICIENT_PERMISSIONS, false);
-        if (args.length < 1) return new CommandResponse(PermissifyConstants.NOT_ENOUGH_ARGUMENTS_PLAYER_LIST_GROUP, false);
+            return PermissifyConstants.INSUFFICIENT_PERMISSIONS;
+
+        if (args.length < 1) return PermissifyConstants.NOT_ENOUGH_ARGUMENTS_PLAYER_LIST_GROUP;
+
         OfflinePlayer targetPlayer = Bukkit.getPlayer(args[0]);
-        if (targetPlayer == null || !targetPlayer.hasPlayedBefore()) return new CommandResponse(PermissifyConstants.INVALID_PLAYER, false);
+        if (targetPlayer == null || !targetPlayer.hasPlayedBefore()) return PermissifyConstants.INVALID_PLAYER;
+
         List<String> groups = plugin.getPermissifyAPI().getDatabaseHandler().get().getGroups().entrySet().stream()
                 .filter(permissionGroup -> permissionGroup.getValue().hasPlayer(targetPlayer.getUniqueId()))
                 .filter(entry -> entry.getValue().hasPlayer(targetPlayer.getUniqueId()))
                 .map(Map.Entry::getKey)
                 .collect(Collectors.toList());
-        return new CommandResponse(PermissifyConstants.PLAYER_GROUP_LIST.replace("<PLAYER>", targetPlayer.getName())
-                .replace("<GROUPS>", String.join(", ", groups)), true);
+        return PermissifyConstants.PLAYER_GROUP_LIST.replace("<PLAYER>", targetPlayer.getName())
+                .replace("<GROUPS>", String.join(", ", groups));
     }
 
-    public CommandResponse handleListPermissions(CommandSender sender, String[] args) {
+    public String handleListPermissions(CommandSender sender, String[] args) {
         PermissifyMain plugin = PermissifyMain.getInstance();
         if (!PermissionUtil.hasPermissionOrSuperAdmin(sender, PermissifyConstants.PERMISSIFY_PLAYER_PERMISSION_LIST))
-            return new CommandResponse(PermissifyConstants.INSUFFICIENT_PERMISSIONS, false);
+            return PermissifyConstants.INSUFFICIENT_PERMISSIONS;
+
         if (!plugin.getPermissifyAPI().getDatabaseHandler().isPresent())
-            return new CommandResponse(PermissifyConstants.UNABLE_TO_LIST.replace("<REASON>", "No database handler."), false);
-        if (args.length < 1) return new CommandResponse(PermissifyConstants.NOT_ENOUGH_ARGUMENTS_PLAYER_LIST_PERMISSIONS, false);
+            return PermissifyConstants.UNABLE_TO_LIST.replace("<REASON>", "No database handler.");
+
+        if (args.length < 1) return PermissifyConstants.NOT_ENOUGH_ARGUMENTS_PLAYER_LIST_PERMISSIONS;
         OfflinePlayer targetPlayer = Bukkit.getPlayer(args[0]);
-        if (targetPlayer == null) return new CommandResponse(PermissifyConstants.INVALID_PLAYER, false);
+        if (targetPlayer == null) return PermissifyConstants.INVALID_PLAYER;
+
         // This sucks, can probably be cleaned up.
         List<PermissionGroup> groups = plugin.getPermissifyAPI().getDatabaseHandler().get().getGroups(targetPlayer.getUniqueId());
         List<String> permissions = new ArrayList<>();
         groups.forEach(group -> permissions.addAll(group.getPermissions().stream().map(Permission::getPermission).collect(Collectors.toList())));
         permissions.addAll(plugin.getPermissifyAPI().getDatabaseHandler().get().getPermissions(targetPlayer.getUniqueId())
                 .stream().map(Permission::getPermission).collect(Collectors.toList()));
-        return new CommandResponse(PermissifyConstants.GROUP_PERMISSIONS.replace("<GROUP>", targetPlayer.getName())
-                .replace("<PERMISSIONS>", String.join(", ", permissions)), true);
+        return PermissifyConstants.GROUP_PERMISSIONS.replace("<GROUP>", targetPlayer.getName())
+                .replace("<PERMISSIONS>", String.join(", ", permissions));
     }
 }

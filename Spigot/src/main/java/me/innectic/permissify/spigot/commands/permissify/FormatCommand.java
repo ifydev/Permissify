@@ -27,10 +27,8 @@ package me.innectic.permissify.spigot.commands.permissify;
 import me.innectic.permissify.api.PermissifyConstants;
 import me.innectic.permissify.api.util.ArgumentUtil;
 import me.innectic.permissify.spigot.PermissifyMain;
-import me.innectic.permissify.spigot.commands.CommandResponse;
 import me.innectic.permissify.spigot.utils.PermissionUtil;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
 
 /**
  * @author Innectic
@@ -38,46 +36,48 @@ import org.bukkit.entity.Player;
  */
 public class FormatCommand {
 
-    public CommandResponse handleSetFormat(CommandSender sender, String[] args) {
+    public String handleSetFormat(CommandSender sender, String[] args) {
         if (!PermissionUtil.hasPermissionOrSuperAdmin(sender, PermissifyConstants.PERMISSIFY_FORMAT))
-            return new CommandResponse(PermissifyConstants.INSUFFICIENT_PERMISSIONS, false);
-        if (args.length < 1) return new CommandResponse(PermissifyConstants.NOT_ENOUGH_ARGUMENTS_SET_FORMAT, false);
+            return PermissifyConstants.INSUFFICIENT_PERMISSIONS;
+
+        if (args.length < 1) return PermissifyConstants.NOT_ENOUGH_ARGUMENTS_SET_FORMAT;
         if (args[0].equalsIgnoreCase("chat")) return handleSetChatFormat(sender, ArgumentUtil.getRemainingArgs(1, args));
         else if (args[0].equalsIgnoreCase("whisper")) return handleWhisperFormat(sender, ArgumentUtil.getRemainingArgs(1, args));
         else if (args[0].equalsIgnoreCase("enable")) return handleEnableFormat(sender, ArgumentUtil.getRemainingArgs(1, args));
         else if (args[0].equalsIgnoreCase("disable")) return handleDisableFormat(sender, ArgumentUtil.getRemainingArgs(1, args));
-        return new CommandResponse(PermissifyConstants.INVALID_ARGUMENT.replace("<ARGUMENT>", args[0]), true);
+
+        return PermissifyConstants.INVALID_ARGUMENT.replace("<ARGUMENT>", args[0]);
     }
 
-    private CommandResponse handleSetChatFormat(CommandSender sender, String[] args) {
+    private String handleSetChatFormat(CommandSender sender, String[] args) {
         if (!PermissifyMain.getInstance().getPermissifyAPI().getDatabaseHandler().isPresent())
-            return new CommandResponse(PermissifyConstants.UNABLE_TO_SET.replace("<REASON>", "No database handler"), false);
-        if (args.length < 1) return new CommandResponse(PermissifyConstants.NOT_ENOUGH_ARGUMENTS_SET_FORMAT, false);
+            return PermissifyConstants.UNABLE_TO_SET.replace("<REASON>", "No database handler");
+        if (args.length < 1) return PermissifyConstants.NOT_ENOUGH_ARGUMENTS_SET_FORMAT;
         String format = String.join(" ", args).trim();
         PermissifyMain.getInstance().getPermissifyAPI().getDatabaseHandler().get().setChatFormat(format);
-        return new CommandResponse(PermissifyConstants.FORMATTER_SET.replace("<FORMATTER>", "chat"), true);
+        return PermissifyConstants.FORMATTER_SET.replace("<FORMATTER>", "chat");
     }
 
-    private CommandResponse handleWhisperFormat(CommandSender sender, String[] args) {
+    private String handleWhisperFormat(CommandSender sender, String[] args) {
         if (!PermissifyMain.getInstance().getPermissifyAPI().getDatabaseHandler().isPresent())
-            return new CommandResponse(PermissifyConstants.UNABLE_TO_SET.replace("<REASON>", "No database handler"), false);
-        if (args.length < 1) return new CommandResponse(PermissifyConstants.NOT_ENOUGH_ARGUMENTS_SET_FORMAT, false);
+            return PermissifyConstants.UNABLE_TO_SET.replace("<REASON>", "No database handler");
+        if (args.length < 1) return PermissifyConstants.NOT_ENOUGH_ARGUMENTS_SET_FORMAT;
         String format = String.join(" ", args).trim();
         PermissifyMain.getInstance().getPermissifyAPI().getDatabaseHandler().get().setWhisperFormat(format);
-        return new CommandResponse(PermissifyConstants.FORMATTER_SET.replace("<FORMATTER>", "whisper"), true);
+        return PermissifyConstants.FORMATTER_SET.replace("<FORMATTER>", "whisper");
     }
 
-    private CommandResponse handleDisableFormat(CommandSender sender, String[] args) {
+    private String handleDisableFormat(CommandSender sender, String[] args) {
         PermissifyMain.getInstance().getConfig().set("handleChat", false);
         PermissifyMain.getInstance().saveConfig();
         PermissifyMain.getInstance().setHandleChat(false);
-        return new CommandResponse(PermissifyConstants.TOGGLED_CHAT_HANDLE.replace("<STATE>", "Disabled"), true);
+        return PermissifyConstants.TOGGLED_CHAT_HANDLE.replace("<STATE>", "Disabled");
     }
 
-    private CommandResponse handleEnableFormat(CommandSender sender, String[] args) {
+    private String handleEnableFormat(CommandSender sender, String[] args) {
         PermissifyMain.getInstance().getConfig().set("handleChat", true);
         PermissifyMain.getInstance().saveConfig();
         PermissifyMain.getInstance().setHandleChat(true);
-        return new CommandResponse(PermissifyConstants.TOGGLED_CHAT_HANDLE.replace("<STATE>", "Enabled"), true);
+        return PermissifyConstants.TOGGLED_CHAT_HANDLE.replace("<STATE>", "Enabled");
     }
 }
