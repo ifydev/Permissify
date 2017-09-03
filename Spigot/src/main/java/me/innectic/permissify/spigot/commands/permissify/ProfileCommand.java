@@ -34,6 +34,7 @@ import me.innectic.permissify.spigot.utils.PermissionUtil;
 import org.bukkit.command.CommandSender;
 
 import java.util.Optional;
+import java.util.logging.Logger;
 
 /**
  * @author Innectic
@@ -65,25 +66,26 @@ public class ProfileCommand {
         if (args.length < 1) return new CommandResponse(PermissifyConstants.NOT_ENOUGH_ARGUMENTS_PROFILE_LOAD, false);
         if (!PermissifyMain.getInstance().getPermissifyAPI().getDatabaseHandler().isPresent())
             return new CommandResponse(PermissifyConstants.UNABLE_TO_SET.replace("<REASON>", "No database handler"), false);
+        Logger logger = PermissifyMain.getInstance().getPermissifyAPI().getLogger();
 
         boolean saved = saveProfile(args[0] + "-pre-load");
         if (!saved) return new CommandResponse(PermissifyConstants.PROFILE_NOT_SAVED.replace("<PROFILE>", args[0]), false);
 
         DatabaseHandler handler = PermissifyMain.getInstance().getPermissifyAPI().getDatabaseHandler().get();
 
-        System.out.println("Loading profile...");
+        logger.info("Loading profile...");
         long originalStart = System.currentTimeMillis();
         String baseDir = PermissifyMain.getInstance().getDataFolder().getAbsolutePath();
         Optional<PermissifyProfile> profile = PermissifyMain.getInstance().getPermissifyAPI().getSerializer().deserialize(args[0], baseDir);
         long end = System.currentTimeMillis();
-        System.out.println("Loaded profile in " + (end - originalStart) + " ms.");
+        logger.info("Loaded profile in " + (end - originalStart) + " ms.");
         if (!profile.isPresent()) return new CommandResponse(PermissifyConstants.PROFILE_NOT_LOADED.replace("<PROFILE>", args[0]), false);
 
         long start = System.currentTimeMillis();
         handler.drop();
         handler.loadProfile(profile.get());
         end = System.currentTimeMillis();
-        System.out.println("Parsed profile in " + (end - start) + " ms.");
+        logger.info("Parsed profile in " + (end - start) + " ms.");
 
         return new CommandResponse(PermissifyConstants.PROFILE_LOADED.replace("<PROFILE>", args[0])
                 .replace("<TIME>", Long.toString(end - originalStart)), true);
@@ -92,24 +94,25 @@ public class ProfileCommand {
     private boolean saveProfile(String name) {
         if (!PermissifyMain.getInstance().getPermissifyAPI().getDatabaseHandler().isPresent()) return false;
         DatabaseHandler handler = PermissifyMain.getInstance().getPermissifyAPI().getDatabaseHandler().get();
+        Logger logger = PermissifyMain.getInstance().getPermissifyAPI().getLogger();
 
         // Generate the profile
-        System.out.println("Generating profile...");
+        logger.info("Generating profile...");
         long start = System.currentTimeMillis();
         PermissifyProfile profile = new PermissifyProfile(handler.getGroups(), handler.getCachedPermissions(),
                 handler.getDefaultGroup().isPresent() ? handler.getDefaultGroup().get() : null,
                 handler.getChatFormat(false), handler.getWhisperFormat(false), handler.getSuperAdmins(),
                 PermissifyConstants.PERMISSIFY_PROFILE_VERSION);
         long end = System.currentTimeMillis();
-        System.out.println("Generated profile in " + (end - start) + " ms.");
+        logger.info("Generated profile in " + (end - start) + " ms.");
 
         // Save the profile to a file
-        System.out.println("Saving profile...");
+        logger.info("Saving profile...");
         start = System.currentTimeMillis();
         String baseDir = PermissifyMain.getInstance().getDataFolder().getAbsolutePath();
         boolean saved = PermissifyMain.getInstance().getPermissifyAPI().getSerializer().serialize(profile, baseDir, name);
         end = System.currentTimeMillis();
-        System.out.println("Serialized profile in " + (end - start) + " ms.");
+        logger.info("Serialized profile in " + (end - start) + " ms.");
         return saved;
     }
 }

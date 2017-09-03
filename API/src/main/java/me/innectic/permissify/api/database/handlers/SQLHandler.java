@@ -39,6 +39,7 @@ import me.innectic.permissify.api.util.FormatterType;
 
 import java.sql.*;
 import java.util.*;
+import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 /**
@@ -323,7 +324,7 @@ public class SQLHandler extends DatabaseHandler {
             createGroup(group.getName(), group.getPrefix(), group.getSuffix(), group.getChatColor());
             Optional<PermissionGroup> created = getGroup(group.getName());
             if (!created.isPresent()) {
-                System.out.println("Profile group was never created?");
+                PermissifyAPI.get().ifPresent(api -> api.getLogger().log(Level.WARNING, "Profile group was never created?"));
                 return;
             }
             // Add permissions to the group
