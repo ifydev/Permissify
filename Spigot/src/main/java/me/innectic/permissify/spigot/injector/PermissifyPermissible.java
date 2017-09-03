@@ -1,7 +1,11 @@
 package me.innectic.permissify.spigot.injector;
 
+import me.innectic.permissify.api.database.DatabaseHandler;
+import me.innectic.permissify.spigot.PermissifyMain;
 import org.bukkit.entity.Player;
 import org.bukkit.permissions.PermissibleBase;
+
+import java.util.Optional;
 
 /**
  * @author Innectic
@@ -16,8 +20,10 @@ public class PermissifyPermissible extends PermissibleBase {
         super(owner);
         this.owner = owner;
     }
-//
-//    @Override
-//    public boolean isPermissionSet(String permission) {
-//    }
+
+    @Override
+    public boolean isPermissionSet(String permission) {
+        Optional<DatabaseHandler> database = PermissifyMain.getInstance().getPermissifyAPI().getDatabaseHandler();
+        return database.map(databaseHandler -> databaseHandler.hasPermission(owner.getUniqueId(), permission)).orElse(false);
+    }
 }

@@ -413,7 +413,8 @@ public class SQLHandler extends DatabaseHandler {
         if (cachedPermissions.containsKey(uuid))
             return cachedPermissions.get(uuid).stream()
                     .filter(entry -> entry.getPermission().equals(permission))
-                    .allMatch(Permission::isGranted);
+                    .allMatch(Permission::isGranted) ||
+                    getGroups(uuid).stream().anyMatch(group -> group.hasPermission(permission));
         // Cache didn't have it, see if the database does.
         Optional<Connection> connection = getConnection();
         if (!connection.isPresent()) {
