@@ -24,7 +24,7 @@
  */
 package me.innectic.permissify.spigot.events;
 
-import me.innectic.permissify.api.util.ChatFormatter;
+import me.innectic.permissify.api.module.registry.ModuleRegister;
 import me.innectic.permissify.spigot.PermissifyMain;
 import me.innectic.permissify.spigot.utils.ColorUtil;
 import org.bukkit.Bukkit;
@@ -32,6 +32,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
+
+import java.lang.reflect.InvocationTargetException;
 
 /**
  * @author Innectic
@@ -47,7 +49,12 @@ public class PlayerChat implements Listener {
         Player player = e.getPlayer();
         if (player == null) return;
         e.setCancelled(true);
-        String formatted = ChatFormatter.formatChat(player.getUniqueId(), player.getName(), e.getMessage());
-        Bukkit.broadcastMessage(ColorUtil.makeReadable(formatted));
+        try {
+            String response = (String) ModuleRegister.getChatHandler().invoke(ModuleRegister.getModules().get("chat"), player.getUniqueId(), player.getName(), e.getMessage());
+            Bukkit.broadcastMessage(ColorUtil.makeReadable(response));
+        } catch (IllegalAccessException | InvocationTargetException e1) {
+            // TODO: Permissify error handling
+            e1.printStackTrace();
+        }
     }
 }
