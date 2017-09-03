@@ -262,6 +262,7 @@ public class SQLHandler extends DatabaseHandler {
 
                 List<LadderLevel> levels = new ArrayList<>();
                 PreparedStatement ladderLevelsStatement = connection.get().prepareStatement("SELECT * FROM ladderLevels where ladder=?");
+                ladderLevelsStatement.setString(1, ladderName);
                 ResultSet ladderLevelsResults = ladderLevelsStatement.executeQuery();
 
                 while (ladderLevelsResults.next()) {

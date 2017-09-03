@@ -28,7 +28,9 @@ import lombok.Getter;
 import me.innectic.permissify.api.database.ConnectionInformation;
 import me.innectic.permissify.api.database.DatabaseHandler;
 import me.innectic.permissify.api.database.handlers.HandlerType;
+import me.innectic.permissify.api.module.registry.ModuleRegister;
 import me.innectic.permissify.api.profile.ProfileSerializer;
+import me.innectic.permissify.api.util.ChatModule;
 import me.innectic.permissify.api.util.DisplayUtil;
 
 import java.lang.reflect.InvocationTargetException;
@@ -68,6 +70,8 @@ public class PermissifyAPI {
             if (connected) System.out.println("Connected to the database.");
             else System.out.println("Unable to connect to the database.");
         });
+        System.out.println("Registering Permissify modules...");
+        ModuleRegister.registerModule(ChatModule.class, "internal");
     }
 
     public static Optional<PermissifyAPI> get() {

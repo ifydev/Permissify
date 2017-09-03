@@ -25,8 +25,9 @@
 package me.innectic.permissify.spigot.events;
 
 import me.innectic.permissify.api.PermissifyConstants;
+import me.innectic.permissify.api.module.registry.ModuleRegister;
 import me.innectic.permissify.api.util.ArgumentUtil;
-import me.innectic.permissify.api.util.ChatFormatter;
+import me.innectic.permissify.api.util.ChatModule;
 import me.innectic.permissify.spigot.PermissifyMain;
 import me.innectic.permissify.spigot.utils.ColorUtil;
 import org.bukkit.Bukkit;
@@ -35,6 +36,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -62,8 +64,16 @@ public class PreProcess implements Listener {
             return;
         }
         String message = String.join(" ", ArgumentUtil.getRemainingArgs(1, arguments));
-        String formatted = ChatFormatter.formatWhisper(e.getPlayer().getUniqueId(), e.getPlayer().getName(), player.getUniqueId(), player.getName(), message);
-        player.sendMessage(ColorUtil.makeReadable(formatted));
-        e.getPlayer().sendMessage(ColorUtil.makeReadable(formatted));
+        try {
+            String response = (String) ModuleRegister.getWhisperHandler().invoke(ModuleRegister.getModules().get("whisper"),
+                    e.getPlayer().getUniqueId(), e.getPlayer().getName(), player.getUniqueId(), player.getName(), message);
+            String readable = ColorUtil.makeReadable(response);
+
+            player.sendMessage(readable);
+            e.getPlayer().sendMessage(readable);
+        } catch (IllegalAccessException | InvocationTargetException e1) {
+            // TODO: Permissify error handling
+            e1.printStackTrace();
+        }
     }
 }
