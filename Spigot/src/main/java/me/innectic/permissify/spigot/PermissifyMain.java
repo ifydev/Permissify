@@ -36,6 +36,7 @@ import me.innectic.permissify.spigot.events.PreProcess;
 import me.innectic.permissify.spigot.utils.ConfigVerifier;
 import me.innectic.permissify.spigot.utils.DisplayUtil;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -62,6 +63,7 @@ public class PermissifyMain extends JavaPlugin {
 
     @Override
     public void onEnable() {
+        long start = System.currentTimeMillis();
         createConfig();
         // Verify the config
         configVerifier = new ConfigVerifier();
@@ -70,12 +72,12 @@ public class PermissifyMain extends JavaPlugin {
         // Initialize the API
         permissifyAPI = new PermissifyAPI();
         if (!handler.isPresent() || !handler.get().getHandlerType().isPresent()) {
-            System.out.println("Internal Permissify Error: No handler / type present!");
+            getLogger().log(Level.SEVERE, ChatColor.RED + "Internal Permissify Error: No handler / type present!");
             return;
         }
         handleChat = getConfig().getBoolean("handleChat");
         try {
-            permissifyAPI.initialize(handler.get().getHandlerType().get(), handler.get().getConnectionInformation(), new DisplayUtil());
+            permissifyAPI.initialize(handler.get().getHandlerType().get(), handler.get().getConnectionInformation(), new DisplayUtil(), getLogger());
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -83,6 +85,9 @@ public class PermissifyMain extends JavaPlugin {
         registerCommands();
         // Register listeners
         registerListeners();
+        long timeTaken = System.currentTimeMillis() - start;
+
+        getLogger().info("Permissify initialized in " + ((double) timeTaken / 1000) + " seconds (" + timeTaken + " ms)!");
     }
 
     @Override

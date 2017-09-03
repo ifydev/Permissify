@@ -33,9 +33,14 @@ import me.innectic.permissify.api.profile.ProfileSerializer;
 import me.innectic.permissify.api.util.ChatModule;
 import me.innectic.permissify.api.util.DisplayUtil;
 
+import java.awt.*;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Optional;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
+import java.util.logging.StreamHandler;
 
 /**
  * @author Innectic
@@ -48,12 +53,14 @@ public class PermissifyAPI {
     @Getter private Optional<DatabaseHandler> databaseHandler;
     @Getter private DisplayUtil displayUtil;
     @Getter private ProfileSerializer serializer;
+    @Getter private Logger logger;
 
     /**
      * Initialize Permissify's API
      */
-    public void initialize(HandlerType type, Optional<ConnectionInformation> connectionInformation, DisplayUtil displayUtil) throws Exception {
+    public void initialize(HandlerType type, Optional<ConnectionInformation> connectionInformation, DisplayUtil displayUtil, Logger logger) throws Exception {
         instance = Optional.of(this);
+        this.logger = logger;
         this.displayUtil = displayUtil;
         serializer = new ProfileSerializer();
 
@@ -67,10 +74,10 @@ public class PermissifyAPI {
             handler.initialize();
             handler.reload(new ArrayList<>());
             boolean connected = handler.connect();
-            if (connected) System.out.println("Connected to the database.");
-            else System.out.println("Unable to connect to the database.");
+            if (connected) logger.info("Connected to the database.");
+            else logger.log(Level.SEVERE, "Unable to connect to the database.");
         });
-        System.out.println("Registering Permissify modules...");
+        logger.info("Registering Permissify modules...");
         ModuleRegister.registerModule(ChatModule.class, "internal");
     }
 
