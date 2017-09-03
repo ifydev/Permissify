@@ -78,7 +78,7 @@ public class PermissifyCommand implements CommandExecutor {
                 sendHelp(sender, page);
                 return;
             } else if (args.length >= 1 && args[0].equalsIgnoreCase("cache")) {
-                CommandResponse response = plugin.getCacheCommand().handleCache(sender, ArgumentUtil.getRemainingArgs(1, args));
+                String response = plugin.getCacheCommand().handleCache(sender, ArgumentUtil.getRemainingArgs(1, args));
                 sendResponse(response, sender);
                 return;
             }
@@ -87,7 +87,7 @@ public class PermissifyCommand implements CommandExecutor {
                 return;
             }
             if (args[0].equalsIgnoreCase("group")) {
-                CommandResponse response;
+                String response;
                 if (args[1].equalsIgnoreCase("create") || args[1].equalsIgnoreCase("add"))
                     response = plugin.getGroupCommand().handleAddGroup(sender, ArgumentUtil.getRemainingArgs(2, args));
                 else if (args[1].equalsIgnoreCase("remove") || args[1].equalsIgnoreCase("delete"))
@@ -108,7 +108,7 @@ public class PermissifyCommand implements CommandExecutor {
                 }
                 sendResponse(response, sender);
             } else if (args[0].equalsIgnoreCase("player")) {
-                CommandResponse response;
+                String response;
                 if (args.length < 3) {
                     sendResponse(PermissifyConstants.NOT_ENOUGH_ARGUMENTS_PLAYER, sender);
                     return;
@@ -131,18 +131,14 @@ public class PermissifyCommand implements CommandExecutor {
                 }
                 sendResponse(response, sender);
             } else if (args[0].equalsIgnoreCase("format")) {
-                CommandResponse response = plugin.getFormatCommand().handleSetFormat(sender, ArgumentUtil.getRemainingArgs(1, args));
-                sender.sendMessage(ColorUtil.makeReadable(response.getResponse()));
+                String response = plugin.getFormatCommand().handleSetFormat(sender, ArgumentUtil.getRemainingArgs(1, args));
+                sender.sendMessage(ColorUtil.makeReadable(response));
             } else if (args[0].equalsIgnoreCase("profile")) {
-                CommandResponse response = plugin.getProfileCommand().handleProfile(sender, ArgumentUtil.getRemainingArgs(1, args));
-                sender.sendMessage(ColorUtil.makeReadable(response.getResponse()));
+                String response = plugin.getProfileCommand().handleProfile(sender, ArgumentUtil.getRemainingArgs(1, args));
+                sender.sendMessage(ColorUtil.makeReadable(response));
             } else sendHelp(sender);
         });
         return false;
-    }
-
-    private void sendResponse(CommandResponse response, CommandSender source) {
-        sendResponse(response.getResponse(), source);
     }
 
     private void sendResponse(List<String> responses, CommandSender source) {
