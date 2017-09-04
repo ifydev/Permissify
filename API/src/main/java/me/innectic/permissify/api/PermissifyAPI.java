@@ -77,7 +77,7 @@ public class PermissifyAPI {
             else logger.log(Level.SEVERE, "Unable to connect to the database.");
         });
         logger.info("Registering Permissify modules...");
-        moduleProvider.registerModule(ChatModule.class, "internal");
+        moduleProvider.registerModule(ChatModule.class, "permissify");
     }
 
     public static Optional<PermissifyAPI> get() {
