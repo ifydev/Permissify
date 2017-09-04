@@ -24,7 +24,7 @@
  */
 package me.innectic.permissify.spigot.events;
 
-import me.innectic.permissify.api.module.registry.ModuleRegister;
+import me.innectic.permissify.api.module.registry.ModuleProvider;
 import me.innectic.permissify.spigot.PermissifyMain;
 import me.innectic.permissify.spigot.utils.ColorUtil;
 import org.bukkit.Bukkit;
@@ -49,12 +49,8 @@ public class PlayerChat implements Listener {
         Player player = e.getPlayer();
         if (player == null) return;
         e.setCancelled(true);
-        try {
-            String response = (String) ModuleRegister.getChatHandler().invoke(ModuleRegister.getModules().get("chat"), player.getUniqueId(), player.getName(), e.getMessage());
-            Bukkit.broadcastMessage(ColorUtil.makeReadable(response));
-        } catch (IllegalAccessException | InvocationTargetException e1) {
-            // TODO: Permissify error handling
-            e1.printStackTrace();
-        }
+        String response = (String) plugin.getPermissifyAPI().getModuleProvider().pushEvent("chat", player.getUniqueId(), player.getName(), e.getMessage());
+        if (response == null) return;
+        Bukkit.broadcastMessage(ColorUtil.makeReadable(response));
     }
 }

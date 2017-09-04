@@ -92,6 +92,8 @@ public class PermissifyMain extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        permissifyAPI.getModuleProvider().end();
+
         configVerifier = null;
         permissifyAPI = null;
     }

@@ -28,19 +28,16 @@ import lombok.Getter;
 import me.innectic.permissify.api.database.ConnectionInformation;
 import me.innectic.permissify.api.database.DatabaseHandler;
 import me.innectic.permissify.api.database.handlers.HandlerType;
-import me.innectic.permissify.api.module.registry.ModuleRegister;
+import me.innectic.permissify.api.module.registry.ModuleProvider;
 import me.innectic.permissify.api.profile.ProfileSerializer;
 import me.innectic.permissify.api.util.ChatModule;
 import me.innectic.permissify.api.util.DisplayUtil;
 
-import java.awt.*;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.logging.SimpleFormatter;
-import java.util.logging.StreamHandler;
 
 /**
  * @author Innectic
@@ -52,8 +49,9 @@ public class PermissifyAPI {
 
     @Getter private Optional<DatabaseHandler> databaseHandler;
     @Getter private DisplayUtil displayUtil;
-    @Getter private ProfileSerializer serializer;
+    @Getter private ProfileSerializer profileSerializer;
     @Getter private Logger logger;
+    @Getter private ModuleProvider moduleProvider;
 
     /**
      * Initialize Permissify's API
@@ -62,7 +60,8 @@ public class PermissifyAPI {
         instance = Optional.of(this);
         this.logger = logger;
         this.displayUtil = displayUtil;
-        serializer = new ProfileSerializer();
+        profileSerializer = new ProfileSerializer();
+        moduleProvider = new ModuleProvider();
 
         try {
             databaseHandler = Optional.of(type.getHandler().getConstructor(ConnectionInformation.class).newInstance(connectionInformation.orElse(null)));
@@ -78,7 +77,7 @@ public class PermissifyAPI {
             else logger.log(Level.SEVERE, "Unable to connect to the database.");
         });
         logger.info("Registering Permissify modules...");
-        ModuleRegister.registerModule(ChatModule.class, "internal");
+        moduleProvider.registerModule(ChatModule.class, "permissify");
     }
 
     public static Optional<PermissifyAPI> get() {
