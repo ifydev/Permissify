@@ -23,6 +23,6 @@ public abstract class PermissifyModule {
         this.moduleName = moduleName;
     }
 
-    public abstract void initialize();
-    public abstract void deinitialize();
+    public abstract void initialize(Object plugin);
+    public abstract void deinitialize(Object plugin);
 }

@@ -58,7 +58,7 @@ public class PermissifyAPI {
     /**
      * Initialize Permissify's API
      */
-    public void initialize(HandlerType type, Optional<ConnectionInformation> connectionInformation, DisplayUtil displayUtil, Logger logger, String moduleLocation) throws Exception {
+    public void initialize(HandlerType type, Optional<ConnectionInformation> connectionInformation, DisplayUtil displayUtil, Logger logger, String moduleLocation, Object plugin) throws Exception {
         instance = Optional.of(this);
         this.logger = logger;
         this.displayUtil = displayUtil;
@@ -80,8 +80,7 @@ public class PermissifyAPI {
             else logger.log(Level.SEVERE, "Unable to connect to the database.");
         });
         logger.info("Registering modules...");
-//        moduleProvider.registerModule(ChatModule.class, "permissify");
-        moduleLoader.loadModules();
+        moduleLoader.loadModules(plugin);
     }
 
     public static Optional<PermissifyAPI> get() {

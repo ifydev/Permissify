@@ -25,7 +25,7 @@ public class ModuleLoader {
     /**
      * Load all modules in the module directory.
      */
-    public void loadModules() {
+    public void loadModules(Object plugin) {
         File moduleFolder = new File(moduleDirectory);
         if (!moduleFolder.exists()) moduleFolder.mkdir();
         if (!moduleFolder.isDirectory()) return;
@@ -36,8 +36,9 @@ public class ModuleLoader {
         Arrays.stream(potentialModules).forEach(file -> {
             File jarFile;
             File pmodFile;
+            if (!file.getName().endsWith(".jar")) return;
 
-            String baseName = file.getName().contains(".") ? file.getName().split(".")[0] : null;
+            String baseName = file.getName().contains(".") ? file.getName().split("\\.")[0] : null;
             if (baseName == null) return;
 
             jarFile = new File(moduleDirectory + "/" + baseName + ".jar");
@@ -51,7 +52,7 @@ public class ModuleLoader {
                 Class loading = Class.forName(moduleFile.getMain(), true, child);
                 if (loading == null) return;
                 PermissifyAPI.get().ifPresent(api ->
-                        api.getModuleProvider().registerModule(loading, moduleFile.getName()));
+                        api.getModuleProvider().registerModule(loading, moduleFile.getName(), plugin));
             } catch (FileNotFoundException | MalformedURLException | ClassNotFoundException e) {
                 e.printStackTrace();
             }

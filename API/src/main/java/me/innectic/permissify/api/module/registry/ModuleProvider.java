@@ -20,7 +20,7 @@ public class ModuleProvider {
     @Getter private Map<String, PermissifyModule> modules = new HashMap<>();
     @Getter private Map<String, Module> eventHandlers = new HashMap<>();
 
-    public void registerModule(Class<? extends PermissifyModule> module, String source) {
+    public void registerModule(Class<? extends PermissifyModule> module, String source, Object plugin) {
         try {
             Constructor<? extends PermissifyModule> moduleConstructor = module.getConstructor();
             PermissifyModule constructedModule = moduleConstructor.newInstance();
@@ -28,11 +28,11 @@ public class ModuleProvider {
             modules.put(constructedModule.getModuleName(), constructedModule);
 
             // Initialize the module
-            constructedModule.initialize();
+            constructedModule.initialize(plugin);
 
             Arrays.stream(constructedModule.getClass().getMethods()).filter(method -> method.isAnnotationPresent(Handles.class)).forEach(method -> {
                 Handles handleAnnotation = method.getAnnotation(Handles.class);
-                String event = handleAnnotation.value();
+                String event = handleAnnotation.event();
 
                 // Store the handler
                 eventHandlers.put(event, new Module(constructedModule.getModuleName(), method));
@@ -46,8 +46,8 @@ public class ModuleProvider {
         }
     }
 
-    public void end() {
-        modules.entrySet().stream().map(Map.Entry::getValue).forEach(PermissifyModule::deinitialize);
+    public void end(Object plugin) {
+        modules.entrySet().stream().map(Map.Entry::getValue).forEach(module -> module.deinitialize(plugin));
     }
 
     public Object pushEvent(String event, Object... arguments) {
@@ -63,7 +63,7 @@ public class ModuleProvider {
     private void reportRegistration(String moduleName, String event) {
         if (moduleName.equals("permissify")) return;
         PermissifyAPI.get().ifPresent(api -> api.getLogger().log(Level.WARNING,
-                String.format("Module %s has registered event %s. Try removing it before reporting any bugs.!", moduleName, event)));
+                String.format("Module %s has registered event %s. Try removing it before reporting any bugs!", moduleName, event)));
     }
 
     @AllArgsConstructor
