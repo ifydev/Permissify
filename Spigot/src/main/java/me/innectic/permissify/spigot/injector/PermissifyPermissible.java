@@ -4,6 +4,7 @@ import me.innectic.permissify.api.database.DatabaseHandler;
 import me.innectic.permissify.spigot.PermissifyMain;
 import org.bukkit.entity.Player;
 import org.bukkit.permissions.PermissibleBase;
+import org.bukkit.permissions.Permission;
 
 import java.util.Optional;
 
@@ -25,5 +26,30 @@ public class PermissifyPermissible extends PermissibleBase {
     public boolean isPermissionSet(String permission) {
         Optional<DatabaseHandler> database = PermissifyMain.getInstance().getPermissifyAPI().getDatabaseHandler();
         return database.map(databaseHandler -> databaseHandler.hasPermission(owner.getUniqueId(), permission)).orElse(false);
+    }
+
+    @Override
+    public boolean isPermissionSet(Permission permission) {
+        Optional<DatabaseHandler> database = PermissifyMain.getInstance().getPermissifyAPI().getDatabaseHandler();
+        return database.map(databaseHandler -> databaseHandler.hasPermission(owner.getUniqueId(), permission.getName()))
+                .orElse(permission.getDefault().getValue(isOp()));
+    }
+
+    @Override
+    public boolean hasPermission(String permission) {
+        Optional<DatabaseHandler> database = PermissifyMain.getInstance().getPermissifyAPI().getDatabaseHandler();
+        return database.map(databaseHandler -> databaseHandler.hasPermission(owner.getUniqueId(), permission)).orElse(false);
+    }
+
+    @Override
+    public boolean hasPermission(Permission permission) {
+        Optional<DatabaseHandler> database = PermissifyMain.getInstance().getPermissifyAPI().getDatabaseHandler();
+        return database.map(databaseHandler -> databaseHandler.hasPermission(owner.getUniqueId(), permission.getName()))
+                .orElse(permission.getDefault().getValue(isOp()));
+    }
+
+    @Override
+    public void setOp(boolean isOp) {
+        owner.setOp(isOp);
     }
 }
