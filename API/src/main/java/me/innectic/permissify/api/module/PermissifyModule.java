@@ -22,4 +22,7 @@ public abstract class PermissifyModule {
     public PermissifyModule(String moduleName) {
         this.moduleName = moduleName;
     }
+
+    public abstract void initialize();
+    public abstract void deinitialize();
 }

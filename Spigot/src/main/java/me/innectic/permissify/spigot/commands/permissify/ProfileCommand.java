@@ -75,7 +75,7 @@ public class ProfileCommand {
         logger.info("Loading profile...");
         long originalStart = System.currentTimeMillis();
         String baseDir = PermissifyMain.getInstance().getDataFolder().getAbsolutePath();
-        Optional<PermissifyProfile> profile = PermissifyMain.getInstance().getPermissifyAPI().getSerializer().deserialize(args[0], baseDir);
+        Optional<PermissifyProfile> profile = PermissifyMain.getInstance().getPermissifyAPI().getProfileSerializer().deserialize(args[0], baseDir);
         long end = System.currentTimeMillis();
         logger.info("Loaded profile in " + (end - originalStart) + " ms.");
         if (!profile.isPresent()) return PermissifyConstants.PROFILE_NOT_LOADED.replace("<PROFILE>", args[0]);
@@ -109,7 +109,7 @@ public class ProfileCommand {
         logger.info("Saving profile...");
         start = System.currentTimeMillis();
         String baseDir = PermissifyMain.getInstance().getDataFolder().getAbsolutePath();
-        boolean saved = PermissifyMain.getInstance().getPermissifyAPI().getSerializer().serialize(profile, baseDir, name);
+        boolean saved = PermissifyMain.getInstance().getPermissifyAPI().getProfileSerializer().serialize(profile, baseDir, name);
         end = System.currentTimeMillis();
         logger.info("Serialized profile in " + (end - start) + " ms.");
         return saved;

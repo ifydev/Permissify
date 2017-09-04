@@ -99,4 +99,14 @@ public class ChatModule extends PermissifyModule {
                 .replace("{username}", senderName).replace("{message}", color + message)
                 .replace("{to}", receiverName).replace("{receiverGroup}", receiver);
     }
+
+    @Override
+    public void initialize() {
+
+    }
+
+    @Override
+    public void deinitialize() {
+
+    }
 }
