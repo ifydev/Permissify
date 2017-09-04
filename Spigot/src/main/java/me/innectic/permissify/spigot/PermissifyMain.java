@@ -77,7 +77,7 @@ public class PermissifyMain extends JavaPlugin {
         }
         handleChat = getConfig().getBoolean("handleChat");
         try {
-            permissifyAPI.initialize(handler.get().getHandlerType().get(), handler.get().getConnectionInformation(), new DisplayUtil(), getLogger());
+            permissifyAPI.initialize(handler.get().getHandlerType().get(), handler.get().getConnectionInformation(), new DisplayUtil(), getLogger(), getDataFolder().getAbsolutePath() + "/modules");
         } catch (Exception e) {
             e.printStackTrace();
         }

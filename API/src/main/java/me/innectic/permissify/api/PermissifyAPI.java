@@ -28,9 +28,9 @@ import lombok.Getter;
 import me.innectic.permissify.api.database.ConnectionInformation;
 import me.innectic.permissify.api.database.DatabaseHandler;
 import me.innectic.permissify.api.database.handlers.HandlerType;
+import me.innectic.permissify.api.module.registry.ModuleLoader;
 import me.innectic.permissify.api.module.registry.ModuleProvider;
 import me.innectic.permissify.api.profile.ProfileSerializer;
-import me.innectic.permissify.api.util.ChatModule;
 import me.innectic.permissify.api.util.DisplayUtil;
 
 import java.lang.reflect.InvocationTargetException;
@@ -51,17 +51,20 @@ public class PermissifyAPI {
     @Getter private DisplayUtil displayUtil;
     @Getter private ProfileSerializer profileSerializer;
     @Getter private Logger logger;
+
     @Getter private ModuleProvider moduleProvider;
+    @Getter private ModuleLoader moduleLoader;
 
     /**
      * Initialize Permissify's API
      */
-    public void initialize(HandlerType type, Optional<ConnectionInformation> connectionInformation, DisplayUtil displayUtil, Logger logger) throws Exception {
+    public void initialize(HandlerType type, Optional<ConnectionInformation> connectionInformation, DisplayUtil displayUtil, Logger logger, String moduleLocation) throws Exception {
         instance = Optional.of(this);
         this.logger = logger;
         this.displayUtil = displayUtil;
         profileSerializer = new ProfileSerializer();
         moduleProvider = new ModuleProvider();
+        moduleLoader = new ModuleLoader(moduleLocation);
 
         try {
             databaseHandler = Optional.of(type.getHandler().getConstructor(ConnectionInformation.class).newInstance(connectionInformation.orElse(null)));
@@ -76,8 +79,9 @@ public class PermissifyAPI {
             if (connected) logger.info("Connected to the database.");
             else logger.log(Level.SEVERE, "Unable to connect to the database.");
         });
-        logger.info("Registering Permissify modules...");
-        moduleProvider.registerModule(ChatModule.class, "permissify");
+        logger.info("Registering modules...");
+//        moduleProvider.registerModule(ChatModule.class, "permissify");
+        moduleLoader.loadModules();
     }
 
     public static Optional<PermissifyAPI> get() {
