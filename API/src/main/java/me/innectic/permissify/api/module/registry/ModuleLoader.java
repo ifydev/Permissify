@@ -29,17 +29,13 @@ public class ModuleLoader {
         if (potentialModules == null) return;
 
         Gson gson = new Gson();
-        Arrays.stream(potentialModules).forEach(file -> {
+        Arrays.stream(potentialModules).map(File::getName).filter(n -> n.endsWith(".jar")).filter(n -> n.contains("."))
+                .map(n -> n.split("\\.")[0]).forEach(file -> {
             File jarFile;
-            if (!file.getName().endsWith(".jar")) return;
-
-            String baseName = file.getName().contains(".") ? file.getName().split("\\.")[0] : null;
-            if (baseName == null) return;
-
-            jarFile = new File(moduleDirectory + "/" + baseName + ".jar");
+            jarFile = new File(moduleDirectory + "/" + file + ".jar");
             try {
                 URLClassLoader child = new URLClassLoader(new URL[]{jarFile.toURL()}, this.getClass().getClassLoader());
-                InputStream pmodStream = child.findResource(baseName + ".pmod").openStream();
+                InputStream pmodStream = child.findResource(file + ".pmod").openStream();
                 if (pmodStream == null) return;
 
                 BufferedInputStream inputStream = new BufferedInputStream(pmodStream);
