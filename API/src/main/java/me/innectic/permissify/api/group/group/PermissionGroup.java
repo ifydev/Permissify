@@ -31,7 +31,6 @@ import lombok.Setter;
 import me.innectic.permissify.api.group.Permission;
 import me.innectic.permissify.api.group.ladder.AbstractLadder;
 
-import java.io.Serializable;
 import java.util.*;
 
 /**
@@ -41,6 +40,7 @@ import java.util.*;
 @RequiredArgsConstructor
 public class PermissionGroup {
     @Getter private final String name;
+    @Getter private final String displayName;
     @Getter private final String chatColor;
     @Getter private final String prefix;
     @Getter private final String suffix;
