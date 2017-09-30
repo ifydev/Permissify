@@ -136,13 +136,14 @@ public abstract class DatabaseHandler {
     /**
      * Create a new permission group.
      *
-     * @param name      the name of the group
-     * @param prefix    the prefix of the name
-     * @param suffix    the suffix of the name
-     * @param chatColor the color of the chat message
-     * @return          if the group was created
+     * @param name        the name of the group
+     * @param displayName the display name of the group
+     * @param prefix      the prefix of the name
+     * @param suffix      the suffix of the name
+     * @param chatColor   the color of the chat message
+     * @return            if the group was created
      */
-    public abstract boolean createGroup(String name, String prefix, String suffix, String chatColor);
+    public abstract boolean createGroup(String name, String displayName, String prefix, String suffix, String chatColor);
 
     /**
      * Delete a permission group

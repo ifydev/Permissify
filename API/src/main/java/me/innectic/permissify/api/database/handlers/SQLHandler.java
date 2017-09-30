@@ -113,7 +113,7 @@ public class SQLHandler extends DatabaseHandler {
             groupPermissionsStatement.close();
 
             PreparedStatement groupsStatement = connection.get().prepareStatement("CREATE TABLE IF NOT EXISTS " + database +
-                    "groups (name VARCHAR(100) NOT NULL UNIQUE, prefix VARCHAR(100) NOT NULL, suffix VARCHAR(100) NOT NULL, chatcolor VARCHAR(4) NOT NULL, defaultGroup TINYINT NOT NULL, ladder VARCHAR(767))");
+                    "groups (name VARCHAR(100) NOT NULL UNIQUE, displayName VARCHAR(100) NOT NULL UNIQUE, prefix VARCHAR(100) NOT NULL, suffix VARCHAR(100) NOT NULL, chatcolor VARCHAR(4) NOT NULL, defaultGroup TINYINT NOT NULL, ladder VARCHAR(767))");
             groupsStatement.execute();
             groupsStatement.close();
 
@@ -200,7 +200,9 @@ public class SQLHandler extends DatabaseHandler {
             ResultSet groupResults = groupStatement.executeQuery();
             while (groupResults.next()) {
                 String groupName = groupResults.getString("name");
+                String displayName = groupResults.getString("displayName");
                 PermissionGroup group = new PermissionGroup(groupName,
+                        displayName,
                         groupResults.getString("chatcolor"),
                         groupResults.getString("prefix"),
                         groupResults.getString("suffix"), getGroupLadder(groupName).orElse(new DefaultLadder()));
@@ -321,7 +323,7 @@ public class SQLHandler extends DatabaseHandler {
         }));
         // Create groups
         profile.getGroups().forEach((key, group) -> {
-            createGroup(group.getName(), group.getPrefix(), group.getSuffix(), group.getChatColor());
+            createGroup(group.getName(), group.getDisplayName(), group.getPrefix(), group.getSuffix(), group.getChatColor());
             Optional<PermissionGroup> created = getGroup(group.getName());
             if (!created.isPresent()) {
                 PermissifyAPI.get().ifPresent(api -> api.getLogger().log(Level.WARNING, "Profile group was never created?"));
@@ -471,11 +473,11 @@ public class SQLHandler extends DatabaseHandler {
     }
 
     @Override
-    public boolean createGroup(String name, String prefix, String suffix, String chatColor) {
+    public boolean createGroup(String name, String displayName, String prefix, String suffix, String chatColor) {
         // Make sure that this group doesn't already exist
         if (cachedGroups.getOrDefault(name, null) != null) return false;
         // Add the new group to the cache
-        cachedGroups.put(name, new PermissionGroup(name, chatColor, prefix, suffix, new DefaultLadder()));
+        cachedGroups.put(name, new PermissionGroup(name, displayName, chatColor, prefix, suffix, new DefaultLadder()));
 
         Optional<Connection> connection = getConnection();
         if (!connection.isPresent()) {
@@ -647,7 +649,7 @@ public class SQLHandler extends DatabaseHandler {
                     ResultSet groupResults = groupStatement.executeQuery();
                     if (!groupResults.next()) return;
                     PermissionGroup permissionGroup = new PermissionGroup(
-                            groupName, groupResults.getString("chatcolor"), groupResults.getString("prefix"),
+                            groupName, groupResults.getString("displayName"), groupResults.getString("chatcolor"), groupResults.getString("prefix"),
                             groupResults.getString("suffix"), getGroupLadder(groupName).orElse(new DefaultLadder()));
                     groupResults.close();
                     groupStatement.close();

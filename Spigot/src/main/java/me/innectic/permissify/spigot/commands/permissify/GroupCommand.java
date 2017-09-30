@@ -61,11 +61,11 @@ public class GroupCommand {
         if (!plugin.getPermissifyAPI().getDatabaseHandler().isPresent())
             return PermissifyConstants.UNABLE_TO_CREATE.replace("<TYPE>", "group").replace("<REASON>", "No database handler.");
 
-        if (args.length < 4) return PermissifyConstants.NOT_ENOUGH_ARGUMENTS_GROUP_CREATE;
-        if (!ColorUtil.isValidChatColor(args[3])) return PermissifyConstants.INVALID_CHATCOLOR.replace("<COLOR>", args[3]);
+        if (args.length < 5) return PermissifyConstants.NOT_ENOUGH_ARGUMENTS_GROUP_CREATE;
+        if (!ColorUtil.isValidChatColor(args[4])) return PermissifyConstants.INVALID_CHATCOLOR.replace("<COLOR>", args[4]);
 
         // Create the new group
-        boolean created = plugin.getPermissifyAPI().getDatabaseHandler().get().createGroup(args[0], args[1], args[2], args[3]);
+        boolean created = plugin.getPermissifyAPI().getDatabaseHandler().get().createGroup(args[0], args[1], args[2], args[3], args[4]);
         if (created) return PermissifyConstants.GROUP_CREATED.replace("<GROUP>", args[0]);
         return PermissifyConstants.UNABLE_TO_CREATE.replace("<TYPE>", "group").replace("<REASON>", "Unable to connect to database.");
     }
