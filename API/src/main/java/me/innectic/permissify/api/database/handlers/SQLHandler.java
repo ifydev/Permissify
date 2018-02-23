@@ -27,11 +27,10 @@ package me.innectic.permissify.api.database.handlers;
 import me.innectic.permissify.api.PermissifyAPI;
 import me.innectic.permissify.api.database.ConnectionError;
 import me.innectic.permissify.api.database.DatabaseHandler;
-import me.innectic.permissify.api.group.Permission;
+import me.innectic.permissify.api.permission.Permission;
 import me.innectic.permissify.api.database.ConnectionInformation;
-import me.innectic.permissify.api.group.group.PermissionGroup;
+import me.innectic.permissify.api.permission.PermissionGroup;
 import me.innectic.permissify.api.profile.PermissifyProfile;
-import me.innectic.permissify.api.util.FormatterType;
 
 import java.sql.*;
 import java.util.*;

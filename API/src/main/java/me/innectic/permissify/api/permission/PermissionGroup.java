@@ -22,12 +22,11 @@
 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 * SOFTWARE.
  */
-package me.innectic.permissify.api.group.group;
+package me.innectic.permissify.api.permission;
 
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import me.innectic.permissify.api.group.Permission;
 
 import java.util.*;
 

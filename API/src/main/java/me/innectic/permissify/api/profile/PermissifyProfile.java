@@ -26,10 +26,9 @@ package me.innectic.permissify.api.profile;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import me.innectic.permissify.api.group.Permission;
-import me.innectic.permissify.api.group.group.PermissionGroup;
+import me.innectic.permissify.api.permission.Permission;
+import me.innectic.permissify.api.permission.PermissionGroup;
 
-import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
