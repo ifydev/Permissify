@@ -193,6 +193,8 @@ public class PlayerCommand {
         if (args.length < 1) return PermissifyConstants.NOT_ENOUGH_ARGUMENTS_PLAYER_LIST_GROUP;
 
         OfflinePlayer targetPlayer = Bukkit.getPlayer(args[0]);
+        System.out.println(args[0]);
+        System.out.println(targetPlayer.getName());
         if (targetPlayer == null || !targetPlayer.hasPlayedBefore()) return PermissifyConstants.INVALID_PLAYER;
 
         List<String> groups = plugin.getPermissifyAPI().getDatabaseHandler().get().getGroups().entrySet().stream()

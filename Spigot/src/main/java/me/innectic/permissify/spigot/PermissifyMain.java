@@ -62,13 +62,16 @@ public class PermissifyMain extends JavaPlugin {
     @Override
     public void onEnable() {
         long start = System.currentTimeMillis();
+        permissifyAPI = new PermissifyAPI();
         createConfig();
         // Verify the config
         configVerifier = new ConfigVerifier();
-        configVerifier.verifyBasicInformation();
+        if (!configVerifier.verifyBasicInformation()) {
+            getLogger().log(Level.SEVERE, ChatColor.RED + "Internal Permissify Error: Could not verify basic information!");
+            return;
+        }
         Optional<FullHandler> handler = configVerifier.verifyConnectionInformation();
         // Initialize the API
-        permissifyAPI = new PermissifyAPI();
         if (!handler.isPresent() || !handler.get().getHandlerType().isPresent()) {
             getLogger().log(Level.SEVERE, ChatColor.RED + "Internal Permissify Error: No handler / type present!");
             return;
