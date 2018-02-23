@@ -30,6 +30,7 @@ import me.innectic.permissify.spigot.PermissifyMain;
 import me.innectic.permissify.spigot.utils.ColorUtil;
 import me.innectic.permissify.spigot.utils.PermissionUtil;
 import org.bukkit.Bukkit;
+import org.bukkit.block.CommandBlock;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -60,6 +61,7 @@ public class PermissifyCommand implements CommandExecutor {
                     return;
                 }
             }
+            if (sender instanceof CommandBlock && !plugin.getConfig().getBoolean("allow-command-block", false)) return;
 
             if (!PermissionUtil.hasPermissionOrSuperAdmin(sender, PermissifyConstants.PERMISSIFY_BASIC)) {
                 sender.sendMessage(ColorUtil.makeReadable(PermissifyConstants.INSUFFICIENT_PERMISSIONS));
