@@ -27,15 +27,14 @@ package me.innectic.permissify.spigot;
 import lombok.Getter;
 import lombok.Setter;
 import me.innectic.permissify.spigot.commands.PermissifyCommand;
-import me.innectic.permissify.spigot.commands.permissify.*;
-import me.innectic.permissify.spigot.events.PlayerChat;
+import me.innectic.permissify.spigot.commands.subcommand.*;
 import me.innectic.permissify.spigot.events.PlayerJoin;
 import me.innectic.permissify.api.PermissifyAPI;
 import me.innectic.permissify.api.database.handlers.FullHandler;
-import me.innectic.permissify.spigot.events.PreProcess;
 import me.innectic.permissify.spigot.utils.ConfigVerifier;
 import me.innectic.permissify.spigot.utils.DisplayUtil;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -54,7 +53,6 @@ public class PermissifyMain extends JavaPlugin {
 
     @Getter private GroupCommand groupCommand;
     @Getter private PlayerCommand playerCommand;
-    @Getter private FormatCommand formatCommand;
     @Getter private CacheCommand cacheCommand;
     @Getter private ProfileCommand profileCommand;
 
@@ -62,20 +60,24 @@ public class PermissifyMain extends JavaPlugin {
 
     @Override
     public void onEnable() {
+        long start = System.currentTimeMillis();
+        permissifyAPI = new PermissifyAPI();
         createConfig();
         // Verify the config
         configVerifier = new ConfigVerifier();
-        configVerifier.verifyBasicInformation();
+        if (!configVerifier.verifyBasicInformation()) {
+            getLogger().log(Level.SEVERE, ChatColor.RED + "Internal Permissify Error: Could not verify basic information!");
+            return;
+        }
         Optional<FullHandler> handler = configVerifier.verifyConnectionInformation();
         // Initialize the API
-        permissifyAPI = new PermissifyAPI();
         if (!handler.isPresent() || !handler.get().getHandlerType().isPresent()) {
-            System.out.println("Internal Permissify Error: No handler / type present!");
+            getLogger().log(Level.SEVERE, ChatColor.RED + "Internal Permissify Error: No handler / type present!");
             return;
         }
         handleChat = getConfig().getBoolean("handleChat");
         try {
-            permissifyAPI.initialize(handler.get().getHandlerType().get(), handler.get().getConnectionInformation(), new DisplayUtil());
+            permissifyAPI.initialize(handler.get().getHandlerType().get(), handler.get().getConnectionInformation(), new DisplayUtil(), getLogger(), getDataFolder().getAbsolutePath() + "/modules", this);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -83,10 +85,15 @@ public class PermissifyMain extends JavaPlugin {
         registerCommands();
         // Register listeners
         registerListeners();
+        long timeTaken = System.currentTimeMillis() - start;
+
+        getLogger().info("Permissify initialized in " + ((double) timeTaken / 1000) + " seconds (" + timeTaken + " ms)!");
     }
 
     @Override
     public void onDisable() {
+        permissifyAPI.getModuleProvider().end(this);
+
         configVerifier = null;
         permissifyAPI = null;
     }
@@ -117,7 +124,6 @@ public class PermissifyMain extends JavaPlugin {
     private void registerCommands() {
         groupCommand = new GroupCommand();
         playerCommand = new PlayerCommand();
-        formatCommand = new FormatCommand();
         cacheCommand = new CacheCommand();
         profileCommand = new ProfileCommand();
 
@@ -128,7 +134,5 @@ public class PermissifyMain extends JavaPlugin {
         PluginManager pluginManager = Bukkit.getPluginManager();
 
         pluginManager.registerEvents(new PlayerJoin(), this);
-        pluginManager.registerEvents(new PlayerChat(), this);
-        pluginManager.registerEvents(new PreProcess(), this);
     }
 }

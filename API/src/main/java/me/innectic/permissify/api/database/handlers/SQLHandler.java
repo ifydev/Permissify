@@ -31,10 +31,10 @@ import me.innectic.permissify.api.permission.Permission;
 import me.innectic.permissify.api.database.ConnectionInformation;
 import me.innectic.permissify.api.permission.PermissionGroup;
 import me.innectic.permissify.api.profile.PermissifyProfile;
-import me.innectic.permissify.api.util.FormatterType;
 
 import java.sql.*;
 import java.util.*;
+import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 /**
@@ -53,7 +53,6 @@ public class SQLHandler extends DatabaseHandler {
 
         if(connectionInformation.getMeta().containsKey("sqlite")) {
             type = "sqlite";
-            // TODO: It would be nice to give this types...
             Map sqliteData = (Map) connectionInformation.getMeta().get("sqlite");
             databaseUrl = (String) sqliteData.get("file");
             isUsingSqlite = true;
@@ -91,7 +90,7 @@ public class SQLHandler extends DatabaseHandler {
             else connection = Optional.ofNullable(DriverManager.getConnection(baseConnectionURL, connectionInformation.get().getUsername(), connectionInformation.get().getPassword()));
             if (!connection.isPresent()) return;
             String database = connectionInformation.get().getDatabase();
-            if (!database.equals("")) database += ".";
+            if (!database.equals("")) database = ".";
             // TODO: This should all be prepared statements, but that breaks for some reason
             if (!isUsingSqlite) {
                 PreparedStatement databaseStatement = connection.get().prepareStatement("CREATE DATABASE IF NOT EXISTS " + database);
@@ -99,7 +98,8 @@ public class SQLHandler extends DatabaseHandler {
                 databaseStatement.close();
             }
 
-            PreparedStatement groupMembersStatement = connection.get().prepareStatement("CREATE TABLE IF NOT EXISTS " + database + "groupMembers (uuid VARCHAR(767) NOT NULL, `group` VARCHAR(700) NOT NULL, `primary` TINYINT NOT NULL)");
+            PreparedStatement groupMembersStatement = connection.get().prepareStatement("CREATE TABLE IF NOT EXISTS " + database +
+                    "groupMembers (uuid VARCHAR(767) NOT NULL, `group` VARCHAR(700) NOT NULL, `primary` TINYINT NOT NULL, ladderPosition INTEGER NOT NULL)");
             groupMembersStatement.execute();
             groupMembersStatement.close();
 
@@ -107,7 +107,8 @@ public class SQLHandler extends DatabaseHandler {
             groupPermissionsStatement.execute();
             groupPermissionsStatement.close();
 
-            PreparedStatement groupsStatement = connection.get().prepareStatement("CREATE TABLE IF NOT EXISTS " + database + "groups (name VARCHAR(100) NOT NULL UNIQUE, prefix VARCHAR(100) NOT NULL, suffix VARCHAR(100) NOT NULL, chatcolor VARCHAR(4) NOT NULL, defaultGroup TINYINT NOT NULL)");
+            PreparedStatement groupsStatement = connection.get().prepareStatement("CREATE TABLE IF NOT EXISTS " + database +
+                    "groups (name VARCHAR(100) NOT NULL UNIQUE, displayName VARCHAR(100) NOT NULL UNIQUE, prefix VARCHAR(100) NOT NULL, suffix VARCHAR(100) NOT NULL, chatcolor VARCHAR(4) NOT NULL, defaultGroup TINYINT NOT NULL, ladder VARCHAR(767))");
             groupsStatement.execute();
             groupsStatement.close();
 
@@ -118,6 +119,14 @@ public class SQLHandler extends DatabaseHandler {
             PreparedStatement superAdminStatement = connection.get().prepareStatement("CREATE TABLE IF NOT EXISTS " + database + "superAdmin (uuid VARCHAR(767) NOT NULL)");
             superAdminStatement.execute();
             superAdminStatement.close();
+
+            PreparedStatement ladderStatement = connection.get().prepareStatement("CREATE TABLE IF NOT EXISTS " + database + "ladders (name VARCHAR(767))");
+            ladderStatement.execute();
+            ladderStatement.close();
+
+            PreparedStatement ladderLevelStatement = connection.get().prepareStatement("CREATE TABLE IF NOT EXISTS " + database + "ladderLevels (ladder VARCHAR(767), name VARCHAR(767), power INTEGER)");
+            ladderLevelStatement.execute();
+            ladderLevelStatement.close();
 
             if (!hasFormattingTable(connection.get(), database)) {
                 PreparedStatement formattingStatement = connection.get().prepareStatement("CREATE TABLE IF NOT EXISTS " + database + "formatting (`format` VARCHAR(400) NOT NULL, formatter VARCHAR(200) NOT NULL)");
@@ -158,70 +167,94 @@ public class SQLHandler extends DatabaseHandler {
 
     @Override
     public void reload(List<UUID> onlinePlayers) {
-        cachedGroups = new ArrayList<>();
+        cachedGroups = new HashMap<>();
         cachedPermissions = new HashMap<>();
         superAdmins = new ArrayList<>();
 
-        chatFormat = getChatFormat(true);
-        whisperFormat = getWhisperFormat(true);
+        loadSuperAdmins();
+        loadGroups();
 
-        Optional<Connection> connection = getConnection();
-        if (connection.isPresent()) {
-            try {
-                // Load all super admins
-                PreparedStatement adminStatement = connection.get().prepareStatement("SELECT uuid FROM superAdmin");
-                ResultSet adminResults = adminStatement.executeQuery();
-                while (adminResults.next()) {
-                    superAdmins.add(UUID.fromString(adminResults.getString("uuid")));
-                }
-                adminResults.close();
-                adminStatement.close();
-
-                // Load all group names
-                PreparedStatement groupStatement = connection.get().prepareStatement("SELECT * from groups");
-                ResultSet groupResults = groupStatement.executeQuery();
-                while (groupResults.next()) {
-                    PermissionGroup group = new PermissionGroup(groupResults.getString("name"),
-                            groupResults.getString("chatcolor"),
-                            groupResults.getString("prefix"),
-                            groupResults.getString("suffix"));
-                    PreparedStatement groupPermissionsStatement = connection.get().prepareStatement("SELECT  * FROM groupPermissions WHERE groupName=?");
-                    groupPermissionsStatement.setString(1, group.getName());
-                    ResultSet groupPermissionsResult = groupPermissionsStatement.executeQuery();
-                    while (groupPermissionsResult.next()) {
-                        group.addPermission(groupPermissionsResult.getString("permission"));
-                    }
-                    groupPermissionsResult.close();
-                    groupPermissionsStatement.close();
-
-                    PreparedStatement groupMembersStatement = connection.get().prepareStatement("SELECT uuid,`primary` FROM groupMembers WHERE `group`=?");
-                    groupMembersStatement.setString(1, group.getName());
-                    ResultSet groupMembersResults = groupMembersStatement.executeQuery();
-                    while (groupMembersResults.next()) {
-                        group.addPlayer(UUID.fromString(groupMembersResults.getString("uuid")), groupMembersResults.getBoolean("primary"));
-                    }
-                    groupMembersResults.close();
-                    groupMembersStatement.close();
-                    cachedGroups.add(group);
-                    if (groupResults.getBoolean("defaultGroup")) defaultGroup = Optional.of(group);
-                }
-                groupStatement.close();
-                groupResults.close();
-                connection.get().close();
-            } catch (SQLException e) {
-                PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.of(e)));
-            }
-        } else PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.empty()));
         onlinePlayers.forEach(this::getPermissions);
     }
 
     @Override
+    protected void loadGroups() {
+        Optional<Connection> connection = getConnection();
+        if (!connection.isPresent()) {
+            PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.empty()));
+            return;
+        }
+
+        try {
+            PreparedStatement groupStatement = connection.get().prepareStatement("SELECT * from groups");
+            ResultSet groupResults = groupStatement.executeQuery();
+            while (groupResults.next()) {
+                String groupName = groupResults.getString("name");
+                String displayName = groupResults.getString("displayName");
+                PermissionGroup group = new PermissionGroup(groupName,
+                        displayName,
+                        groupResults.getString("chatcolor"),
+                        groupResults.getString("prefix"),
+                        groupResults.getString("suffix"));
+
+                PreparedStatement groupPermissionsStatement = connection.get().prepareStatement("SELECT * FROM groupPermissions WHERE groupName=?");
+                groupPermissionsStatement.setString(1, group.getName());
+                ResultSet groupPermissionsResult = groupPermissionsStatement.executeQuery();
+
+                while (groupPermissionsResult.next()) {
+                    group.addPermission(groupPermissionsResult.getString("permission"));
+                }
+                groupPermissionsResult.close();
+                groupPermissionsStatement.close();
+
+                PreparedStatement groupMembersStatement = connection.get().prepareStatement("SELECT uuid,`primary` FROM groupMembers WHERE `group`=?");
+                groupMembersStatement.setString(1, group.getName());
+
+                ResultSet groupMembersResults = groupMembersStatement.executeQuery();
+                while (groupMembersResults.next()) {
+                    group.addPlayer(UUID.fromString(groupMembersResults.getString("uuid")), groupMembersResults.getBoolean("primary"));
+                }
+
+                groupMembersResults.close();
+                groupMembersStatement.close();
+                cachedGroups.put(groupName, group);
+
+                if (groupResults.getBoolean("defaultGroup")) defaultGroup = Optional.of(group);
+            }
+            groupResults.close();
+            groupStatement.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    protected void loadSuperAdmins() {
+        Optional<Connection> connection = getConnection();
+        if (!connection.isPresent()) {
+            PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.empty()));
+            return;
+        }
+        try {
+            // Load all super admins
+            PreparedStatement adminStatement = connection.get().prepareStatement("SELECT uuid FROM superAdmin");
+            ResultSet adminResults = adminStatement.executeQuery();
+            while (adminResults.next()) {
+                superAdmins.add(UUID.fromString(adminResults.getString("uuid")));
+            }
+            adminResults.close();
+            adminStatement.close();
+            connection.get().close();
+        } catch (SQLException e) {
+            PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.of(e)));
+        }
+    }
+
+    @Override
     public void drop() {
-        cachedGroups = new ArrayList<>();
+        cachedGroups = new HashMap<>();
         cachedPermissions = new HashMap<>();
         superAdmins = new ArrayList<>();
-        chatFormat = "";
-        whisperFormat = "";
     }
 
     @Override
@@ -232,11 +265,11 @@ public class SQLHandler extends DatabaseHandler {
             else removePermission(uuid, permission.getPermission());
         }));
         // Create groups
-        profile.getGroups().forEach(group -> {
-            createGroup(group.getName(), group.getPrefix(), group.getSuffix(), group.getChatColor());
+        profile.getGroups().forEach((key, group) -> {
+            createGroup(group.getName(), group.getDisplayName(), group.getPrefix(), group.getSuffix(), group.getChatColor());
             Optional<PermissionGroup> created = getGroup(group.getName());
             if (!created.isPresent()) {
-                System.out.println("Profile group was never created?");
+                PermissifyAPI.get().ifPresent(api -> api.getLogger().log(Level.WARNING, "Profile group was never created?"));
                 return;
             }
             // Add permissions to the group
@@ -247,9 +280,6 @@ public class SQLHandler extends DatabaseHandler {
             // Add the players to the group
             group.getPlayers().forEach(created.get()::addPlayer);
         });
-        // Set the other misc things.
-        chatFormat = profile.getChatFormat();
-        whisperFormat = profile.getWhisperFormat();
         superAdmins = profile.getSuperAdmins();
         defaultGroup = Optional.ofNullable(profile.getDefaultGroup());
     }
@@ -260,14 +290,15 @@ public class SQLHandler extends DatabaseHandler {
         List<Permission> playerPermissions = cachedPermissions.getOrDefault(uuid, new ArrayList<>());
 
         for (String permission : permissions) {
-            Permission perm = new Permission(permission, true);
-            playerPermissions.add(perm);
-
             Optional<Connection> connection = getConnection();
             if (!connection.isPresent()) {
                 PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.empty()));
                 return;
             }
+
+            Permission perm = new Permission(permission, true);
+            playerPermissions.add(perm);
+
             try {
                 PreparedStatement statement = connection.get().prepareStatement("INSERT INTO playerPermissions (uuid,permission,granted) VALUES (?,?,?)");
                 statement.setString(1, uuid.toString());
@@ -302,14 +333,7 @@ public class SQLHandler extends DatabaseHandler {
                 PreparedStatement statement = connection.get().prepareStatement("DELETE FROM playerPermissions WHERE uuid=? AND permission=?");
                 statement.setString(1, uuid.toString());
                 statement.setString(2, permission);
-                statement.execute();
-                // Cleanup
-                statement.close();
-                statement = connection.get().prepareStatement("INSERT INTO playerPermissions (uuid,permission,granted) VALUES (?,?,?)");
-                statement.setString(1, uuid.toString());
-                statement.setString(2, permission);
-                statement.setBoolean(3, false);
-                // Cleanup
+
                 statement.execute();
                 statement.close();
                 connection.get().close();
@@ -320,7 +344,7 @@ public class SQLHandler extends DatabaseHandler {
     }
 
     @Override
-    public boolean hasPermission(UUID uuid, String permission) {
+    public boolean isGrantedPermission(UUID uuid, String permission) {
         // Check the cache first
         if (cachedPermissions.containsKey(uuid))
             return cachedPermissions.get(uuid).stream()
@@ -350,6 +374,11 @@ public class SQLHandler extends DatabaseHandler {
             PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.of(e)));
         }
         return false;
+    }
+
+    @Override
+    public boolean hasPermission(UUID uuid, String permission) {
+        return cachedPermissions.containsKey(uuid) && cachedPermissions.get(uuid).stream().filter(entry -> entry.getPermission().equals(permission)).count() == 1;
     }
 
     @Override
@@ -383,11 +412,11 @@ public class SQLHandler extends DatabaseHandler {
     }
 
     @Override
-    public boolean createGroup(String name, String prefix, String suffix, String chatColor) {
+    public boolean createGroup(String name, String displayName, String prefix, String suffix, String chatColor) {
         // Make sure that this group doesn't already exist
-        if (cachedGroups.stream().anyMatch(group -> group.getName().equalsIgnoreCase(name))) return false;
+        if (cachedGroups.getOrDefault(name, null) != null) return false;
         // Add the new group to the cache
-        cachedGroups.add(new PermissionGroup(name, chatColor, prefix, suffix));
+        cachedGroups.put(name, new PermissionGroup(name, displayName, chatColor, prefix, suffix));
 
         Optional<Connection> connection = getConnection();
         if (!connection.isPresent()) {
@@ -415,9 +444,10 @@ public class SQLHandler extends DatabaseHandler {
 
     @Override
     public boolean deleteGroup(String name) {
-        if (getGroups().stream().noneMatch(group -> group.getName().equalsIgnoreCase(name))) return false;
+        if (getGroups().entrySet().stream().map(Map.Entry::getValue).noneMatch(group -> group.getName().equalsIgnoreCase(name)))
+            return false;
         // Delete from the cache
-        cachedGroups.removeIf(group -> group.getName().equalsIgnoreCase(name));
+        cachedGroups.remove(name);
 
         Optional<Connection> connection = getConnection();
         if (!connection.isPresent()) {
@@ -439,7 +469,7 @@ public class SQLHandler extends DatabaseHandler {
 
     @Override
     public Optional<PermissionGroup> getGroup(String name) {
-        return cachedGroups.stream().filter(group -> group.getName().equalsIgnoreCase(name)).findFirst();
+        return Optional.ofNullable(cachedGroups.getOrDefault(name, null));
     }
 
     @Override
@@ -447,8 +477,7 @@ public class SQLHandler extends DatabaseHandler {
         if (group.hasPlayer(uuid)) return false;
         group.addPlayer(uuid, false);
         // Update the cache
-        cachedGroups.removeIf(entry -> entry.getName().equals(group.getName()));
-        cachedGroups.add(group);
+        cachedGroups.put(group.getName(), group);
 
         Optional<Connection> connection = getConnection();
         if (!connection.isPresent()) {
@@ -475,8 +504,8 @@ public class SQLHandler extends DatabaseHandler {
         if (!group.hasPlayer(uuid)) return false;
         group.removePlayer(uuid);
         // Update the cache
-        cachedGroups.removeIf(entry -> entry.getName().equals(group.getName()));
-        cachedGroups.add(group);
+        cachedGroups.remove(group.getName());
+        cachedGroups.put(group.getName(), group);
 
         Optional<Connection> connection = getConnection();
         if (!connection.isPresent()) {
@@ -498,13 +527,13 @@ public class SQLHandler extends DatabaseHandler {
     }
 
     @Override
-    public List<PermissionGroup> getGroups() {
+    public Map<String, PermissionGroup> getGroups() {
         return cachedGroups;
     }
 
     @Override
     public List<PermissionGroup> getGroups(UUID uuid) {
-        return cachedGroups.stream().filter(group -> group.hasPlayer(uuid)).collect(Collectors.toList());
+        return cachedGroups.entrySet().stream().map(Map.Entry::getValue).filter(group -> group.hasPlayer(uuid)).collect(Collectors.toList());
     }
 
     @Override
@@ -551,7 +580,7 @@ public class SQLHandler extends DatabaseHandler {
             ResultSet results = statement.executeQuery();
             while (results.next()) {
                 String groupName = results.getString("group");
-                Optional<PermissionGroup> group = cachedGroups.stream().filter(permissionGroup -> permissionGroup .getName().equals(groupName)).findFirst();
+                Optional<PermissionGroup> group = getGroup(groupName);
                 // Get the group from the database, if we don't have have it already
                 if (!group.isPresent()) {
                     PreparedStatement groupStatement = connection.get().prepareStatement("SELECT prefix,suffix,chatcolor FROM groups WHERE name=?");
@@ -559,7 +588,7 @@ public class SQLHandler extends DatabaseHandler {
                     ResultSet groupResults = groupStatement.executeQuery();
                     if (!groupResults.next()) return;
                     PermissionGroup permissionGroup = new PermissionGroup(
-                            groupName, groupResults.getString("chatcolor"), groupResults.getString("prefix"),
+                            groupName, groupResults.getString("displayName"), groupResults.getString("chatcolor"), groupResults.getString("prefix"),
                             groupResults.getString("suffix"));
                     groupResults.close();
                     groupStatement.close();
@@ -570,7 +599,7 @@ public class SQLHandler extends DatabaseHandler {
                         permissionGroup.addPlayer(UUID.fromString(groupPlayersResult.getString("uuid")),
                                 groupPlayersResult.getBoolean("primary"));
                     }
-                    cachedGroups.add(permissionGroup);
+                    cachedGroups.put(groupName, permissionGroup);
                 }
             }
             results.close();
@@ -584,7 +613,8 @@ public class SQLHandler extends DatabaseHandler {
     @Override
     public boolean addGroupPermission(String group, String... permissions) {
         // Make sure this is a valid group
-        Optional<PermissionGroup> permissionGroup = getGroups().stream().filter(permission -> permission.getName().equalsIgnoreCase(group)).findFirst();
+        Optional<PermissionGroup> permissionGroup = getGroups().entrySet().stream().map(Map.Entry::getValue)
+                .filter(permission -> permission.getName().equalsIgnoreCase(group)).findFirst();
         if (!permissionGroup.isPresent()) return false;
         // Update the cache
         for (String permission : permissions) {
@@ -613,7 +643,8 @@ public class SQLHandler extends DatabaseHandler {
 
     @Override
     public boolean removeGroupPermission(String group, String... permissions) {
-        Optional<PermissionGroup> permissionGroup = getGroups().stream().filter(permission -> permission.getName().equalsIgnoreCase(group)).findFirst();
+        Optional<PermissionGroup> permissionGroup = getGroups().entrySet().stream().map(Map.Entry::getValue)
+                .filter(permission -> permission.getName().equalsIgnoreCase(group)).findFirst();
         if (!permissionGroup.isPresent()) return false;
 
         for (String permission : permissions) {
@@ -641,7 +672,8 @@ public class SQLHandler extends DatabaseHandler {
 
     @Override
     public boolean hasGroupPermission(String group, String permission) {
-        Optional<PermissionGroup> permissionGroup = getGroups().stream().filter(perm -> perm.getName().equalsIgnoreCase(group)).findFirst();
+        Optional<PermissionGroup> permissionGroup = getGroups().entrySet().stream().map(Map.Entry::getValue)
+                .filter(perm -> perm.getName().equalsIgnoreCase(group)).findFirst();
         return permissionGroup.map(groupPermission -> groupPermission.hasPermission(permission)).orElse(false);
     }
 
@@ -673,99 +705,8 @@ public class SQLHandler extends DatabaseHandler {
     }
 
     @Override
-    public void setChatFormat(String format) {
-        this.chatFormat = format;
+    public void removeSuperAdmin(UUID uuid) {
 
-        Optional<Connection> connection = getConnection();
-        if (!connection.isPresent()) {
-            PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.empty()));
-            return;
-        }
-
-        try {
-            PreparedStatement statement = connection.get().prepareStatement("UPDATE formatting SET format=? WHERE formatter=?");
-            statement.setString(1, format);
-            statement.setString(2, FormatterType.CHAT.getUsageName());
-            statement.execute();
-            statement.close();
-            connection.get().close();
-        } catch (SQLException e) {
-            PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.of(e)));
-        }
-    }
-
-    @Override
-    public String getChatFormat(boolean skipCache) {
-        if (!skipCache) return chatFormat;
-
-        Optional<Connection> connection = getConnection();
-        if (!connection.isPresent()) {
-            PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.empty()));
-            return "";
-        }
-
-        try {
-            PreparedStatement statement = connection.get().prepareStatement("SELECT format FROM formatting WHERE formatter=?");
-            statement.setString(1, FormatterType.CHAT.getUsageName());
-            ResultSet results = statement.executeQuery();
-            if (!results.next()) return "";
-            String format = results.getString("format");
-            results.close();
-            statement.close();
-            connection.get().close();
-            return format;
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return "";
-    }
-
-    @Override
-    public void setWhisperFormat(String format) {
-        this.chatFormat = format;
-
-        Optional<Connection> connection = getConnection();
-        if (!connection.isPresent()) {
-            PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.empty()));
-            return;
-        }
-
-        try {
-            PreparedStatement statement = connection.get().prepareStatement("UPDATE formatting SET format=? WHERE formatter=?");
-            statement.setString(1, format);
-            statement.setString(2, FormatterType.WHISPER.getUsageName());
-            statement.execute();
-            statement.close();
-            connection.get().close();
-        } catch (SQLException e) {
-            PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.of(e)));
-        }
-    }
-
-    @Override
-    public String getWhisperFormat(boolean skipCache) {
-        if (!skipCache) return whisperFormat;
-
-        Optional<Connection> connection = getConnection();
-        if (!connection.isPresent()) {
-            PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.empty()));
-            return "";
-        }
-
-        try {
-            PreparedStatement statement = connection.get().prepareStatement("SELECT format FROM formatting WHERE formatter=?");
-            statement.setString(1, FormatterType.WHISPER.getUsageName());
-            ResultSet results = statement.executeQuery();
-            if (!results.next()) return "";
-            String format = results.getString("format");
-            results.close();
-            statement.close();
-            connection.get().close();
-            return format;
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return "";
     }
 
     @Override

@@ -29,7 +29,6 @@ import lombok.Getter;
 import me.innectic.permissify.api.permission.Permission;
 import me.innectic.permissify.api.permission.PermissionGroup;
 
-import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -39,11 +38,21 @@ import java.util.UUID;
  * @since 8/26/2017
  */
 @AllArgsConstructor
-public class PermissifyProfile implements Serializable {
-    @Getter private final List<PermissionGroup> groups;
+public class PermissifyProfile {
+    @Getter private final Map<String, PermissionGroup> groups;
     @Getter private Map<UUID, List<Permission>> playerPermissions;
     @Getter private PermissionGroup defaultGroup;
-    @Getter private String chatFormat;
-    @Getter private String whisperFormat;
     @Getter private List<UUID> superAdmins;
+    @Getter private int version;
+
+    @Override
+    public String toString() {
+        return "PermissifyProfile [" +
+                "groups=" + groups +
+                ", playerPermissions=" + playerPermissions +
+                ", defaultGroup=" + defaultGroup +
+                ", superAdmins=" + superAdmins +
+                ", version=" + version +
+                " ]";
+    }
 }

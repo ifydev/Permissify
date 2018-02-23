@@ -28,12 +28,16 @@ import lombok.Getter;
 import me.innectic.permissify.api.database.ConnectionInformation;
 import me.innectic.permissify.api.database.DatabaseHandler;
 import me.innectic.permissify.api.database.handlers.HandlerType;
+import me.innectic.permissify.api.module.registry.ModuleLoader;
+import me.innectic.permissify.api.module.registry.ModuleProvider;
 import me.innectic.permissify.api.profile.ProfileSerializer;
 import me.innectic.permissify.api.util.DisplayUtil;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Optional;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * @author Innectic
@@ -45,15 +49,22 @@ public class PermissifyAPI {
 
     @Getter private Optional<DatabaseHandler> databaseHandler;
     @Getter private DisplayUtil displayUtil;
-    @Getter private ProfileSerializer serializer;
+    @Getter private ProfileSerializer profileSerializer;
+    @Getter private Logger logger;
+
+    @Getter private ModuleProvider moduleProvider;
+    @Getter private ModuleLoader moduleLoader;
 
     /**
      * Initialize Permissify's API
      */
-    public void initialize(HandlerType type, Optional<ConnectionInformation> connectionInformation, DisplayUtil displayUtil) throws Exception {
+    public void initialize(HandlerType type, Optional<ConnectionInformation> connectionInformation, DisplayUtil displayUtil, Logger logger, String moduleLocation, Object plugin) throws Exception {
         instance = Optional.of(this);
+        this.logger = logger;
         this.displayUtil = displayUtil;
-        serializer = new ProfileSerializer();
+        profileSerializer = new ProfileSerializer();
+        moduleProvider = new ModuleProvider();
+        moduleLoader = new ModuleLoader(moduleLocation);
 
         try {
             databaseHandler = Optional.of(type.getHandler().getConstructor(ConnectionInformation.class).newInstance(connectionInformation.orElse(null)));
@@ -65,9 +76,11 @@ public class PermissifyAPI {
             handler.initialize();
             handler.reload(new ArrayList<>());
             boolean connected = handler.connect();
-            if (connected) System.out.println("Connected to the database.");
-            else System.out.println("Unable to connect to the database.");
+            if (connected) logger.info("Connected to the database.");
+            else logger.log(Level.SEVERE, "Unable to connect to the database.");
         });
+        logger.info("Registering modules...");
+        moduleLoader.loadModules(plugin);
     }
 
     public static Optional<PermissifyAPI> get() {

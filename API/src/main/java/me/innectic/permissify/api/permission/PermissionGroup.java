@@ -25,10 +25,9 @@
 package me.innectic.permissify.api.permission;
 
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import lombok.Setter;
 
-import java.io.Serializable;
 import java.util.*;
 
 /**
@@ -36,11 +35,13 @@ import java.util.*;
  * @since 6/14/2017
  */
 @RequiredArgsConstructor
-public class PermissionGroup implements Serializable {
-    @Getter private final String name;
-    @Getter private final String chatColor;
-    @Getter private final String prefix;
-    @Getter private final String suffix;
+public class PermissionGroup {
+    @Getter @NonNull private String name;
+    @Getter @NonNull private String displayName;
+    @Getter @NonNull private String chatColor;
+    @Getter @NonNull private String prefix;
+    @Getter @NonNull private String suffix;
+
     @Getter private List<Permission> permissions = new ArrayList<>();
     @Getter private Map<UUID, Boolean> players = new HashMap<>();
 
@@ -87,5 +88,17 @@ public class PermissionGroup implements Serializable {
 
     public void setPrimaryGroup(UUID uuid, boolean isPrimary) {
         players.put(uuid, isPrimary);
+    }
+
+    @Override
+    public String toString() {
+        return "PermissionGroup [" +
+                "name=" + name +
+                ", chatColor=" + chatColor +
+                ", prefix=" + prefix +
+                ", suffix=" + suffix +
+                ", permissions=" + permissions +
+                ", players=" + players +
+                " ]";
     }
 }
