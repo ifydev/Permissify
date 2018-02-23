@@ -143,11 +143,8 @@ public class GroupCommand {
             if (!plugin.getPermissifyAPI().getDatabaseHandler().isPresent()) return;
             Optional<PermissionGroup> group = plugin.getPermissifyAPI().getDatabaseHandler().get().getGroup(args[0]);
             group.ifPresent(permissionGroup -> {
-                for (String permission : remaining) {
-                    permissionGroup.removePermission(permission);
-                }
+                for (String permission : remaining) permissionGroup.removePermission(permission);
                 Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> permissionGroup.getPlayers().keySet().stream().map(Bukkit::getPlayer).filter(Objects::nonNull).forEach(PermissionUtil::applyPermissions));
-
             });
         });
 

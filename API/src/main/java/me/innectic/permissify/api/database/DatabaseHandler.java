@@ -27,7 +27,6 @@ package me.innectic.permissify.api.database;
 import lombok.Getter;
 import me.innectic.permissify.api.group.Permission;
 import me.innectic.permissify.api.group.group.PermissionGroup;
-import me.innectic.permissify.api.group.ladder.AbstractLadder;
 import me.innectic.permissify.api.profile.PermissifyProfile;
 
 import java.util.*;
@@ -43,12 +42,8 @@ public abstract class DatabaseHandler {
     @Getter protected Map<UUID, List<Permission>> cachedPermissions = new HashMap<>();
     @Getter protected Map<String, PermissionGroup> cachedGroups = new HashMap<>();
     @Getter protected Optional<PermissionGroup> defaultGroup = Optional.empty();
-    @Getter protected Map<String, AbstractLadder> cachedLadders = new HashMap<>();
     @Getter protected final Optional<ConnectionInformation> connectionInformation;
     @Getter protected List<UUID> superAdmins = new ArrayList<>();
-    // Revisit: Maybe different default formatters?
-    protected String chatFormat = "{group} {username}: {message}";
-    protected String whisperFormat = "{senderGroup} {username} > {receiverGroup} {to}: {message}";
 
     public DatabaseHandler(ConnectionInformation connectionInformation) {
         this.connectionInformation = Optional.ofNullable(connectionInformation);
@@ -77,11 +72,6 @@ public abstract class DatabaseHandler {
      * Load all groups
      */
     protected abstract void loadGroups();
-
-    /**
-     * Load all ladders
-     */
-    protected abstract void loadLadders();
 
     /**
      * Load all super admins
@@ -121,7 +111,7 @@ public abstract class DatabaseHandler {
      *
      * @param uuid       the uuid of the player to check
      * @param permission the permission to check
-     * @return           if the player has the permission, regardless of the granted status
+     * @return if the player has the permission, regardless of the granted status
      */
     public abstract boolean hasPermission(UUID uuid, String permission);
 
@@ -130,7 +120,7 @@ public abstract class DatabaseHandler {
      *
      * @param uuid       the uuid of the player to check
      * @param permission the permission to check for
-     * @return           if the player has the permission
+     * @return if the player has the permission
      */
     public abstract boolean isGrantedPermission(UUID uuid, String permission);
 
@@ -138,7 +128,7 @@ public abstract class DatabaseHandler {
      * Get the permissions of a uuid
      *
      * @param uuid the uuid to get the permissions of
-     * @return     the permissions the uuid has
+     * @return the permissions the uuid has
      */
     public abstract List<Permission> getPermissions(UUID uuid);
 
@@ -150,7 +140,7 @@ public abstract class DatabaseHandler {
      * @param prefix      the prefix of the name
      * @param suffix      the suffix of the name
      * @param chatColor   the color of the chat message
-     * @return            if the group was created
+     * @return if the group was created
      */
     public abstract boolean createGroup(String name, String displayName, String prefix, String suffix, String chatColor);
 
@@ -165,7 +155,7 @@ public abstract class DatabaseHandler {
      * Get the permission group from name.
      *
      * @param name the name of the group.
-     * @return     fulfilled if exists, empty otherwise
+     * @return fulfilled if exists, empty otherwise
      */
     public abstract Optional<PermissionGroup> getGroup(String name);
 
@@ -174,7 +164,7 @@ public abstract class DatabaseHandler {
      *
      * @param uuid  the uuid of the player
      * @param group the group to add them to
-     * @return      if they were added
+     * @return if they were added
      */
     public abstract boolean addPlayerToGroup(UUID uuid, PermissionGroup group);
 
@@ -183,7 +173,7 @@ public abstract class DatabaseHandler {
      *
      * @param uuid  the player to remove
      * @param group the group to remove from
-     * @return      if the player was removed
+     * @return if the player was removed
      */
     public abstract boolean removePlayerFromGroup(UUID uuid, PermissionGroup group);
 
@@ -198,7 +188,7 @@ public abstract class DatabaseHandler {
      * Get all permission groups a player is in.
      *
      * @param uuid the uuid of the player
-     * @return     the groups the player is in
+     * @return the groups the player is in
      */
     public abstract List<PermissionGroup> getGroups(UUID uuid);
 
@@ -214,7 +204,7 @@ public abstract class DatabaseHandler {
      * Get the primary group of a player.
      *
      * @param uuid the uuid of the player to get
-     * @return     the primary group of the player
+     * @return the primary group of the player
      */
     public abstract Optional<PermissionGroup> getPrimaryGroup(UUID uuid);
 
@@ -230,7 +220,7 @@ public abstract class DatabaseHandler {
      *
      * @param group       the group to add to
      * @param permissions the permissions to add
-     * @return            if it was added or not
+     * @return if it was added or not
      */
     public abstract boolean addGroupPermission(String group, String... permissions);
 
@@ -239,7 +229,7 @@ public abstract class DatabaseHandler {
      *
      * @param group       the group to remove from
      * @param permissions the permissions to remove
-     * @return            if the permissions were removed
+     * @return if the permissions were removed
      */
     public abstract boolean removeGroupPermission(String group, String... permissions);
 
@@ -248,7 +238,7 @@ public abstract class DatabaseHandler {
      *
      * @param group      the group to check
      * @param permission the permission to check
-     * @return           if the group has the permission
+     * @return if the group has the permission
      */
     public abstract boolean hasGroupPermission(String group, String permission);
 
@@ -274,55 +264,9 @@ public abstract class DatabaseHandler {
     public abstract void removeSuperAdmin(UUID uuid);
 
     /**
-     * Set the format for chat messages
+     * Set the default group players are in when they join for the first time
      *
-     * @param format the format for chat.
-     */
-    public abstract void setChatFormat(String format);
-
-    /**
-     * Get the format for public chat messages
-     *
-     * @param skipCache should the cache be skipped? Forces getting from the database
-     * @return          the format
-     */
-    public abstract String getChatFormat(boolean skipCache);
-
-    /**
-     * Set the format of whispers
-     *
-     * @param format the format for whispers.
-     */
-    public abstract void setWhisperFormat(String format);
-
-    /**
-     * Get the format for whispers.
-     *
-     * @param skipCache should the cache be skipped? Forces getting from the database
-     * @return          the format
-     */
-    public abstract String getWhisperFormat(boolean skipCache);
-
-    /**
-     * Set the default permission group to the one provided.
-     *
-     * @param group the new group to become the default.
+     * @param group the default group
      */
     public abstract void setDefaultGroup(PermissionGroup group);
-
-    /**
-     * Set the ladder of a group.
-     *
-     * @param group  the name of the group
-     * @param ladder the ladder to add to the group
-     */
-    public abstract void setGroupLadder(String group, AbstractLadder ladder);
-
-    /**
-     * Get the current ladder of a group.
-     *
-     * @param group the name of the group to get the ladder from
-     * @return      the ladder, if present.
-     */
-    public abstract Optional<AbstractLadder> getGroupLadder(String group);
 }

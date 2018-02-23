@@ -27,9 +27,7 @@ package me.innectic.permissify.api.group.group;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import lombok.Setter;
 import me.innectic.permissify.api.group.Permission;
-import me.innectic.permissify.api.group.ladder.AbstractLadder;
 
 import java.util.*;
 
@@ -44,7 +42,6 @@ public class PermissionGroup {
     @Getter @NonNull private String chatColor;
     @Getter @NonNull private String prefix;
     @Getter @NonNull private String suffix;
-    @Getter @Setter @NonNull private AbstractLadder ladder;
 
     @Getter private List<Permission> permissions = new ArrayList<>();
     @Getter private Map<UUID, Boolean> players = new HashMap<>();
@@ -101,7 +98,6 @@ public class PermissionGroup {
                 ", chatColor=" + chatColor +
                 ", prefix=" + prefix +
                 ", suffix=" + suffix +
-                ", ladder=" + ladder +
                 ", permissions=" + permissions +
                 ", players=" + players +
                 " ]";

@@ -99,8 +99,7 @@ public class ProfileCommand {
         logger.info("Generating profile...");
         long start = System.currentTimeMillis();
         PermissifyProfile profile = new PermissifyProfile(handler.getGroups(), handler.getCachedPermissions(),
-                handler.getDefaultGroup().isPresent() ? handler.getDefaultGroup().get() : null,
-                handler.getChatFormat(false), handler.getWhisperFormat(false), handler.getSuperAdmins(),
+                handler.getDefaultGroup().isPresent() ? handler.getDefaultGroup().get() : null, handler.getSuperAdmins(),
                 PermissifyConstants.PERMISSIFY_PROFILE_VERSION);
         long end = System.currentTimeMillis();
         logger.info("Generated profile in " + (end - start) + " ms.");
