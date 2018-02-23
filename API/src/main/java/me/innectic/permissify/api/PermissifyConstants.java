@@ -81,9 +81,9 @@ public class PermissifyConstants {
     public static final String PERMISSION_REMOVED_PLAYER = PERMISSIFY_PREFIX + "&e&lPermission <PERMISSION> has been removed from <PLAYER>!";
     public static final String PLAYER_ADDED_TO_GROUP = PERMISSIFY_PREFIX + "&e&lAdded <PLAYER> to <GROUP>";
     public static final String PLAYER_REMOVED_FROM_GROUP = PERMISSIFY_PREFIX + "&e&lRemoved <PLAYER> from <GROUP>";
-    public static final String FORMATTER_SET = PERMISSIFY_PREFIX + "&e&lFormatter <FORMATTER> set!";
     public static final String MAIN_GROUP_SET = PERMISSIFY_PREFIX + "&e&lSet main group for <PLAYER> to <GROUP>!";
-    public static final String TOGGLED_CHAT_HANDLE = PERMISSIFY_PREFIX + "&e&l<STATE> chat formatting.";
+    public static final String PLAYER_ALREADY_HAS_PERMISSION = PERMISSIFY_PREFIX + "&c&lPlayer <PLAYER> already has permission <PERMISSION>";
+    public static final String PLAYER_DOES_NOT_HAVE_PERMISSION = PERMISSIFY_PREFIX + "&c&lPlayer <PLAYER> does not have permission <PERMISSION>";
 
     public static final String EMPTY_DEFAULT_GROUP_NAME = "&c&lNONE";
     public static final String DEFAULT_GROUP_RESPONSE = PERMISSIFY_PREFIX + "&e&lThe current default group is '<GROUP>&e&l'.";

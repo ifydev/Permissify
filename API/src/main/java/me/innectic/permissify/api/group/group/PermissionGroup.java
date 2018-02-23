@@ -39,12 +39,13 @@ import java.util.*;
  */
 @RequiredArgsConstructor
 public class PermissionGroup {
-    @Getter private final String name;
-    @Getter private final String displayName;
-    @Getter private final String chatColor;
-    @Getter private final String prefix;
-    @Getter private final String suffix;
-    @NonNull @Getter @Setter private AbstractLadder ladder;
+    @Getter @NonNull private String name;
+    @Getter @NonNull private String displayName;
+    @Getter @NonNull private String chatColor;
+    @Getter @NonNull private String prefix;
+    @Getter @NonNull private String suffix;
+    @Getter @Setter @NonNull private AbstractLadder ladder;
+
     @Getter private List<Permission> permissions = new ArrayList<>();
     @Getter private Map<UUID, Boolean> players = new HashMap<>();
 

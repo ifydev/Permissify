@@ -47,7 +47,7 @@ public class PermissionUtil {
                     (PermissifyMain.getInstance().getPermissifyAPI().getDatabaseHandler().map(handler ->
                             handler.isSuperAdmin(player.getUniqueId())).orElse(false));
         }
-        return sender instanceof CommandBlock || sender instanceof ConsoleCommandSender; // XXX: Maybe we don't want command blocks here?
+        return sender instanceof CommandBlock || sender instanceof ConsoleCommandSender;
     }
 
     public static void applyPermissions(Player player) {

@@ -132,9 +132,6 @@ public class PermissifyCommand implements CommandExecutor {
                     return;
                 }
                 sendResponse(response, sender);
-            } else if (args[0].equalsIgnoreCase("format")) {
-                String response = plugin.getFormatCommand().handleSetFormat(sender, ArgumentUtil.getRemainingArgs(1, args));
-                sender.sendMessage(ColorUtil.makeReadable(response));
             } else if (args[0].equalsIgnoreCase("profile")) {
                 String response = plugin.getProfileCommand().handleProfile(sender, ArgumentUtil.getRemainingArgs(1, args));
                 sender.sendMessage(ColorUtil.makeReadable(response));

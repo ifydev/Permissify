@@ -53,7 +53,6 @@ public class PermissifyMain extends JavaPlugin {
 
     @Getter private GroupCommand groupCommand;
     @Getter private PlayerCommand playerCommand;
-    @Getter private FormatCommand formatCommand;
     @Getter private CacheCommand cacheCommand;
     @Getter private ProfileCommand profileCommand;
 
@@ -125,7 +124,6 @@ public class PermissifyMain extends JavaPlugin {
     private void registerCommands() {
         groupCommand = new GroupCommand();
         playerCommand = new PlayerCommand();
-        formatCommand = new FormatCommand();
         cacheCommand = new CacheCommand();
         profileCommand = new ProfileCommand();
 

@@ -350,14 +350,15 @@ public class SQLHandler extends DatabaseHandler {
         List<Permission> playerPermissions = cachedPermissions.getOrDefault(uuid, new ArrayList<>());
 
         for (String permission : permissions) {
-            Permission perm = new Permission(permission, true);
-            playerPermissions.add(perm);
-
             Optional<Connection> connection = getConnection();
             if (!connection.isPresent()) {
                 PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.empty()));
                 return;
             }
+
+            Permission perm = new Permission(permission, true);
+            playerPermissions.add(perm);
+
             try {
                 PreparedStatement statement = connection.get().prepareStatement("INSERT INTO playerPermissions (uuid,permission,granted) VALUES (?,?,?)");
                 statement.setString(1, uuid.toString());
@@ -392,14 +393,7 @@ public class SQLHandler extends DatabaseHandler {
                 PreparedStatement statement = connection.get().prepareStatement("DELETE FROM playerPermissions WHERE uuid=? AND permission=?");
                 statement.setString(1, uuid.toString());
                 statement.setString(2, permission);
-                statement.execute();
-                // Cleanup
-                statement.close();
-                statement = connection.get().prepareStatement("INSERT INTO playerPermissions (uuid,permission,granted) VALUES (?,?,?)");
-                statement.setString(1, uuid.toString());
-                statement.setString(2, permission);
-                statement.setBoolean(3, false);
-                // Cleanup
+
                 statement.execute();
                 statement.close();
                 connection.get().close();
@@ -410,7 +404,7 @@ public class SQLHandler extends DatabaseHandler {
     }
 
     @Override
-    public boolean hasPermission(UUID uuid, String permission) {
+    public boolean isGrantedPermission(UUID uuid, String permission) {
         // Check the cache first
         if (cachedPermissions.containsKey(uuid))
             return cachedPermissions.get(uuid).stream()
@@ -440,6 +434,11 @@ public class SQLHandler extends DatabaseHandler {
             PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.of(e)));
         }
         return false;
+    }
+
+    @Override
+    public boolean hasPermission(UUID uuid, String permission) {
+        return cachedPermissions.containsKey(uuid) && cachedPermissions.get(uuid).stream().filter(entry -> entry.getPermission().equals(permission)).count() == 1;
     }
 
     @Override

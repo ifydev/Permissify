@@ -121,9 +121,18 @@ public abstract class DatabaseHandler {
      *
      * @param uuid       the uuid of the player to check
      * @param permission the permission to check
-     * @return           if the player has the permission
+     * @return           if the player has the permission, regardless of the granted status
      */
     public abstract boolean hasPermission(UUID uuid, String permission);
+
+    /**
+     * Does a player have a permission granted to them?
+     *
+     * @param uuid       the uuid of the player to check
+     * @param permission the permission to check for
+     * @return           if the player has the permission
+     */
+    public abstract boolean isGrantedPermission(UUID uuid, String permission);
 
     /**
      * Get the permissions of a uuid
