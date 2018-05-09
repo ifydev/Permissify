@@ -63,6 +63,7 @@ public class PermissionUtil {
             // Add the permissions to the player
             handler.getGroups(player.getUniqueId()).stream().map(PermissionGroup::getPermissions).forEach(permissions::addAll);
             permissions.forEach(permission -> player.addAttachment(PermissifyMain.getInstance(), permission.getPermission(), permission.isGranted()));
+            player.recalculatePermissions();
         });
     }
 }
