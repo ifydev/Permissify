@@ -31,8 +31,10 @@ import me.innectic.permissify.spigot.commands.subcommand.*;
 import me.innectic.permissify.spigot.events.PlayerJoin;
 import me.innectic.permissify.api.PermissifyAPI;
 import me.innectic.permissify.api.database.handlers.FullHandler;
+import me.innectic.permissify.spigot.events.PlayerLeave;
 import me.innectic.permissify.spigot.utils.ConfigVerifier;
 import me.innectic.permissify.spigot.utils.DisplayUtil;
+import me.innectic.permissify.spigot.utils.PermissibleUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.plugin.PluginManager;
@@ -84,11 +86,14 @@ public class PermissifyMain extends JavaPlugin {
         registerListeners();
         long timeTaken = System.currentTimeMillis() - start;
 
+        Bukkit.getOnlinePlayers().forEach(PermissibleUtil::injectPermissible);
+
         getLogger().info("Permissify initialized in " + ((double) timeTaken / 1000) + " seconds (" + timeTaken + " ms)!");
     }
 
     @Override
     public void onDisable() {
+        Bukkit.getOnlinePlayers().forEach(PermissibleUtil::uninjectPermissible);
         permissifyAPI.getModuleProvider().end(this);
 
         configVerifier = null;
@@ -131,5 +136,6 @@ public class PermissifyMain extends JavaPlugin {
         PluginManager pluginManager = Bukkit.getPluginManager();
 
         pluginManager.registerEvents(new PlayerJoin(), this);
+        pluginManager.registerEvents(new PlayerLeave(), this);
     }
 }

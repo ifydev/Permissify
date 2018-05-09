@@ -25,6 +25,7 @@
 package me.innectic.permissify.spigot.events;
 
 import me.innectic.permissify.spigot.PermissifyMain;
+import me.innectic.permissify.spigot.utils.PermissibleUtil;
 import me.innectic.permissify.spigot.utils.PermissionUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -44,6 +45,7 @@ public class PlayerJoin implements Listener {
             Player player = e.getPlayer();
             if (player == null) return;
             // Set the permissions of the player
+            PermissibleUtil.injectPermissible(player);
             PermissionUtil.applyPermissions(player);
         });
     }

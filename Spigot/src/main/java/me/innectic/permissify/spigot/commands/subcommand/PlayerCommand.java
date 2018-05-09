@@ -33,6 +33,7 @@ import me.innectic.permissify.spigot.utils.PermissionUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -141,7 +142,10 @@ public class PlayerCommand {
             return PermissifyConstants.PLAYER_ALREADY_HAS_PERMISSION.replace("<PLAYER>", targetPlayer.getName()).replace("<PERMISSION>", args[1]);
         }
         plugin.getPermissifyAPI().getDatabaseHandler().get().addPermission(targetPlayer.getUniqueId(), args[1]);
-        if (targetPlayer.isOnline()) targetPlayer.getPlayer().addAttachment(plugin, args[1], true);
+        if (targetPlayer.isOnline()) {
+            targetPlayer.getPlayer().addAttachment(plugin, args[1], true);
+            ((Player) targetPlayer).recalculatePermissions();
+        }
 
         if (args.length >= 3) {
             // Timed permission.
