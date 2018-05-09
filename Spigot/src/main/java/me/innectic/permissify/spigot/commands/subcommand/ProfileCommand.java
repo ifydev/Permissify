@@ -22,7 +22,7 @@
 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 * SOFTWARE.
  */
-package me.innectic.permissify.spigot.commands.permissify;
+package me.innectic.permissify.spigot.commands.subcommand;
 
 import me.innectic.permissify.api.PermissifyConstants;
 import me.innectic.permissify.api.database.DatabaseHandler;
@@ -75,7 +75,7 @@ public class ProfileCommand {
         logger.info("Loading profile...");
         long originalStart = System.currentTimeMillis();
         String baseDir = PermissifyMain.getInstance().getDataFolder().getAbsolutePath();
-        Optional<PermissifyProfile> profile = PermissifyMain.getInstance().getPermissifyAPI().getSerializer().deserialize(args[0], baseDir);
+        Optional<PermissifyProfile> profile = PermissifyMain.getInstance().getPermissifyAPI().getProfileSerializer().deserialize(args[0], baseDir);
         long end = System.currentTimeMillis();
         logger.info("Loaded profile in " + (end - originalStart) + " ms.");
         if (!profile.isPresent()) return PermissifyConstants.PROFILE_NOT_LOADED.replace("<PROFILE>", args[0]);
@@ -99,8 +99,7 @@ public class ProfileCommand {
         logger.info("Generating profile...");
         long start = System.currentTimeMillis();
         PermissifyProfile profile = new PermissifyProfile(handler.getGroups(), handler.getCachedPermissions(),
-                handler.getDefaultGroup().isPresent() ? handler.getDefaultGroup().get() : null,
-                handler.getChatFormat(false), handler.getWhisperFormat(false), handler.getSuperAdmins(),
+                handler.getDefaultGroup().isPresent() ? handler.getDefaultGroup().get() : null, handler.getSuperAdmins(),
                 PermissifyConstants.PERMISSIFY_PROFILE_VERSION);
         long end = System.currentTimeMillis();
         logger.info("Generated profile in " + (end - start) + " ms.");
@@ -109,7 +108,7 @@ public class ProfileCommand {
         logger.info("Saving profile...");
         start = System.currentTimeMillis();
         String baseDir = PermissifyMain.getInstance().getDataFolder().getAbsolutePath();
-        boolean saved = PermissifyMain.getInstance().getPermissifyAPI().getSerializer().serialize(profile, baseDir, name);
+        boolean saved = PermissifyMain.getInstance().getPermissifyAPI().getProfileSerializer().serialize(profile, baseDir, name);
         end = System.currentTimeMillis();
         logger.info("Serialized profile in " + (end - start) + " ms.");
         return saved;

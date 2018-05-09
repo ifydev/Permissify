@@ -22,16 +22,12 @@
 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 * SOFTWARE.
  */
-package me.innectic.permissify.api.group.group;
+package me.innectic.permissify.api.permission;
 
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import lombok.Setter;
-import me.innectic.permissify.api.group.Permission;
-import me.innectic.permissify.api.group.ladder.AbstractLadder;
 
-import java.io.Serializable;
 import java.util.*;
 
 /**
@@ -40,11 +36,12 @@ import java.util.*;
  */
 @RequiredArgsConstructor
 public class PermissionGroup {
-    @Getter private final String name;
-    @Getter private final String chatColor;
-    @Getter private final String prefix;
-    @Getter private final String suffix;
-    @NonNull @Getter @Setter private AbstractLadder ladder;
+    @Getter @NonNull private String name;
+    @Getter @NonNull private String displayName;
+    @Getter @NonNull private String chatColor;
+    @Getter @NonNull private String prefix;
+    @Getter @NonNull private String suffix;
+
     @Getter private List<Permission> permissions = new ArrayList<>();
     @Getter private Map<UUID, Boolean> players = new HashMap<>();
 
@@ -100,7 +97,6 @@ public class PermissionGroup {
                 ", chatColor=" + chatColor +
                 ", prefix=" + prefix +
                 ", suffix=" + suffix +
-                ", ladder=" + ladder +
                 ", permissions=" + permissions +
                 ", players=" + players +
                 " ]";

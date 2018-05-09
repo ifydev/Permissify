@@ -26,13 +26,8 @@ package me.innectic.permissify.api.profile;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import me.innectic.permissify.api.group.ladder.AbstractLadder;
-import me.innectic.permissify.api.group.ladder.LadderAdapter;
-import me.innectic.permissify.api.group.ladder.impl.DefaultLadder;
 
 import java.io.*;
-import java.lang.reflect.Type;
-import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -48,7 +43,7 @@ public class ProfileSerializer {
 
     public ProfileSerializer() {
         GsonBuilder gsonBuilder = new GsonBuilder();
-        gsonBuilder.registerTypeAdapter(AbstractLadder.class, new LadderAdapter());
+//        gsonBuilder.registerTypeAdapter(AbstractLadder.class, new LadderAdapter());
         gson = gsonBuilder.create();
     }
 

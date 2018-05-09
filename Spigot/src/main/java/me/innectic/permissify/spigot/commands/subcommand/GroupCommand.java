@@ -22,13 +22,13 @@
 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 * SOFTWARE.
  */
-package me.innectic.permissify.spigot.commands.permissify;
+package me.innectic.permissify.spigot.commands.subcommand;
 
 import me.innectic.permissify.api.database.DatabaseHandler;
 import me.innectic.permissify.spigot.PermissifyMain;
 import me.innectic.permissify.api.PermissifyConstants;
-import me.innectic.permissify.api.group.Permission;
-import me.innectic.permissify.api.group.group.PermissionGroup;
+import me.innectic.permissify.api.permission.Permission;
+import me.innectic.permissify.api.permission.PermissionGroup;
 import me.innectic.permissify.api.util.ArgumentUtil;
 import me.innectic.permissify.spigot.utils.ColorUtil;
 import me.innectic.permissify.spigot.utils.PermissionUtil;
@@ -61,11 +61,11 @@ public class GroupCommand {
         if (!plugin.getPermissifyAPI().getDatabaseHandler().isPresent())
             return PermissifyConstants.UNABLE_TO_CREATE.replace("<TYPE>", "group").replace("<REASON>", "No database handler.");
 
-        if (args.length < 4) return PermissifyConstants.NOT_ENOUGH_ARGUMENTS_GROUP_CREATE;
-        if (!ColorUtil.isValidChatColor(args[3])) return PermissifyConstants.INVALID_CHATCOLOR.replace("<COLOR>", args[3]);
+        if (args.length < 5) return PermissifyConstants.NOT_ENOUGH_ARGUMENTS_GROUP_CREATE;
+        if (!ColorUtil.isValidChatColor(args[4])) return PermissifyConstants.INVALID_CHATCOLOR.replace("<COLOR>", args[4]);
 
         // Create the new group
-        boolean created = plugin.getPermissifyAPI().getDatabaseHandler().get().createGroup(args[0], args[1], args[2], args[3]);
+        boolean created = plugin.getPermissifyAPI().getDatabaseHandler().get().createGroup(args[0], args[1], args[2], args[3], args[4]);
         if (created) return PermissifyConstants.GROUP_CREATED.replace("<GROUP>", args[0]);
         return PermissifyConstants.UNABLE_TO_CREATE.replace("<TYPE>", "group").replace("<REASON>", "Unable to connect to database.");
     }
@@ -143,11 +143,8 @@ public class GroupCommand {
             if (!plugin.getPermissifyAPI().getDatabaseHandler().isPresent()) return;
             Optional<PermissionGroup> group = plugin.getPermissifyAPI().getDatabaseHandler().get().getGroup(args[0]);
             group.ifPresent(permissionGroup -> {
-                for (String permission : remaining) {
-                    permissionGroup.removePermission(permission);
-                }
+                for (String permission : remaining) permissionGroup.removePermission(permission);
                 Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> permissionGroup.getPlayers().keySet().stream().map(Bukkit::getPlayer).filter(Objects::nonNull).forEach(PermissionUtil::applyPermissions));
-
             });
         });
 

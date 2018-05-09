@@ -22,12 +22,12 @@
 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 * SOFTWARE.
  */
-package me.innectic.permissify.spigot.commands.permissify;
+package me.innectic.permissify.spigot.commands.subcommand;
 
 import me.innectic.permissify.spigot.PermissifyMain;
 import me.innectic.permissify.api.PermissifyConstants;
-import me.innectic.permissify.api.group.Permission;
-import me.innectic.permissify.api.group.group.PermissionGroup;
+import me.innectic.permissify.api.permission.Permission;
+import me.innectic.permissify.api.permission.PermissionGroup;
 import me.innectic.permissify.spigot.utils.MiscUtil;
 import me.innectic.permissify.spigot.utils.PermissionUtil;
 import org.bukkit.Bukkit;
@@ -136,6 +136,10 @@ public class PlayerCommand {
         OfflinePlayer targetPlayer = Bukkit.getPlayer(args[0]);
         if (targetPlayer == null || !targetPlayer.hasPlayedBefore()) return PermissifyConstants.INVALID_PLAYER;
 
+        if (plugin.getPermissifyAPI().getDatabaseHandler().get().hasPermission(targetPlayer.getUniqueId(), args[1])) {
+            // Player already has this permission.
+            return PermissifyConstants.PLAYER_ALREADY_HAS_PERMISSION.replace("<PLAYER>", targetPlayer.getName()).replace("<PERMISSION>", args[1]);
+        }
         plugin.getPermissifyAPI().getDatabaseHandler().get().addPermission(targetPlayer.getUniqueId(), args[1]);
         if (targetPlayer.isOnline()) targetPlayer.getPlayer().addAttachment(plugin, args[1], true);
 
@@ -174,6 +178,11 @@ public class PlayerCommand {
 
         OfflinePlayer targetPlayer = Bukkit.getPlayer(args[0]);
         if (targetPlayer == null || !targetPlayer.hasPlayedBefore()) return PermissifyConstants.INVALID_PLAYER;
+        if (!plugin.getPermissifyAPI().getDatabaseHandler().get().hasPermission(targetPlayer.getUniqueId(), args[1])) {
+            // Player doesn't have this permission
+            return PermissifyConstants.PLAYER_DOES_NOT_HAVE_PERMISSION.replace("<PLAYER>", targetPlayer.getName()).replace("<PERMISSION>", args[1]);
+        }
+
         plugin.getPermissifyAPI().getDatabaseHandler().get().removePermission(targetPlayer.getUniqueId(), args[1]);
         if (targetPlayer.isOnline()) targetPlayer.getPlayer().addAttachment(plugin, args[1], false);
 

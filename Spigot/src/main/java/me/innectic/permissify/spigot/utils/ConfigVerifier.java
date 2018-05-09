@@ -53,10 +53,8 @@ public class ConfigVerifier implements VerifyConfig {
     @Override
     public Optional<FullHandler> verifyConnectionInformation() {
         PermissifyMain plugin = PermissifyMain.getInstance();
-        Optional<HandlerType> type = HandlerType.findType(plugin.getConfig().getString("storage"));
+        Optional<HandlerType> type = HandlerType.findType(plugin.getConfig().getString("storage", "sqlite"));
         if  (!type.isPresent()) return Optional.empty();
-
-        if (plugin.getConfig().get("handleChat") == null) return Optional.empty();
 
         Optional<ConnectionInformation> connectionInformation = Optional.empty();
         if (type.get().getHandler() == SQLHandler.class) {
