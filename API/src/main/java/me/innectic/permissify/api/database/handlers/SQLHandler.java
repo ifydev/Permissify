@@ -85,18 +85,23 @@ public class SQLHandler extends DatabaseHandler {
         if (!connectionInformation.isPresent()) return;
 
         try {
-            Optional<Connection> connection;
-            if (isUsingSqlite) connection = Optional.ofNullable(DriverManager.getConnection(baseConnectionURL));
-            else connection = Optional.ofNullable(DriverManager.getConnection(baseConnectionURL, connectionInformation.get().getUsername(), connectionInformation.get().getPassword()));
+            Optional<Connection> connection =
+                    isUsingSqlite ? Optional.ofNullable(DriverManager.getConnection(baseConnectionURL))
+                    : Optional.ofNullable(DriverManager.getConnection(baseConnectionURL,
+                            connectionInformation.get().getUsername(), connectionInformation.get().getPassword()));
             if (!connection.isPresent()) return;
+
             String database = connectionInformation.get().getDatabase();
-            if (!database.equals("")) database = ".";
+
             // TODO: This should all be prepared statements, but that breaks for some reason
             if (!isUsingSqlite) {
                 PreparedStatement databaseStatement = connection.get().prepareStatement("CREATE DATABASE IF NOT EXISTS " + database);
                 databaseStatement.execute();
                 databaseStatement.close();
             }
+
+            if (!database.isEmpty() && isUsingSqlite) database = ".";
+            else database += ".";
 
             PreparedStatement groupMembersStatement = connection.get().prepareStatement("CREATE TABLE IF NOT EXISTS " + database +
                     "groupMembers (uuid VARCHAR(767) NOT NULL, `group` VARCHAR(700) NOT NULL, `primary` TINYINT NOT NULL, ladderPosition INTEGER NOT NULL)");
@@ -127,24 +132,6 @@ public class SQLHandler extends DatabaseHandler {
             PreparedStatement ladderLevelStatement = connection.get().prepareStatement("CREATE TABLE IF NOT EXISTS " + database + "ladderLevels (ladder VARCHAR(767), name VARCHAR(767), power INTEGER)");
             ladderLevelStatement.execute();
             ladderLevelStatement.close();
-
-            if (!hasFormattingTable(connection.get(), database)) {
-                PreparedStatement formattingStatement = connection.get().prepareStatement("CREATE TABLE IF NOT EXISTS " + database + "formatting (`format` VARCHAR(400) NOT NULL, formatter VARCHAR(200) NOT NULL)");
-                formattingStatement.execute();
-                formattingStatement.close();
-
-                PreparedStatement defaultChatFormat = connection.get().prepareStatement("INSERT INTO " + database + "formatting (`format`, formatter) VALUES (?,?)");
-                defaultChatFormat.setString(1, "{group} {username}: {message}");
-                defaultChatFormat.setString(2, "chat");
-                defaultChatFormat.execute();
-                defaultChatFormat.close();
-
-                PreparedStatement defaultWhisperFormat = connection.get().prepareStatement("INSERT INTO " + database + "formatting (`format`, formatter) VALUES (?,?)");
-                defaultWhisperFormat.setString(1, "{senderGroup} {username} > {receiverGroup} {to}: {message}");
-                defaultWhisperFormat.setString(2, "whisper");
-                defaultWhisperFormat.execute();
-                defaultWhisperFormat.close();
-            }
 
             connection.get().close();
         } catch (SQLException e) {

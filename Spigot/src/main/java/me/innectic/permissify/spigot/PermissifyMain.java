@@ -56,8 +56,6 @@ public class PermissifyMain extends JavaPlugin {
     @Getter private CacheCommand cacheCommand;
     @Getter private ProfileCommand profileCommand;
 
-    @Getter @Setter private boolean handleChat = false;
-
     @Override
     public void onEnable() {
         long start = System.currentTimeMillis();
@@ -75,7 +73,6 @@ public class PermissifyMain extends JavaPlugin {
             getLogger().log(Level.SEVERE, ChatColor.RED + "Internal Permissify Error: No handler / type present!");
             return;
         }
-        handleChat = getConfig().getBoolean("handleChat");
         try {
             permissifyAPI.initialize(handler.get().getHandlerType().get(), handler.get().getConnectionInformation(), new DisplayUtil(), getLogger(), getDataFolder().getAbsolutePath() + "/modules", this);
         } catch (Exception e) {
