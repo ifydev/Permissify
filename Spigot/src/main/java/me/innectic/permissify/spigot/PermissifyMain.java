@@ -76,7 +76,7 @@ public class PermissifyMain extends JavaPlugin {
             return;
         }
         try {
-            permissifyAPI.initialize(handler.get().getHandlerType().get(), handler.get().getConnectionInformation(), new DisplayUtil(), getLogger(), getDataFolder().getAbsolutePath() + "/modules", this);
+            permissifyAPI.initialize(handler.get().getHandlerType().get(), handler.get().getConnectionInformation(), new DisplayUtil(), getLogger());
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -94,7 +94,6 @@ public class PermissifyMain extends JavaPlugin {
     @Override
     public void onDisable() {
         Bukkit.getOnlinePlayers().forEach(PermissibleUtil::uninjectPermissible);
-        permissifyAPI.getModuleProvider().end(this);
 
         configVerifier = null;
         permissifyAPI = null;
