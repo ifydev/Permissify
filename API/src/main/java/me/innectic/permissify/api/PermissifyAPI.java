@@ -28,8 +28,6 @@ import lombok.Getter;
 import me.innectic.permissify.api.database.ConnectionInformation;
 import me.innectic.permissify.api.database.DatabaseHandler;
 import me.innectic.permissify.api.database.handlers.HandlerType;
-import me.innectic.permissify.api.module.registry.ModuleLoader;
-import me.innectic.permissify.api.module.registry.ModuleProvider;
 import me.innectic.permissify.api.profile.ProfileSerializer;
 import me.innectic.permissify.api.util.DisplayUtil;
 
@@ -52,19 +50,14 @@ public class PermissifyAPI {
     @Getter private ProfileSerializer profileSerializer;
     @Getter private Logger logger;
 
-    @Getter private ModuleProvider moduleProvider;
-    @Getter private ModuleLoader moduleLoader;
-
     /**
      * Initialize Permissify's API
      */
-    public void initialize(HandlerType type, Optional<ConnectionInformation> connectionInformation, DisplayUtil displayUtil, Logger logger, String moduleLocation, Object plugin) throws Exception {
+    public void initialize(HandlerType type, Optional<ConnectionInformation> connectionInformation, DisplayUtil displayUtil, Logger logger) throws Exception {
         instance = Optional.of(this);
         this.logger = logger;
         this.displayUtil = displayUtil;
         profileSerializer = new ProfileSerializer();
-        moduleProvider = new ModuleProvider();
-        moduleLoader = new ModuleLoader(moduleLocation);
 
         try {
             databaseHandler = Optional.of(type.getHandler().getConstructor(ConnectionInformation.class).newInstance(connectionInformation.orElse(null)));
@@ -78,8 +71,6 @@ public class PermissifyAPI {
             if (handler.connect()) logger.info("Connected to the database.");
             else logger.log(Level.SEVERE, "Unable to connect to the database.");
         });
-        logger.info("Registering modules...");
-        moduleLoader.loadModules(plugin);
     }
 
     public static Optional<PermissifyAPI> get() {
