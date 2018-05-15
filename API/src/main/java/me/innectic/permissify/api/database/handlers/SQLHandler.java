@@ -48,14 +48,18 @@ public class SQLHandler extends DatabaseHandler {
 
     public SQLHandler(ConnectionInformation connectionInformation) {
         super(connectionInformation);
-        String type = "mysql";
-        String databaseUrl = "//" + connectionInformation.getUrl() + ":" + connectionInformation.getPort();
+
+        String type;
+        String databaseUrl;
 
         if(connectionInformation.getMeta().containsKey("sqlite")) {
             type = "sqlite";
             Map sqliteData = (Map) connectionInformation.getMeta().get("sqlite");
             databaseUrl = (String) sqliteData.get("file");
             isUsingSqlite = true;
+        } else {
+            type = "mysql";
+            databaseUrl = "//" + connectionInformation.getUrl() + ":" + connectionInformation.getPort();
         }
         baseConnectionURL = "jdbc:" + type + ":" + databaseUrl;
     }
@@ -100,13 +104,14 @@ public class SQLHandler extends DatabaseHandler {
                 databaseStatement.close();
             }
 
-            if (!database.isEmpty() && isUsingSqlite) database = ".";
+            if (isUsingSqlite) database = "";
             else database += ".";
 
             PreparedStatement groupMembersStatement = connection.get().prepareStatement("CREATE TABLE IF NOT EXISTS " + database +
                     "groupMembers (uuid VARCHAR(767) NOT NULL, `group` VARCHAR(700) NOT NULL, `primary` TINYINT NOT NULL, ladderPosition INTEGER NOT NULL)");
             groupMembersStatement.execute();
             groupMembersStatement.close();
+
 
             PreparedStatement groupPermissionsStatement = connection.get().prepareStatement("CREATE TABLE IF NOT EXISTS " + database +"groupPermissions (groupName VARCHAR(767) NOT NULL, permission VARCHAR(767) NOT NULL)");
             groupPermissionsStatement.execute();

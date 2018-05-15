@@ -29,10 +29,7 @@ import lombok.Setter;
 import me.innectic.permissify.api.PermissifyAPI;
 import me.innectic.permissify.api.database.handlers.FullHandler;
 import me.innectic.permissify.spigot.commands.PermissifyCommand;
-import me.innectic.permissify.spigot.commands.subcommand.CacheCommand;
-import me.innectic.permissify.spigot.commands.subcommand.GroupCommand;
-import me.innectic.permissify.spigot.commands.subcommand.PlayerCommand;
-import me.innectic.permissify.spigot.commands.subcommand.ProfileCommand;
+import me.innectic.permissify.spigot.commands.subcommand.*;
 import me.innectic.permissify.spigot.events.PlayerJoin;
 import me.innectic.permissify.spigot.events.PlayerLeave;
 import me.innectic.permissify.spigot.utils.ConfigVerifier;
@@ -60,7 +57,10 @@ public class PermissifyMain extends JavaPlugin {
     @Getter private PlayerCommand playerCommand;
     @Getter private CacheCommand cacheCommand;
     @Getter private ProfileCommand profileCommand;
+    @Getter private DebugCommand debugCommand;
+
     @Getter @Setter private boolean useWildcards;
+    @Getter @Setter private boolean debugMode;
 
     @Override
     public void onEnable() {
@@ -73,7 +73,8 @@ public class PermissifyMain extends JavaPlugin {
             getLogger().log(Level.SEVERE, ChatColor.RED + "Internal Permissify Error: Could not verify basic information!");
             return;
         }
-        if (getConfig().getBoolean("disable-wildcard-permissions", false)) this.useWildcards = false;
+        this.useWildcards = !getConfig().getBoolean("disable-wildcard-permissions", false);
+        getLogger().info(useWildcards ? "Using wildcards!" : "Not using wildcards!");
 
         Optional<FullHandler> handler = configVerifier.verifyConnectionInformation();
         // Initialize the API
@@ -133,6 +134,7 @@ public class PermissifyMain extends JavaPlugin {
         playerCommand = new PlayerCommand();
         cacheCommand = new CacheCommand();
         profileCommand = new ProfileCommand();
+        debugCommand = new DebugCommand();
 
         getCommand("permissify").setExecutor(new PermissifyCommand());
     }

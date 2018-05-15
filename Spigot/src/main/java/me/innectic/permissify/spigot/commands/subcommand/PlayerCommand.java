@@ -38,6 +38,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.permissions.PermissionAttachment;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -146,7 +147,7 @@ public class PlayerCommand {
         if (args.length < 2) return PermissifyConstants.NOT_ENOUGH_ARGUMENTS_PLAYER_ADD_PERMISSION;
 
         OfflinePlayer targetPlayer = Bukkit.getPlayer(args[0]);
-        if (targetPlayer == null || !targetPlayer.hasPlayedBefore()) return PermissifyConstants.INVALID_PLAYER;
+        if (targetPlayer == null || (!targetPlayer.hasPlayedBefore() && targetPlayer.isOnline())) return PermissifyConstants.INVALID_PLAYER;
 
         if (plugin.getPermissifyAPI().getDatabaseHandler().get().hasPermission(targetPlayer.getUniqueId(), args[1])) {
             // Player already has this permission.
@@ -193,14 +194,17 @@ public class PlayerCommand {
         if (args.length < 2) return PermissifyConstants.NOT_ENOUGH_ARGUMENTS_PLAYER_REMOVE_PERMISSION;
 
         OfflinePlayer targetPlayer = Bukkit.getPlayer(args[0]);
-        if (targetPlayer == null || !targetPlayer.hasPlayedBefore()) return PermissifyConstants.INVALID_PLAYER;
+        if (targetPlayer == null || (!targetPlayer.hasPlayedBefore() && targetPlayer.isOnline())) return PermissifyConstants.INVALID_PLAYER;
         if (!plugin.getPermissifyAPI().getDatabaseHandler().get().hasPermission(targetPlayer.getUniqueId(), args[1])) {
             // Player doesn't have this permission
             return PermissifyConstants.PLAYER_DOES_NOT_HAVE_PERMISSION.replace("<PLAYER>", targetPlayer.getName()).replace("<PERMISSION>", args[1]);
         }
 
         plugin.getPermissifyAPI().getDatabaseHandler().get().removePermission(targetPlayer.getUniqueId(), args[1]);
-        if (targetPlayer.isOnline()) targetPlayer.getPlayer().addAttachment(plugin, args[1], false);
+        if (targetPlayer.isOnline()) {
+            Optional<PermissionAttachment> attachment = PermissionUtil.findAttachmentByPermission(targetPlayer.getPlayer(), args[1]);
+            attachment.ifPresent(targetPlayer.getPlayer()::removeAttachment);
+        }
 
         plugin.getPermissifyAPI().getDatabaseHandler().get().updateCache(targetPlayer.getUniqueId());
         Bukkit.getPluginManager().callEvent(new PlayerPermissionChangeEvent(targetPlayer, args[1], ChangeType.REMOVED));
