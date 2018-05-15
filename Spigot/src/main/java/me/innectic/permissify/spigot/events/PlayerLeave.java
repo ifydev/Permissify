@@ -42,8 +42,14 @@ public class PlayerLeave implements Listener {
     public void onPlayerLeave(PlayerQuitEvent e) {
         Bukkit.getScheduler().runTaskAsynchronously(PermissifyMain.getInstance(), () -> {
             Player player = e.getPlayer();
-            if (player == null) return;
+            if (player == null) {
+                System.out.println("Player did not exist on leave.");
+                return;
+            }
             // Set the permissions of the player
+            player.getEffectivePermissions().clear();
+            player.recalculatePermissions();
+
             PermissibleUtil.uninjectPermissible(player);
         });
     }

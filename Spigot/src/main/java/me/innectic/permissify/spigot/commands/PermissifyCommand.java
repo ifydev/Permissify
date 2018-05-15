@@ -76,7 +76,6 @@ public class PermissifyCommand implements CommandExecutor {
                             page = Integer.parseInt(args[1]);
                         } catch (NumberFormatException ignored) {}
                     }
-                    page -= 1;
                     sendHelp(sender, page);
                     return;
                 } else if (args[0].equalsIgnoreCase("cache")) {
@@ -84,12 +83,11 @@ public class PermissifyCommand implements CommandExecutor {
                     sendResponse(response, sender);
                     return;
                 }
-            }
-
-            if (args.length < 2) {
+            } else {
                 sendHelp(sender);
                 return;
             }
+
             if (args[0].equalsIgnoreCase("group")) {
                 String response;
                 if (args[1].equalsIgnoreCase("create") || args[1].equalsIgnoreCase("add"))
@@ -159,6 +157,7 @@ public class PermissifyCommand implements CommandExecutor {
             sendResponse(PermissifyConstants.INVALID_HELP_PAGE.replace("<PAGE>", String.valueOf(page)), player);
             return;
         }
+        page = page == 0 ? page : page - 1; // what
         sendResponse(PermissifyConstants.PERMISSIFY_HELP_HEADER, player);
         sendResponse(PermissifyConstants.PERMISSIFY_HELP_PAGES.get(page), player);
         sendResponse(PermissifyConstants.PERMISSIFY_HELP_FOOTER, player);

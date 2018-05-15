@@ -38,12 +38,13 @@ import java.util.UUID;
  * @since 8/26/2017
  */
 @AllArgsConstructor
+@Getter
 public class PermissifyProfile {
-    @Getter private final Map<String, PermissionGroup> groups;
-    @Getter private Map<UUID, List<Permission>> playerPermissions;
-    @Getter private PermissionGroup defaultGroup;
-    @Getter private List<UUID> superAdmins;
-    @Getter private int version;
+    private final Map<String, PermissionGroup> groups;
+    private Map<UUID, List<Permission>> playerPermissions;
+    private PermissionGroup defaultGroup;
+    private List<UUID> superAdmins;
+    private int version;
 
     @Override
     public String toString() {

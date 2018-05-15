@@ -1,4 +1,4 @@
-storage: mysql
+storage: sqlite
 allow-command-block: false
 disable-wildcard-permissions: false
 connection:
