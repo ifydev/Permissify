@@ -14,16 +14,12 @@ import java.util.Optional;
  * @since 5/14/18
  */
 @RequiredArgsConstructor
-public class PlayerGroupChangeEvent extends Event {
+@Getter
+public class PlayerGroupAddEvent extends Event {
 
-    private static HandlerList handlers = new HandlerList();
+    private HandlerList handlers = new HandlerList();
 
-    @Getter private final OfflinePlayer player;
-    @Getter private final PermissionGroup toGroup;
-    @Getter private final Optional<PermissionGroup> fromGroup;
-
-    @Override
-    public HandlerList getHandlers() {
-        return null;
-    }
+    private final OfflinePlayer player;
+    private final PermissionGroup toGroup;
+    private final Optional<PermissionGroup> fromGroup;
 }
