@@ -13,6 +13,8 @@ public class PermissibleUtil {
     private static PermissibleInjector injector = new PermissibleInjector(true);
 
     public static void injectPermissible(Player player) {
+        if (!PermissifyMain.getInstance().isUseWildcards()) return;
+
         try {
             PermissifyPermissible permissible = new PermissifyPermissible(player, PermissifyMain.getInstance());
             Optional<Permissible> old = injector.inject(player, permissible);
@@ -24,6 +26,8 @@ public class PermissibleUtil {
     }
 
     public static void uninjectPermissible(Player player) {
+        if (!PermissifyMain.getInstance().isUseWildcards()) return;
+
         try {
             Optional<Permissible> ours = injector.getPermissible(player);
             if (!ours.isPresent()) return;
