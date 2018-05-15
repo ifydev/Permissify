@@ -125,6 +125,9 @@ public class PermissifyConstants {
     public static final String UNABLE_OTHER = PERMISSIFY_PREFIX + "&c&lUnable to continue: <REASON>";
     public static final String UNABLE_TO_SET = PERMISSIFY_PREFIX + "&c&lUnable to set: <REASON>";
 
+    public static final String DEBUG_ENABLED = PERMISSIFY_PREFIX + "&e&lDebug mode &2&lenabled!";
+    public static final String DEBUG_DISABLED = PERMISSIFY_PREFIX + "&e&lDebug mode &c&ldisabled!";
+
     public static final String PERMISSIFY_HELP_HEADER = "&e================== &a&lPermissify Help &e==================";
     public static final String PERMISSIFY_HELP_FOOTER = "&e=====================================================";
 //    public static final int LINES_PER_PAGE = 10;   TODO: Pagination should happen by `len(pages) / lines_per_page`.
@@ -149,6 +152,8 @@ public class PermissifyConstants {
             "&a&l/permissify player removegroup [player] [group]",
             "&a&l/permissify player setmain [player] [group]",
             "&a&l/permissify group default [group?]"
+    ), Arrays.asList(
+            "&a&l/permissify debug [export] [include profile]"
     )));
 
     // Error response

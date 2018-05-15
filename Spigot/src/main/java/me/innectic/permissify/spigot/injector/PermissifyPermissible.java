@@ -32,27 +32,25 @@ public class PermissifyPermissible extends PermissibleBase {
     @Override
     public boolean isPermissionSet(String permission) {
         Optional<DatabaseHandler> database = PermissifyMain.getInstance().getPermissifyAPI().getDatabaseHandler();
+        System.out.println(database.map(databaseHandler -> databaseHandler.hasPermission(owner.getUniqueId(), permission)).orElse(false));
         return database.map(databaseHandler -> databaseHandler.hasPermission(owner.getUniqueId(), permission)).orElse(false);
     }
 
     @Override
     public boolean isPermissionSet(Permission permission) {
-        Optional<DatabaseHandler> database = PermissifyMain.getInstance().getPermissifyAPI().getDatabaseHandler();
-        return database.map(databaseHandler -> databaseHandler.hasPermission(owner.getUniqueId(), permission.getName()))
-                .orElse(permission.getDefault().getValue(isOp()));
+        return isPermissionSet(permission.getName());
     }
 
     @Override
     public boolean hasPermission(String permission) {
         Set<PermissionAttachmentInfo> attachments = getEffectivePermissions();
         for (PermissionAttachmentInfo attachment : attachments) {
+            if (!attachment.getValue()) continue;
             String against = attachment.getPermission();
-            boolean isNegative = against.charAt(0) == '-';
-            if (isNegative) against = against.substring(1);
 
-            if (isPermissionAllowedFromWildcard(permission, against) && isNegative) return false;
+            if (isPermissionAllowedFromWildcard(permission, against)) return true;
         }
-        return true;
+        return false;
     }
 
     @Override
@@ -76,7 +74,7 @@ public class PermissifyPermissible extends PermissibleBase {
             String againstPart = againstParts.next();
 
             if (!againstParts.hasNext() && againstPart.equals("*")) return true;
-            if (!againstPart.equalsIgnoreCase("*") && !againstPart.equalsIgnoreCase(checkPart)) return false;
+            if (!againstPart.equals("*") && !againstPart.equalsIgnoreCase(checkPart)) return false;
         }
         return false;
     }

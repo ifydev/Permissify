@@ -19,6 +19,7 @@ public class PermissibleUtil {
             PermissifyPermissible permissible = new PermissifyPermissible(player, PermissifyMain.getInstance());
             Optional<Permissible> old = injector.inject(player, permissible);
             old.ifPresent(permissible::setPreviousPermissible);
+
             permissible.recalculatePermissions();
         } catch (IllegalAccessException | NoSuchFieldException e) {
             e.printStackTrace();
@@ -34,6 +35,8 @@ public class PermissibleUtil {
             if (!(ours.get() instanceof PermissifyPermissible)) return;
             if (!injector.inject(player, ((PermissifyPermissible) ours.get()).getPreviousPermissible()).isPresent())
                 System.out.println("Failed to uninject for " + player.getName());
+            player.getEffectivePermissions().clear();
+            player.recalculatePermissions();
         } catch (IllegalAccessException | NoSuchFieldException e) {
             e.printStackTrace();
         }
