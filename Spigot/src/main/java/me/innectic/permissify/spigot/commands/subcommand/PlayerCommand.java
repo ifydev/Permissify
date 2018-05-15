@@ -28,8 +28,10 @@ import me.innectic.permissify.spigot.PermissifyMain;
 import me.innectic.permissify.api.PermissifyConstants;
 import me.innectic.permissify.api.permission.Permission;
 import me.innectic.permissify.api.permission.PermissionGroup;
+import me.innectic.permissify.spigot.events.custom.ChangeType;
 import me.innectic.permissify.spigot.events.custom.PlayerGroupAddEvent;
 import me.innectic.permissify.spigot.events.custom.PlayerGroupRemoveEvent;
+import me.innectic.permissify.spigot.events.custom.PlayerPermissionChangeEvent;
 import me.innectic.permissify.spigot.utils.MiscUtil;
 import me.innectic.permissify.spigot.utils.PermissionUtil;
 import org.bukkit.Bukkit;
@@ -175,6 +177,7 @@ public class PlayerCommand {
         }
 
         plugin.getPermissifyAPI().getDatabaseHandler().get().updateCache(targetPlayer.getUniqueId());
+        Bukkit.getPluginManager().callEvent(new PlayerPermissionChangeEvent(targetPlayer, args[1], ChangeType.ADDED));
         return PermissifyConstants.PERMISSION_ADDED_PLAYER
                 .replace("<PLAYER>", targetPlayer.getName()).replace("<PERMISSION>", args[1]);
     }
@@ -200,6 +203,7 @@ public class PlayerCommand {
         if (targetPlayer.isOnline()) targetPlayer.getPlayer().addAttachment(plugin, args[1], false);
 
         plugin.getPermissifyAPI().getDatabaseHandler().get().updateCache(targetPlayer.getUniqueId());
+        Bukkit.getPluginManager().callEvent(new PlayerPermissionChangeEvent(targetPlayer, args[1], ChangeType.REMOVED));
         return PermissifyConstants.PERMISSION_REMOVED_PLAYER
                 .replace("<PLAYER>", targetPlayer.getName()).replace("<PERMISSION>", args[1]);
     }
