@@ -28,6 +28,10 @@ import me.innectic.permissify.spigot.PermissifyMain;
 import me.innectic.permissify.api.PermissifyConstants;
 import me.innectic.permissify.api.permission.Permission;
 import me.innectic.permissify.api.permission.PermissionGroup;
+import me.innectic.permissify.spigot.events.custom.ChangeType;
+import me.innectic.permissify.spigot.events.custom.PlayerGroupAddEvent;
+import me.innectic.permissify.spigot.events.custom.PlayerGroupRemoveEvent;
+import me.innectic.permissify.spigot.events.custom.PlayerPermissionChangeEvent;
 import me.innectic.permissify.spigot.utils.MiscUtil;
 import me.innectic.permissify.spigot.utils.PermissionUtil;
 import org.bukkit.Bukkit;
@@ -60,6 +64,9 @@ public class PlayerCommand {
 
         OfflinePlayer targetPlayer = Bukkit.getPlayer(args[0]);
         if (targetPlayer == null || !targetPlayer.hasPlayedBefore()) return PermissifyConstants.INVALID_PLAYER;
+        Optional<PermissionGroup> oldGroup = plugin.getPermissifyAPI().getDatabaseHandler().get()
+                .getGroups(targetPlayer.getUniqueId()).stream()
+                .filter(g -> g.isPrimaryGroup(targetPlayer.getUniqueId())).findFirst();
 
         Optional<PermissionGroup> group = plugin.getPermissifyAPI().getDatabaseHandler().get().getGroup(args[1]);
         if (!group.isPresent()) return PermissifyConstants.INVALID_GROUP.replace("<GROUP>", args[1]);
@@ -69,6 +76,7 @@ public class PlayerCommand {
                 targetPlayer.getPlayer().addAttachment(plugin, permission.getPermission(), permission.isGranted()));
 
         plugin.getPermissifyAPI().getDatabaseHandler().get().updateCache(targetPlayer.getUniqueId());
+        Bukkit.getServer().getPluginManager().callEvent(new PlayerGroupAddEvent(targetPlayer, group.get(), oldGroup));
         return PermissifyConstants.PLAYER_ADDED_TO_GROUP
                 .replace("<PLAYER>", targetPlayer.getName()).replace("<GROUP>", group.get().getName());
     }
@@ -92,7 +100,10 @@ public class PlayerCommand {
 
         if (targetPlayer.isOnline()) group.get().getPermissions().forEach(permission ->
                 targetPlayer.getPlayer().addAttachment(plugin, permission.getPermission(), false));
+
         plugin.getPermissifyAPI().getDatabaseHandler().get().updateCache(targetPlayer.getUniqueId());
+        Bukkit.getServer().getPluginManager().callEvent(new PlayerGroupRemoveEvent(targetPlayer, group.get()));
+
         return PermissifyConstants.PLAYER_REMOVED_FROM_GROUP
                 .replace("<PLAYER>", targetPlayer.getName()).replace("<GROUP>", group.get().getName());
     }
@@ -166,6 +177,7 @@ public class PlayerCommand {
         }
 
         plugin.getPermissifyAPI().getDatabaseHandler().get().updateCache(targetPlayer.getUniqueId());
+        Bukkit.getPluginManager().callEvent(new PlayerPermissionChangeEvent(targetPlayer, args[1], ChangeType.ADDED));
         return PermissifyConstants.PERMISSION_ADDED_PLAYER
                 .replace("<PLAYER>", targetPlayer.getName()).replace("<PERMISSION>", args[1]);
     }
@@ -191,6 +203,7 @@ public class PlayerCommand {
         if (targetPlayer.isOnline()) targetPlayer.getPlayer().addAttachment(plugin, args[1], false);
 
         plugin.getPermissifyAPI().getDatabaseHandler().get().updateCache(targetPlayer.getUniqueId());
+        Bukkit.getPluginManager().callEvent(new PlayerPermissionChangeEvent(targetPlayer, args[1], ChangeType.REMOVED));
         return PermissifyConstants.PERMISSION_REMOVED_PLAYER
                 .replace("<PLAYER>", targetPlayer.getName()).replace("<PERMISSION>", args[1]);
     }
