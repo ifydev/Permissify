@@ -115,6 +115,7 @@ public class PermissifyConstants {
     public static final String INVALID_GROUP = PERMISSIFY_PREFIX + "&c&lInvalid group '<GROUP>'!";
     public static final String INVALID_PLAYER = PERMISSIFY_PREFIX + "&c&lInvalid player!";
     public static final String INVALID_ARGUMENT = PERMISSIFY_PREFIX + "&c&lInvalid argument: <ARGUMENT>";
+    public static final String INVALID_HELP_PAGE = PERMISSIFY_PREFIX + "&c&lInvalid page: <PAGE>";
 
     public static final String PLAYER_NOT_IN_GROUP = PERMISSIFY_PREFIX + "&c&l<PLAYER> isn't in the group <GROUP>!";
 

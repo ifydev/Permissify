@@ -68,22 +68,24 @@ public class PermissifyCommand implements CommandExecutor {
                 return;
             }
 
-            if (args.length >= 1 && args[0].equalsIgnoreCase("help")) {
-                int page = 0;
-                if (args.length >= 2) {
-                    try {
-                        page = Integer.parseInt(args[1]);
-                    } catch (NumberFormatException ignored) {}
+            if (args.length >= 1) {
+                if (args[0].equalsIgnoreCase("help")) {
+                    int page = 0;
+                    if (args.length >= 2) {
+                        try {
+                            page = Integer.parseInt(args[1]);
+                        } catch (NumberFormatException ignored) {}
+                    }
+                    page -= 1;
+                    sendHelp(sender, page);
+                    return;
+                } else if (args[0].equalsIgnoreCase("cache")) {
+                    String response = plugin.getCacheCommand().handleCache(sender, ArgumentUtil.getRemainingArgs(1, args));
+                    sendResponse(response, sender);
+                    return;
                 }
-                page -= 1;
-                if (page < 0) page = 0;
-                sendHelp(sender, page);
-                return;
-            } else if (args.length >= 1 && args[0].equalsIgnoreCase("cache")) {
-                String response = plugin.getCacheCommand().handleCache(sender, ArgumentUtil.getRemainingArgs(1, args));
-                sendResponse(response, sender);
-                return;
             }
+
             if (args.length < 2) {
                 sendHelp(sender);
                 return;
@@ -153,6 +155,10 @@ public class PermissifyCommand implements CommandExecutor {
     }
 
     private void sendHelp(CommandSender player, int page) {
+        if (page < 0 || page > PermissifyConstants.PERMISSIFY_HELP_PAGES.size()) {
+            sendResponse(PermissifyConstants.INVALID_HELP_PAGE.replace("<PAGE>", String.valueOf(page)), player);
+            return;
+        }
         sendResponse(PermissifyConstants.PERMISSIFY_HELP_HEADER, player);
         sendResponse(PermissifyConstants.PERMISSIFY_HELP_PAGES.get(page), player);
         sendResponse(PermissifyConstants.PERMISSIFY_HELP_FOOTER, player);
