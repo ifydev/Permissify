@@ -1,5 +1,6 @@
 storage: mysql
 allow-command-block: false
+disable-wildcard-permissions: false
 connection:
   host: localhost
   port: 3306

@@ -26,11 +26,14 @@ package me.innectic.permissify.spigot;
 
 import lombok.Getter;
 import lombok.Setter;
-import me.innectic.permissify.spigot.commands.PermissifyCommand;
-import me.innectic.permissify.spigot.commands.subcommand.*;
-import me.innectic.permissify.spigot.events.PlayerJoin;
 import me.innectic.permissify.api.PermissifyAPI;
 import me.innectic.permissify.api.database.handlers.FullHandler;
+import me.innectic.permissify.spigot.commands.PermissifyCommand;
+import me.innectic.permissify.spigot.commands.subcommand.CacheCommand;
+import me.innectic.permissify.spigot.commands.subcommand.GroupCommand;
+import me.innectic.permissify.spigot.commands.subcommand.PlayerCommand;
+import me.innectic.permissify.spigot.commands.subcommand.ProfileCommand;
+import me.innectic.permissify.spigot.events.PlayerJoin;
 import me.innectic.permissify.spigot.events.PlayerLeave;
 import me.innectic.permissify.spigot.utils.ConfigVerifier;
 import me.innectic.permissify.spigot.utils.DisplayUtil;
@@ -57,6 +60,7 @@ public class PermissifyMain extends JavaPlugin {
     @Getter private PlayerCommand playerCommand;
     @Getter private CacheCommand cacheCommand;
     @Getter private ProfileCommand profileCommand;
+    @Getter @Setter private boolean useWildcards;
 
     @Override
     public void onEnable() {
@@ -69,12 +73,15 @@ public class PermissifyMain extends JavaPlugin {
             getLogger().log(Level.SEVERE, ChatColor.RED + "Internal Permissify Error: Could not verify basic information!");
             return;
         }
+        if (getConfig().getBoolean("disable-wildcard-permissions", false)) this.useWildcards = false;
+
         Optional<FullHandler> handler = configVerifier.verifyConnectionInformation();
         // Initialize the API
         if (!handler.isPresent() || !handler.get().getHandlerType().isPresent()) {
             getLogger().log(Level.SEVERE, ChatColor.RED + "Internal Permissify Error: No handler / type present!");
             return;
         }
+
         try {
             permissifyAPI.initialize(handler.get().getHandlerType().get(), handler.get().getConnectionInformation(), new DisplayUtil(), getLogger());
         } catch (Exception e) {
@@ -85,10 +92,9 @@ public class PermissifyMain extends JavaPlugin {
         // Register listeners
         registerListeners();
         long timeTaken = System.currentTimeMillis() - start;
+        getLogger().info("Permissify initialized in " + ((double) timeTaken / 1000) + " seconds (" + timeTaken + " ms)!");
 
         Bukkit.getOnlinePlayers().forEach(PermissibleUtil::injectPermissible);
-
-        getLogger().info("Permissify initialized in " + ((double) timeTaken / 1000) + " seconds (" + timeTaken + " ms)!");
     }
 
     @Override
