@@ -36,6 +36,7 @@ import me.innectic.permissify.spigot.utils.PermissionUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
+import org.bukkit.permissions.PermissionAttachment;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -196,7 +197,10 @@ public class PlayerCommand {
         }
 
         plugin.getPermissifyAPI().getDatabaseHandler().get().removePermission(targetPlayer.getUniqueId(), args[1]);
-        if (targetPlayer.isOnline()) targetPlayer.getPlayer().addAttachment(plugin, args[1], false);
+        if (targetPlayer.isOnline()) {
+            Optional<PermissionAttachment> attachment = PermissionUtil.findAttachmentByPermission(targetPlayer.getPlayer(), args[1]);
+            attachment.ifPresent(targetPlayer.getPlayer()::removeAttachment);
+        }
 
         plugin.getPermissifyAPI().getDatabaseHandler().get().updateCache(targetPlayer.getUniqueId());
         return PermissifyConstants.PERMISSION_REMOVED_PLAYER

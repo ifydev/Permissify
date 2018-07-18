@@ -42,7 +42,11 @@ public class PlayerJoin implements Listener {
     public void onPlayerJoinEvent(PlayerJoinEvent e) {
         Bukkit.getScheduler().runTaskAsynchronously(PermissifyMain.getInstance(), () -> {
             Player player = e.getPlayer();
-            if (player == null) return;
+            if (player == null) {
+                System.out.println("Player did not exist on join");
+                return;
+            }
+            PermissionUtil.clearPermissions(player);
             // Set the permissions of the player
             PermissionUtil.applyPermissions(player);
         });

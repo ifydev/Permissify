@@ -31,8 +31,12 @@ import org.bukkit.block.CommandBlock;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.permissions.PermissionAttachment;
+import org.bukkit.permissions.PermissionAttachmentInfo;
 
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 /**
  * @author Innectic
@@ -64,5 +68,14 @@ public class PermissionUtil {
             handler.getGroups(player.getUniqueId()).stream().map(PermissionGroup::getPermissions).forEach(permissions::addAll);
             permissions.forEach(permission -> player.addAttachment(PermissifyMain.getInstance(), permission.getPermission(), permission.isGranted()));
         });
+    }
+
+    public static void clearPermissions(Player player) {
+        player.getEffectivePermissions().stream().filter(Objects::nonNull).map(PermissionAttachmentInfo::getAttachment).filter(Objects::nonNull).forEach(player::removeAttachment);
+        player.recalculatePermissions();
+    }
+
+    public static Optional<PermissionAttachment> findAttachmentByPermission(Player player, String permission) {
+        return player.getEffectivePermissions().stream().filter(p -> p.getPermission().equalsIgnoreCase(permission)).map(PermissionAttachmentInfo::getAttachment).findFirst();
     }
 }
