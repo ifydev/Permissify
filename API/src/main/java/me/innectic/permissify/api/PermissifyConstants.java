@@ -89,7 +89,7 @@ public class PermissifyConstants {
     public static final String DEFAULT_GROUP_RESPONSE = PERMISSIFY_PREFIX + "&e&lThe current default group is '<GROUP>&e&l'.";
     public static final String DEFAULT_GROUP_SET = PERMISSIFY_PREFIX + "&e&lThe default group has been set to '<GROUP>&e&l'.";
 
-    public static final String NOT_ENOUGH_ARGUMENTS_GROUP_CREATE = PERMISSIFY_PREFIX + "&c&lNot enough arguments! &e&l/permissify group create [name] [prefix] [suffix] [chat-color]";
+    public static final String NOT_ENOUGH_ARGUMENTS_GROUP_CREATE = PERMISSIFY_PREFIX + "&c&lNot enough arguments! &e&l/permissify group create [name] [display_name] [prefix] [suffix] [chat_color]";
     public static final String NOT_ENOUGH_ARGUMENTS_GROUP_REMOVE = PERMISSIFY_PREFIX + "&c&lNot enough arguments! &e&l/permissify group remove [name]";
     public static final String NOT_ENOUGH_ARGUMENTS_GROUP_PERMISSION_ADD = PERMISSIFY_PREFIX + "&c&lNot enough arguments! &e&l/permissify group addpermission [group] [permission]";
     public static final String NOT_ENOUGH_ARGUMENTS_GROUP_PERMISSION_REMOVE = PERMISSIFY_PREFIX + "&c&lNot enough arguments! &e&l/permissify group removepermission [group] [permission]";
@@ -134,7 +134,7 @@ public class PermissifyConstants {
             "&a&l/permissify superadmin [player] - &c&lWARNING: &e&lSUPERADMIN GIVES PERMISSION FOR EVERYTHING!",
             "&a&l/permissify cache",
             "&a&l/permissify cache purge",
-            "&a&l/permissify group create [name] [prefix] [suffix] [chatcolor]",
+            "&a&l/permissify group create [name] [display_name] [prefix] [suffix] [chatcolor]",
             "&a&l/permissify group remove [name]",
             "&a&l/permissify group addpermission [group] [permissions...] [(optional) lifespan]",
             "&a&l/permissify group removepermission [group] [permissions...]"

@@ -61,6 +61,7 @@ public class GroupCommand {
         if (!plugin.getPermissifyAPI().getDatabaseHandler().isPresent())
             return PermissifyConstants.UNABLE_TO_CREATE.replace("<TYPE>", "group").replace("<REASON>", "No database handler.");
 
+        System.out.println(Arrays.toString(args));
         if (args.length < 5) return PermissifyConstants.NOT_ENOUGH_ARGUMENTS_GROUP_CREATE;
         if (!ColorUtil.isValidChatColor(args[4])) return PermissifyConstants.INVALID_CHATCOLOR.replace("<COLOR>", args[4]);
 
