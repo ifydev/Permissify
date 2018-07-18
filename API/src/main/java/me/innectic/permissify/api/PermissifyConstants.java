@@ -106,6 +106,9 @@ public class PermissifyConstants {
     public static final String NOT_ENOUGH_ARGUMENTS_PROFILE = PERMISSIFY_PREFIX + "&c&lNot enough arguments! &e&l/permissify profile [save|load] [profile]";
     public static final String NOT_ENOUGH_ARGUMENTS_PROFILE_SAVE = PERMISSIFY_PREFIX + "&c&lNot enough arguments! &e&l/permissify profile save [fileName]";
     public static final String NOT_ENOUGH_ARGUMENTS_PROFILE_LOAD = PERMISSIFY_PREFIX + "&c&lNot enough arguments! &e&l/permissify profile load [source]";
+    public static final String NOT_ENOUGH_ARGUMENTS_SUPERADMIN = PERMISSIFY_PREFIX + "&c&l/Not enough arguments! &e&l/permissify superadmin <grant|remove> <player>";
+    public static final String NOT_ENOUGH_ARGUMENTS_SUPERADMIN_GRANT = PERMISSIFY_PREFIX + "&c&lNot enough arguments! &e&l/permissify superadmin grant <player>";
+    public static final String NOT_ENOUGH_ARGUMENTS_SUPERADMIN_REMOVE = PERMISSIFY_PREFIX + "&c&lNot enough arguments! &e&l/permissify superadmin remove <player>";
 
     public static final String PROFILE_SAVED = PERMISSIFY_PREFIX + "&e&lSaved profile '<PROFILE>'.";
     public static final String PROFILE_NOT_SAVED = PERMISSIFY_PREFIX + "&c&lUnable to save profile '<PROFILE>'";
@@ -132,7 +135,8 @@ public class PermissifyConstants {
 
     public static final List<List<String>> PERMISSIFY_HELP_PAGES = new ArrayList<>(Arrays.asList(Arrays.asList(
             "&a&l/permissify help [page]",
-            "&a&l/permissify superadmin <player> - &c&lWARNING: &e&lSUPERADMIN GIVES PERMISSION FOR EVERYTHING!",
+            "&a&l/permissify superadmin grant <player> - &c&lWARNING: &e&lSUPERADMIN GIVES PERMISSION FOR EVERYTHING!",
+            "&a&l/permissify superadmin remove <player>",
             "&a&l/permissify cache",
             "&a&l/permissify cache purge",
             "&a&l/permissify group create <name> <display_name> <prefix> <suffix> <chatcolor>",

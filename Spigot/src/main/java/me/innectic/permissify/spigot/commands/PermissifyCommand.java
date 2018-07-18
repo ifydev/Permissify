@@ -54,11 +54,24 @@ public class PermissifyCommand implements CommandExecutor {
                 return;
             }
             if (sender instanceof ConsoleCommandSender) {
-                if (args.length >= 2 && args[0].equalsIgnoreCase("superadmin")) {
-                    Player player = Bukkit.getPlayer(args[1]);
-                    if (player == null) return;
-                    plugin.getPermissifyAPI().getDatabaseHandler().get().addSuperAdmin(player.getUniqueId());
-                    return;
+                if (args[0].equalsIgnoreCase("superadmin")) {
+                    if (args.length < 3) {
+                        sender.sendMessage(ColorUtil.makeReadable(PermissifyConstants.NOT_ENOUGH_ARGUMENTS_SUPERADMIN));
+                        return;
+                    }
+                    Player player = Bukkit.getPlayer(args[2]);
+                    if (player == null || !player.isOnline()) return;
+
+                    if (args[1].equalsIgnoreCase("grant")) {
+                        plugin.getPermissifyAPI().getDatabaseHandler().get().addSuperAdmin(player.getUniqueId());
+                        return;
+                    } else if (args[1].equalsIgnoreCase("remove")) {
+                        plugin.getPermissifyAPI().getDatabaseHandler().get().removeSuperAdmin(player.getUniqueId());
+                        return;
+                    } else {
+                        sender.sendMessage(ColorUtil.makeReadable(PermissifyConstants.INVALID_ARGUMENT.replace("<ARGUMENT>", args[1])));
+                        return;
+                    }
                 }
             }
             if (sender instanceof CommandBlock && !plugin.getConfig().getBoolean("allow-command-block", false)) return;

@@ -719,6 +719,7 @@ public class SQLHandler extends DatabaseHandler {
     @Override
     public void addSuperAdmin(UUID uuid) {
         if (uuid == null) return;
+        if (superAdmins.contains(uuid)) return;
         // Update the cache
         superAdmins.add(uuid);
         // Update mysql
@@ -746,7 +747,24 @@ public class SQLHandler extends DatabaseHandler {
 
     @Override
     public void removeSuperAdmin(UUID uuid) {
-        // TODO: Before 1.0.1
+        if (uuid == null) return;
+        superAdmins.removeIf(u -> u.equals(uuid));
+
+        Optional<Connection> connection = getConnection();
+        if (!connection.isPresent()) {
+            PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.empty()));
+            return;
+        }
+        try {
+            PreparedStatement statement = connection.get().prepareStatement("DELETE FROM superAdmin WHERE uuid=?");
+            statement.setString(1, uuid.toString());
+            statement.execute();
+            statement.close();
+            connection.get().close();
+        } catch (SQLException e) {
+            PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.DATABASE_EXCEPTION, Optional.of(e)));
+            e.printStackTrace();
+        }
     }
 
     @Override
