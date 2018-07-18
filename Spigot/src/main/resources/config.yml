@@ -1,4 +1,4 @@
-storage: mysql
+storage: sqlite
 allow-command-block: false
 connection:
   host: localhost

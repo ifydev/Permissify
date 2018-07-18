@@ -77,7 +77,7 @@ public class ConfigVerifier implements VerifyConfig {
                 if (plugin.getConfig().getString("connection.file") == null) return Optional.empty();
 
                 Map<String, Object> sqliteMeta = new HashMap<>();
-                sqliteMeta.put("file", plugin.getDataFolder() + "/" + plugin.getConfig().getString("connection.file") + ".db");
+                sqliteMeta.put("file", plugin.getDataFolder() + "/" + plugin.getConfig().getString("connection.file"));
                 Map<String, Object> meta = new HashMap<>();
                 meta.put("sqlite", sqliteMeta);
 

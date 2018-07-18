@@ -61,7 +61,6 @@ public class GroupCommand {
         if (!plugin.getPermissifyAPI().getDatabaseHandler().isPresent())
             return PermissifyConstants.UNABLE_TO_CREATE.replace("<TYPE>", "group").replace("<REASON>", "No database handler.");
 
-        System.out.println(Arrays.toString(args));
         if (args.length < 5) return PermissifyConstants.NOT_ENOUGH_ARGUMENTS_GROUP_CREATE;
         if (!ColorUtil.isValidChatColor(args[4])) return PermissifyConstants.INVALID_CHATCOLOR.replace("<COLOR>", args[4]);
 
@@ -120,11 +119,11 @@ public class GroupCommand {
             Optional<PermissionGroup> group = plugin.getPermissifyAPI().getDatabaseHandler().get().getGroup(args[0]);
             group.ifPresent(permissionGroup -> {
                 Arrays.stream(remaining).forEach(permissionGroup::addPermission);
-                Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> permissionGroup.getPlayers().entrySet().stream().map(Map.Entry::getKey).map(Bukkit::getPlayer).filter(Objects::nonNull).forEach(PermissionUtil::applyPermissions));
+                permissionGroup.getPlayers().entrySet().stream().map(Map.Entry::getKey).map(Bukkit::getPlayer).filter(Objects::nonNull).forEach(PermissionUtil::applyPermissions);
             });
         });
         return PermissifyConstants.PERMISSION_ADDED_GROUP.replace("<PERMISSION>",
-                String.join(", ", ArgumentUtil.getRemainingArgs(1, args)).replace("<GROUP>", args[0]));
+                String.join(", ", ArgumentUtil.getRemainingArgs(1, args))).replace("<GROUP>", args[0]);
     }
 
     public String handlePermissionRemove(CommandSender sender, String[] args) {
@@ -145,12 +144,12 @@ public class GroupCommand {
             Optional<PermissionGroup> group = plugin.getPermissifyAPI().getDatabaseHandler().get().getGroup(args[0]);
             group.ifPresent(permissionGroup -> {
                 for (String permission : remaining) permissionGroup.removePermission(permission);
-                Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> permissionGroup.getPlayers().keySet().stream().map(Bukkit::getPlayer).filter(Objects::nonNull).forEach(PermissionUtil::applyPermissions));
+                permissionGroup.getPlayers().keySet().stream().map(Bukkit::getPlayer).filter(Objects::nonNull).forEach(PermissionUtil::applyPermissions);
             });
         });
 
         return PermissifyConstants.PERMISSION_REMOVED_GROUP.replace("<PERMISSION>",
-                String.join(", ", remaining).replace("<GROUP>", args[0]));
+                String.join(", ", remaining)).replace("<GROUP>", args[0]);
     }
 
     public String handleListPermissions(CommandSender sender, String[] args) {
@@ -197,8 +196,7 @@ public class GroupCommand {
             // If we only have one, show the default group.
             String defaultGroupName = handler.getDefaultGroup().map(group -> ChatColor.getByChar(group.getChatColor()) + group.getName())
                     .orElse(PermissifyConstants.EMPTY_DEFAULT_GROUP_NAME);
-            String response = PermissifyConstants.DEFAULT_GROUP_RESPONSE.replace("<GROUP>", defaultGroupName);
-            return response;
+            return PermissifyConstants.DEFAULT_GROUP_RESPONSE.replace("<GROUP>", defaultGroupName);
         }
 
         Optional<PermissionGroup> defaultGroup = handler.getGroup(args[0]);

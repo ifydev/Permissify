@@ -68,22 +68,26 @@ public class PermissifyCommand implements CommandExecutor {
                 return;
             }
 
-            if (args.length >= 1 && args[0].equalsIgnoreCase("help")) {
-                int page = 0;
-                if (args.length >= 2) {
-                    try {
-                        page = Integer.parseInt(args[1]);
-                    } catch (NumberFormatException ignored) {}
+            if (args.length >= 1) {
+                if (args[0].equalsIgnoreCase("help")) {
+                    int page = 0;
+                    if (args.length >= 2) {
+                        try {
+                            page = Integer.parseInt(args[1]);
+                        } catch (NumberFormatException ignored) {
+                        }
+                    }
+                    page -= 1;
+                    if (page < 0) page = 0;
+                    sendHelp(sender, page);
+                    return;
+                } else if (args[0].equalsIgnoreCase("cache")) {
+                    String response = plugin.getCacheCommand().handleCache(sender, ArgumentUtil.getRemainingArgs(1, args));
+                    sendResponse(response, sender);
+                    return;
                 }
-                page -= 1;
-                if (page < 0) page = 0;
-                sendHelp(sender, page);
-                return;
-            } else if (args.length >= 1 && args[0].equalsIgnoreCase("cache")) {
-                String response = plugin.getCacheCommand().handleCache(sender, ArgumentUtil.getRemainingArgs(1, args));
-                sendResponse(response, sender);
-                return;
             }
+
             if (args.length < 2) {
                 sendHelp(sender);
                 return;
@@ -126,7 +130,7 @@ public class PermissifyCommand implements CommandExecutor {
                 else if (args[1].equalsIgnoreCase("listgroups"))
                     response = plugin.getPlayerCommand().handleListGroups(sender, ArgumentUtil.getRemainingArgs(2, args));
                 else if (args[1].equalsIgnoreCase("removegroup")) response = plugin.getPlayerCommand().handleRemovePlayerFromGroup(sender, ArgumentUtil.getRemainingArgs(2, args));
-                else if (args[1].equalsIgnoreCase("setmain")) response = plugin.getPlayerCommand().handleSetMainGroup(sender, ArgumentUtil.getRemainingArgs(2, args));
+                else if (args[1].equalsIgnoreCase("primarygroup")) response = plugin.getPlayerCommand().handleSetOrGetPrimaryGroup(sender, ArgumentUtil.getRemainingArgs(2, args));
                 else {
                     sendHelp(sender);
                     return;
@@ -145,6 +149,7 @@ public class PermissifyCommand implements CommandExecutor {
     }
 
     private void sendResponse(String response, CommandSender source) {
+        if (response.equals("")) return;
         source.sendMessage(ColorUtil.makeReadable(response));  // XXX: Probably don't need ColorUtil anymore...
     }
 

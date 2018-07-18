@@ -24,10 +24,13 @@
  */
 package me.innectic.permissify.spigot.commands.subcommand;
 
-import me.innectic.permissify.spigot.PermissifyMain;
+import me.innectic.permissify.api.PermissifyAPI;
 import me.innectic.permissify.api.PermissifyConstants;
+import me.innectic.permissify.api.database.ConnectionError;
 import me.innectic.permissify.api.permission.Permission;
 import me.innectic.permissify.api.permission.PermissionGroup;
+import me.innectic.permissify.api.util.Tristate;
+import me.innectic.permissify.spigot.PermissifyMain;
 import me.innectic.permissify.spigot.utils.MiscUtil;
 import me.innectic.permissify.spigot.utils.PermissionUtil;
 import org.bukkit.Bukkit;
@@ -96,13 +99,19 @@ public class PlayerCommand {
                 .replace("<PLAYER>", targetPlayer.getName()).replace("<GROUP>", group.get().getName());
     }
 
-    public String handleSetMainGroup(CommandSender sender, String[] args) {
+    public String handleSetOrGetPrimaryGroup(CommandSender sender, String[] args) {
         PermissifyMain plugin = PermissifyMain.getInstance();
         if (!plugin.getPermissifyAPI().getDatabaseHandler().isPresent())
             return PermissifyConstants.UNABLE_TO_SET.replace("<REASON>", "No database handler.");
 
         if (!PermissionUtil.hasPermissionOrSuperAdmin(sender, PermissifyConstants.PERMISSIFY_PLAYER_SET_MAIN_GROUP))
             return PermissifyConstants.INSUFFICIENT_PERMISSIONS;
+
+        if (args.length == 1) {
+            // Get the primary group.
+            Optional<PermissionGroup> group = plugin.getPermissifyAPI().getDatabaseHandler().get().getDefaultGroup();
+            return PermissifyConstants.PRIMARY_GROUP_TEMPLATE.replace("<GROUP>", group.map(PermissionGroup::getName).orElse("&c&lNONE"));
+        }
 
         if (args.length < 2) return PermissifyConstants.NOT_ENOUGH_ARGUMENTS_SET_MAIN_GROUP;
 
@@ -114,13 +123,16 @@ public class PlayerCommand {
         if (!group.get().getPlayers().containsKey(player.getUniqueId()))
             return PermissifyConstants.PLAYER_NOT_IN_GROUP.replace("<PLAYER>", player.getName()).replace("<GROUP>", group.get().getName());
 
-        boolean groupSet = plugin.getPermissifyAPI().getDatabaseHandler().get().setPrimaryGroup(group.get(), player.getUniqueId());
+        Tristate groupSet = plugin.getPermissifyAPI().getDatabaseHandler().get().setPrimaryGroup(group.get(), player.getUniqueId());
         plugin.getPermissifyAPI().getDatabaseHandler().get().updateCache(player.getUniqueId());
 
-        if (groupSet)
+        if (groupSet == Tristate.TRUE)
             return PermissifyConstants.MAIN_GROUP_SET.replace("<PLAYER>", player.getName()).replace("<GROUP>", group.get().getName());
-        // Should be pretty much impossible to get here, unless the database isn't connected.
-        return PermissifyConstants.PLAYER_NOT_IN_GROUP.replace("<PLAYER>", player.getName()).replace("<GROUP>", group.get().getName());
+        else if (groupSet == Tristate.FALSE) {
+            PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.empty()));
+            return "";
+        }
+        return PermissifyConstants.ALREADY_MAIN_GROUP.replace("<GROUP>", group.get().getName());
     }
 
     public String handleAddPermission(CommandSender sender, String[] args) {

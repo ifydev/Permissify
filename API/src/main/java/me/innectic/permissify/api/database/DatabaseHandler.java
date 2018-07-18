@@ -25,9 +25,11 @@
 package me.innectic.permissify.api.database;
 
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import me.innectic.permissify.api.permission.Permission;
 import me.innectic.permissify.api.permission.PermissionGroup;
 import me.innectic.permissify.api.profile.PermissifyProfile;
+import me.innectic.permissify.api.util.Tristate;
 
 import java.util.*;
 
@@ -37,17 +39,14 @@ import java.util.*;
  *
  * The base database type.
  */
+@RequiredArgsConstructor
 public abstract class DatabaseHandler {
 
     @Getter protected Map<UUID, List<Permission>> cachedPermissions = new HashMap<>();
     @Getter protected Map<String, PermissionGroup> cachedGroups = new HashMap<>();
     @Getter protected Optional<PermissionGroup> defaultGroup = Optional.empty();
-    @Getter protected final Optional<ConnectionInformation> connectionInformation;
+    @Getter protected final ConnectionInformation connectionInformation;
     @Getter protected List<UUID> superAdmins = new ArrayList<>();
-
-    public DatabaseHandler(ConnectionInformation connectionInformation) {
-        this.connectionInformation = Optional.ofNullable(connectionInformation);
-    }
 
     /**
      * Initialize the database handler
@@ -198,7 +197,7 @@ public abstract class DatabaseHandler {
      * @param group the group to set as the primary
      * @param uuid  the uuid of the player to set the primary of
      */
-    public abstract boolean setPrimaryGroup(PermissionGroup group, UUID uuid);
+    public abstract Tristate setPrimaryGroup(PermissionGroup group, UUID uuid);
 
     /**
      * Get the primary group of a player.
