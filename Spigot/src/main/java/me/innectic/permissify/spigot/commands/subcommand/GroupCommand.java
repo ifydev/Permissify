@@ -25,6 +25,7 @@
 package me.innectic.permissify.spigot.commands.subcommand;
 
 import me.innectic.permissify.api.database.DatabaseHandler;
+import me.innectic.permissify.api.util.Tristate;
 import me.innectic.permissify.spigot.PermissifyMain;
 import me.innectic.permissify.api.PermissifyConstants;
 import me.innectic.permissify.api.permission.Permission;
@@ -65,8 +66,9 @@ public class GroupCommand {
         if (!ColorUtil.isValidChatColor(args[4])) return PermissifyConstants.INVALID_CHATCOLOR.replace("<COLOR>", args[4]);
 
         // Create the new group
-        boolean created = plugin.getPermissifyAPI().getDatabaseHandler().get().createGroup(args[0], args[1], args[2], args[3], args[4]);
-        if (created) return PermissifyConstants.GROUP_CREATED.replace("<GROUP>", args[0]);
+        Tristate created = plugin.getPermissifyAPI().getDatabaseHandler().get().createGroup(args[0], args[1], args[2], args[3], args[4]);
+        if (created == Tristate.TRUE) return PermissifyConstants.GROUP_CREATED.replace("<GROUP>", args[0]);
+        else if (created == Tristate.NONE) return PermissifyConstants.GROUP_ALREADY_EXISTS.replace("<GROUP>", args[0]);
         return PermissifyConstants.UNABLE_TO_CREATE.replace("<TYPE>", "group").replace("<REASON>", "Unable to connect to database.");
     }
 
@@ -92,11 +94,11 @@ public class GroupCommand {
         if (!group.isPresent()) return PermissifyConstants.INVALID_GROUP.replace("<GROUP>", args[0]);
 
         List<UUID> playersInGroup = group.get().getPlayers().entrySet().stream().map(Map.Entry::getKey).collect(Collectors.toList());
-        boolean removed = plugin.getPermissifyAPI().getDatabaseHandler().get().deleteGroup(args[0]);
-        if (removed) {
+        Tristate removed = plugin.getPermissifyAPI().getDatabaseHandler().get().deleteGroup(args[0]);
+        if (removed == Tristate.TRUE) {
             Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> playersInGroup.stream().map(Bukkit::getPlayer).filter(Objects::nonNull).forEach(PermissionUtil::applyPermissions));
             return PermissifyConstants.GROUP_REMOVED.replace("<GROUP>", args[0]);
-        }
+        } else if (removed == Tristate.NONE) return PermissifyConstants.INVALID_GROUP.replace("<GROUP>", args[0]);
         return PermissifyConstants.UNABLE_TO_REMOVE.replace("<TYPE>", "group").replace("<REASON>", "Unable to connect to database");
     }
 

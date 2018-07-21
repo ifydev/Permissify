@@ -54,13 +54,6 @@ public abstract class DatabaseHandler {
     public abstract void initialize();
 
     /**
-     * Connect to the database
-     *
-     * @return if the connection was successful or not
-     */
-    public abstract boolean connect();
-
-    /**
      * Clear the handler's cache and reload all needed values.
      *
      * @param onlinePlayers the current players online who will need permissions.
@@ -141,14 +134,14 @@ public abstract class DatabaseHandler {
      * @param chatColor   the color of the chat message
      * @return if the group was created
      */
-    public abstract boolean createGroup(String name, String displayName, String prefix, String suffix, String chatColor);
+    public abstract Tristate createGroup(String name, String displayName, String prefix, String suffix, String chatColor);
 
     /**
      * Delete a permission group
      *
      * @param name the name of the group
      */
-    public abstract boolean deleteGroup(String name);
+    public abstract Tristate deleteGroup(String name);
 
     /**
      * Get the permission group from name.

@@ -116,7 +116,7 @@ public class SQLHandler extends DatabaseHandler {
             groupPermissionsStatement.close();
 
             PreparedStatement groupsStatement = connection.prepareStatement("CREATE TABLE IF NOT EXISTS " + database +
-                    "groups (name VARCHAR(100) NOT NULL UNIQUE, displayName VARCHAR(100) NOT NULL UNIQUE, prefix VARCHAR(100) NOT NULL, suffix VARCHAR(100) NOT NULL, chatcolor VARCHAR(4) NOT NULL, defaultGroup TINYINT NOT NULL, ladder VARCHAR(767))");
+                    "groups (name VARCHAR(100) NOT NULL UNIQUE, displayName VARCHAR(100) NOT NULL, prefix VARCHAR(100) NOT NULL, suffix VARCHAR(100) NOT NULL, chatcolor VARCHAR(4) NOT NULL, defaultGroup TINYINT NOT NULL, ladder VARCHAR(767))");
             groupsStatement.execute();
             groupsStatement.close();
 
@@ -159,19 +159,6 @@ public class SQLHandler extends DatabaseHandler {
             PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.DATABASE_EXCEPTION, Optional.of(e)));
             e.printStackTrace();
         }
-    }
-
-    @Override
-    public boolean connect() {
-        Optional<Connection> connection = getConnection();
-        boolean connected = connection.isPresent();
-
-        connection.ifPresent(c -> {
-            try {
-                c.close();
-            } catch (SQLException ignored) {}
-        });
-        return connected;
     }
 
     @Override
@@ -426,16 +413,16 @@ public class SQLHandler extends DatabaseHandler {
     }
 
     @Override
-    public boolean createGroup(String name, String displayName, String prefix, String suffix, String chatColor) {
+    public Tristate createGroup(String name, String displayName, String prefix, String suffix, String chatColor) {
         // Make sure that this group doesn't already exist
-        if (cachedGroups.getOrDefault(name, null) != null) return false;
+        if (cachedGroups.getOrDefault(name, null) != null) return Tristate.NONE;
         // Add the new group to the cache
         cachedGroups.put(name, new PermissionGroup(name, displayName, chatColor, prefix, suffix));
 
         Optional<Connection> connection = getConnection();
         if (!connection.isPresent()) {
             PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.empty()));
-            return false;
+            return Tristate.FALSE;
         }
 
         try {
@@ -455,14 +442,14 @@ public class SQLHandler extends DatabaseHandler {
             e.printStackTrace();
         }
 
-        return true;
+        return Tristate.TRUE;
     }
 
     @Override
-    public boolean deleteGroup(String name) {
+    public Tristate deleteGroup(String name) {
         Optional<PermissionGroup> group = getGroups().entrySet().stream().map(Map.Entry::getValue).filter(g -> g.getName().equalsIgnoreCase(name)).findFirst();
         if (!group.isPresent())
-            return false;
+            return Tristate.NONE;
 
         if (defaultGroup.isPresent() && defaultGroup.get().getName().equalsIgnoreCase(name)) {
             setDefaultGroup(null);
@@ -475,7 +462,7 @@ public class SQLHandler extends DatabaseHandler {
         Optional<Connection> connection = getConnection();
         if (!connection.isPresent()) {
             PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.empty()));
-            return false;
+            return Tristate.FALSE;
         }
         try {
             PreparedStatement statement = connection.get().prepareStatement("DELETE FROM groups WHERE name=?");
@@ -484,12 +471,12 @@ public class SQLHandler extends DatabaseHandler {
             statement.close();
             connection.get().close();
 
-            return true;
+            return Tristate.TRUE;
         } catch (SQLException e) {
             PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.DATABASE_EXCEPTION, Optional.of(e)));
             e.printStackTrace();
         }
-        return false;
+        return Tristate.FALSE;
     }
 
     @Override
@@ -684,27 +671,27 @@ public class SQLHandler extends DatabaseHandler {
                 .filter(permission -> permission.getName().equalsIgnoreCase(group)).findFirst();
         if (!permissionGroup.isPresent()) return false;
 
-        for (String permission : permissions) {
-            if (!permissionGroup.get().hasPermission(permission)) return false;
-            permissionGroup.get().removePermission(permission);
-            Optional<Connection> connection = getConnection();
-            if (!connection.isPresent()) {
-                PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.empty()));
-                return false;
-            }
-            try {
+        Optional<Connection> connection = getConnection();
+        if (!connection.isPresent()) {
+            PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.empty()));
+            return false;
+        }
+        try {
+            for (String permission : permissions) {
+                if (!permissionGroup.get().hasPermission(permission)) return false;
+                permissionGroup.get().removePermission(permission);
+
                 PreparedStatement statement = connection.get().prepareStatement("DELETE FROM groupPermissions WHERE groupName=? AND permission=?");
                 statement.setString(1, group);
                 statement.setString(2, permission);
                 statement.execute();
                 statement.close();
-                connection.get().close();
-
-                return true;
-            } catch (SQLException e) {
+            }
+            connection.get().close();
+            return true;
+        } catch (SQLException e) {
                 PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.of(e)));
                 e.printStackTrace();
-            }
         }
         return false;
     }

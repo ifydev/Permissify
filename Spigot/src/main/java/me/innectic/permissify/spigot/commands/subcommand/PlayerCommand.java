@@ -93,8 +93,9 @@ public class PlayerCommand {
         if (!group.isPresent()) return PermissifyConstants.INVALID_GROUP.replace("<GROUP>", args[1]);
         plugin.getPermissifyAPI().getDatabaseHandler().get().removePlayerFromGroup(targetPlayer.getUniqueId(), group.get());
 
-        if (targetPlayer.isOnline()) group.get().getPermissions().forEach(permission ->
-                targetPlayer.getPlayer().addAttachment(plugin, permission.getPermission(), false));
+        // TODO: stuff with the new permissible system that's actually done properly
+//        if (targetPlayer.isOnline()) group.get().getPermissions().forEach(permission ->
+//                targetPlayer.getPlayer().removeAttachment(new PermissionAttachment(plugin, permission.getPermission())));
         plugin.getPermissifyAPI().getDatabaseHandler().get().updateCache(targetPlayer.getUniqueId());
         return PermissifyConstants.PLAYER_REMOVED_FROM_GROUP
                 .replace("<PLAYER>", targetPlayer.getName()).replace("<GROUP>", group.get().getName());

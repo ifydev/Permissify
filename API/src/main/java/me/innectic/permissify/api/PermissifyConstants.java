@@ -85,6 +85,7 @@ public class PermissifyConstants {
     public static final String PLAYER_ALREADY_HAS_PERMISSION = PERMISSIFY_PREFIX + "&c&lPlayer <PLAYER> already has permission <PERMISSION>";
     public static final String PLAYER_DOES_NOT_HAVE_PERMISSION = PERMISSIFY_PREFIX + "&c&lPlayer <PLAYER> does not have permission <PERMISSION>";
     public static final String ALREADY_MAIN_GROUP = PERMISSIFY_PREFIX + "&c&l<GROUP> is already the main group!";
+    public static final String GROUP_ALREADY_EXISTS = PERMISSIFY_PREFIX + "&c&l<GROUP> already exists!";
 
     public static final String EMPTY_DEFAULT_GROUP_NAME = "&c&lNONE";
     public static final String DEFAULT_GROUP_RESPONSE = PERMISSIFY_PREFIX + "&e&lThe current default group is '<GROUP>&e&l'.";
@@ -107,8 +108,6 @@ public class PermissifyConstants {
     public static final String NOT_ENOUGH_ARGUMENTS_PROFILE_SAVE = PERMISSIFY_PREFIX + "&c&lNot enough arguments! &e&l/permissify profile save [fileName]";
     public static final String NOT_ENOUGH_ARGUMENTS_PROFILE_LOAD = PERMISSIFY_PREFIX + "&c&lNot enough arguments! &e&l/permissify profile load [source]";
     public static final String NOT_ENOUGH_ARGUMENTS_SUPERADMIN = PERMISSIFY_PREFIX + "&c&l/Not enough arguments! &e&l/permissify superadmin <grant|remove> <player>";
-    public static final String NOT_ENOUGH_ARGUMENTS_SUPERADMIN_GRANT = PERMISSIFY_PREFIX + "&c&lNot enough arguments! &e&l/permissify superadmin grant <player>";
-    public static final String NOT_ENOUGH_ARGUMENTS_SUPERADMIN_REMOVE = PERMISSIFY_PREFIX + "&c&lNot enough arguments! &e&l/permissify superadmin remove <player>";
 
     public static final String PROFILE_SAVED = PERMISSIFY_PREFIX + "&e&lSaved profile '<PROFILE>'.";
     public static final String PROFILE_NOT_SAVED = PERMISSIFY_PREFIX + "&c&lUnable to save profile '<PROFILE>'";
