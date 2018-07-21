@@ -36,7 +36,6 @@ import me.innectic.permissify.spigot.utils.PermissionUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
-import org.bukkit.permissions.PermissionAttachment;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -96,6 +95,8 @@ public class PlayerCommand {
         // TODO: stuff with the new permissible system that's actually done properly
 //        if (targetPlayer.isOnline()) group.get().getPermissions().forEach(permission ->
 //                targetPlayer.getPlayer().removeAttachment(new PermissionAttachment(plugin, permission.getPermission())));
+        plugin.getAttachmentManager().getAttachment(targetPlayer.getUniqueId(), Optional.of(group.get().getName())).ifPresent(attachment ->
+                group.get().getPermissions().forEach(permission -> attachment.unsetPermission(permission.getPermission())));
         plugin.getPermissifyAPI().getDatabaseHandler().get().updateCache(targetPlayer.getUniqueId());
         return PermissifyConstants.PLAYER_REMOVED_FROM_GROUP
                 .replace("<PLAYER>", targetPlayer.getName()).replace("<GROUP>", group.get().getName());
@@ -199,8 +200,10 @@ public class PlayerCommand {
 
         plugin.getPermissifyAPI().getDatabaseHandler().get().removePermission(targetPlayer.getUniqueId(), args[1]);
         if (targetPlayer.isOnline()) {
-            Optional<PermissionAttachment> attachment = PermissionUtil.findAttachmentByPermission(targetPlayer.getPlayer(), args[1]);
-            attachment.ifPresent(targetPlayer.getPlayer()::removeAttachment);
+            System.out.println("ONRSTEORSNTRSEIOTNRSEIOTNRSEIOTNRSEIOTNRSTORSTIOERNTEIORSNTEIRSTN");
+
+            plugin.getAttachmentManager().getAttachment(targetPlayer.getUniqueId(), Optional.empty()).ifPresent(self ->
+                    self.unsetPermission(args[1]));
         }
 
         plugin.getPermissifyAPI().getDatabaseHandler().get().updateCache(targetPlayer.getUniqueId());

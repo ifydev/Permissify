@@ -137,10 +137,10 @@ public class GroupCommand {
             return PermissifyConstants.UNABLE_TO_CREATE.replace("<TYPE>", "group").replace("<REASON>", "No database handler.");
 
         if (args.length < 2) return PermissifyConstants.NOT_ENOUGH_ARGUMENTS_GROUP_PERMISSION_REMOVE;
-        boolean added = plugin.getPermissifyAPI().getDatabaseHandler().get().removeGroupPermission(args[0], ArgumentUtil.getRemainingArgs(1, args));
+        String[] remaining = ArgumentUtil.getRemainingArgs(1, args);
+        boolean added = plugin.getPermissifyAPI().getDatabaseHandler().get().removeGroupPermission(args[0], remaining);
         if (!added) return PermissifyConstants.UNABLE_TO_ADD.replace("<REASON>", "Permission isn't on group!");
 
-        String[] remaining = ArgumentUtil.getRemainingArgs(1, args);
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
             if (!plugin.getPermissifyAPI().getDatabaseHandler().isPresent()) return;
             Optional<PermissionGroup> group = plugin.getPermissifyAPI().getDatabaseHandler().get().getGroup(args[0]);
