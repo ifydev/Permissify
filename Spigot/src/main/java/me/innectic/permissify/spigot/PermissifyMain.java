@@ -29,9 +29,13 @@ import lombok.Setter;
 import me.innectic.permissify.api.PermissifyAPI;
 import me.innectic.permissify.api.database.handlers.FullHandler;
 import me.innectic.permissify.spigot.commands.PermissifyCommand;
-import me.innectic.permissify.spigot.commands.subcommand.*;
+import me.innectic.permissify.spigot.commands.subcommand.CacheCommand;
+import me.innectic.permissify.spigot.commands.subcommand.GroupCommand;
+import me.innectic.permissify.spigot.commands.subcommand.PlayerCommand;
+import me.innectic.permissify.spigot.commands.subcommand.ProfileCommand;
 import me.innectic.permissify.spigot.events.PlayerJoin;
 import me.innectic.permissify.spigot.events.PlayerLeave;
+import me.innectic.permissify.spigot.utils.AttachmentManager;
 import me.innectic.permissify.spigot.utils.ConfigVerifier;
 import me.innectic.permissify.spigot.utils.DisplayUtil;
 import me.innectic.permissify.spigot.utils.PermissibleUtil;
@@ -60,6 +64,7 @@ public class PermissifyMain extends JavaPlugin {
 
     @Getter @Setter private boolean useWildcards;
     @Getter @Setter private boolean debugMode;
+    @Getter private AttachmentManager attachmentManager;
 
     @Override
     public void onEnable() {
@@ -87,6 +92,8 @@ public class PermissifyMain extends JavaPlugin {
         } catch (Exception e) {
             e.printStackTrace();
         }
+        // Create the attachment manager
+        attachmentManager = new AttachmentManager();
         // Register commands
         registerCommands();
         // Register listeners

@@ -25,9 +25,11 @@
 package me.innectic.permissify.api.database;
 
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import me.innectic.permissify.api.permission.Permission;
 import me.innectic.permissify.api.permission.PermissionGroup;
 import me.innectic.permissify.api.profile.PermissifyProfile;
+import me.innectic.permissify.api.util.Tristate;
 
 import java.util.*;
 
@@ -37,29 +39,19 @@ import java.util.*;
  *
  * The base database type.
  */
+@RequiredArgsConstructor
 public abstract class DatabaseHandler {
 
     @Getter protected Map<UUID, List<Permission>> cachedPermissions = new HashMap<>();
     @Getter protected Map<String, PermissionGroup> cachedGroups = new HashMap<>();
     @Getter protected Optional<PermissionGroup> defaultGroup = Optional.empty();
-    @Getter protected final Optional<ConnectionInformation> connectionInformation;
+    @Getter protected final ConnectionInformation connectionInformation;
     @Getter protected List<UUID> superAdmins = new ArrayList<>();
-
-    public DatabaseHandler(ConnectionInformation connectionInformation) {
-        this.connectionInformation = Optional.ofNullable(connectionInformation);
-    }
 
     /**
      * Initialize the database handler
      */
     public abstract void initialize();
-
-    /**
-     * Connect to the database
-     *
-     * @return if the connection was successful or not
-     */
-    public abstract boolean connect();
 
     /**
      * Clear the handler's cache and reload all needed values.
@@ -142,14 +134,14 @@ public abstract class DatabaseHandler {
      * @param chatColor   the color of the chat message
      * @return if the group was created
      */
-    public abstract boolean createGroup(String name, String displayName, String prefix, String suffix, String chatColor);
+    public abstract Tristate createGroup(String name, String displayName, String prefix, String suffix, String chatColor);
 
     /**
      * Delete a permission group
      *
      * @param name the name of the group
      */
-    public abstract boolean deleteGroup(String name);
+    public abstract Tristate deleteGroup(String name);
 
     /**
      * Get the permission group from name.
@@ -198,7 +190,7 @@ public abstract class DatabaseHandler {
      * @param group the group to set as the primary
      * @param uuid  the uuid of the player to set the primary of
      */
-    public abstract boolean setPrimaryGroup(PermissionGroup group, UUID uuid);
+    public abstract Tristate setPrimaryGroup(PermissionGroup group, UUID uuid);
 
     /**
      * Get the primary group of a player.

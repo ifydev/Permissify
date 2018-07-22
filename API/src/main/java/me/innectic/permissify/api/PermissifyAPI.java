@@ -34,7 +34,6 @@ import me.innectic.permissify.api.util.DisplayUtil;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Optional;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -68,8 +67,6 @@ public class PermissifyAPI {
         databaseHandler.ifPresent(handler -> {
             handler.initialize();
             handler.reload(new ArrayList<>());
-            if (handler.connect()) logger.info("Connected to the database.");
-            else logger.log(Level.SEVERE, "Unable to connect to the database.");
         });
     }
 

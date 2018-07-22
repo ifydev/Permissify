@@ -26,7 +26,6 @@ package me.innectic.permissify.spigot.events;
 
 import me.innectic.permissify.spigot.PermissifyMain;
 import me.innectic.permissify.spigot.utils.PermissibleUtil;
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -39,18 +38,18 @@ import org.bukkit.event.player.PlayerQuitEvent;
 public class PlayerLeave implements Listener {
 
     @EventHandler
-    public void onPlayerLeave(PlayerQuitEvent e) {
-        Bukkit.getScheduler().runTaskAsynchronously(PermissifyMain.getInstance(), () -> {
-            Player player = e.getPlayer();
-            if (player == null) {
-                System.out.println("Player did not exist on leave.");
-                return;
-            }
-            // Set the permissions of the player
-            player.getEffectivePermissions().clear();
-            player.recalculatePermissions();
+    public void onPlayerQuitEvent(PlayerQuitEvent e) {
+        PermissifyMain plugin = PermissifyMain.getInstance();
+        if (plugin == null) return;
 
-            PermissibleUtil.uninjectPermissible(player);
-        });
+        if (e.getPlayer() == null) return;
+        Player player = e.getPlayer();
+
+        plugin.getAttachmentManager().removeAttachment(player.getUniqueId());
+
+        // Set the permissions of the player
+        player.getEffectivePermissions().clear();
+        player.recalculatePermissions();
+        PermissibleUtil.uninjectPermissible(player);
     }
 }

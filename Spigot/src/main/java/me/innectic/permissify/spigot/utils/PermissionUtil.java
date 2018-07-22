@@ -24,7 +24,6 @@
  */
 package me.innectic.permissify.spigot.utils;
 
-import me.innectic.permissify.api.permission.Permission;
 import me.innectic.permissify.api.permission.PermissionGroup;
 import me.innectic.permissify.spigot.PermissifyMain;
 import org.bukkit.block.CommandBlock;
@@ -34,7 +33,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.permissions.PermissionAttachment;
 import org.bukkit.permissions.PermissionAttachmentInfo;
 
-import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -55,18 +53,29 @@ public class PermissionUtil {
     }
 
     public static void applyPermissions(Player player) {
-        PermissifyMain.getInstance().getPermissifyAPI().getDatabaseHandler().ifPresent(handler -> {
+        player.getEffectivePermissions().clear();
+
+        PermissifyMain plugin = PermissifyMain.getInstance();
+        plugin.getPermissifyAPI().getDatabaseHandler().ifPresent(handler -> {
             // Check if the player should be in a default group.
             if (handler.getDefaultGroup().isPresent() && !handler.getDefaultGroup().get().hasPlayer(player.getUniqueId())) {
                 handler.addPlayerToGroup(player.getUniqueId(), handler.getDefaultGroup().get());
                 handler.setPrimaryGroup(handler.getDefaultGroup().get(), player.getUniqueId());
             }
             handler.updateCache(player.getUniqueId());
-            List<Permission> permissions = handler.getPermissions(player.getUniqueId());
-            // Add the permissions to the player
-            handler.getGroups(player.getUniqueId()).stream().map(PermissionGroup::getPermissions).forEach(permissions::addAll);
-            permissions.forEach(permission -> player.addAttachment(PermissifyMain.getInstance(), permission.getPermission(), permission.isGranted()));
-            player.recalculatePermissions();
+
+            // Add the player's "self" permissions
+            plugin.getAttachmentManager().getAttachment(player.getUniqueId(), Optional.empty()).ifPresent(self ->
+                    handler.getPermissions(player.getUniqueId()).forEach(permission -> self.setPermission(permission.getPermission(), permission.isGranted())));
+
+            // Add the player's group permissions
+            handler.getGroups(player.getUniqueId()).forEach(group -> {
+                PermissionAttachment attachment = plugin.getAttachmentManager().getAttachment(player.getUniqueId(), Optional.of(group.getName())).orElse(player.addAttachment(plugin));
+                attachment.getPermissions().keySet().forEach(attachment::unsetPermission);
+
+                group.getPermissions().forEach(permission -> attachment.setPermission(permission.getPermission(), permission.isGranted()));
+                plugin.getAttachmentManager().setAttachment(player.getUniqueId(), attachment, Optional.of(group.getName()));
+            });
         });
     }
 

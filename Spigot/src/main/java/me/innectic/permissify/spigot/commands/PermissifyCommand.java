@@ -1,26 +1,26 @@
 /*
-*
-* This file is part of Permissify, licensed under the MIT License (MIT).
-* Copyright (c) Innectic
-* Copyright (c) contributors
-*
-* Permission is hereby granted, free of charge, to any person obtaining a copy
-* of this software and associated documentation files (the "Software"), to deal
-* in the Software without restriction, including without limitation the rights
-* to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-* copies of the Software, and to permit persons to whom the Software is
-* furnished to do so, subject to the following conditions:
-*
-* The above copyright notice and this permission notice shall be included in all
-* copies or substantial portions of the Software.
-*
-* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-* SOFTWARE.
+ *
+ * This file is part of Permissify, licensed under the MIT License (MIT).
+ * Copyright (c) Innectic
+ * Copyright (c) contributors
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
  */
 package me.innectic.permissify.spigot.commands;
 
@@ -54,11 +54,24 @@ public class PermissifyCommand implements CommandExecutor {
                 return;
             }
             if (sender instanceof ConsoleCommandSender) {
-                if (args.length >= 2 && args[0].equalsIgnoreCase("superadmin")) {
-                    Player player = Bukkit.getPlayer(args[1]);
-                    if (player == null) return;
-                    plugin.getPermissifyAPI().getDatabaseHandler().get().addSuperAdmin(player.getUniqueId());
-                    return;
+                if (args[0].equalsIgnoreCase("superadmin")) {
+                    if (args.length < 3) {
+                        sender.sendMessage(ColorUtil.makeReadable(PermissifyConstants.NOT_ENOUGH_ARGUMENTS_SUPERADMIN));
+                        return;
+                    }
+                    Player player = Bukkit.getPlayer(args[2]);
+                    if (player == null || !player.isOnline()) return;
+
+                    if (args[1].equalsIgnoreCase("grant")) {
+                        plugin.getPermissifyAPI().getDatabaseHandler().get().addSuperAdmin(player.getUniqueId());
+                        return;
+                    } else if (args[1].equalsIgnoreCase("remove")) {
+                        plugin.getPermissifyAPI().getDatabaseHandler().get().removeSuperAdmin(player.getUniqueId());
+                        return;
+                    } else {
+                        sender.sendMessage(ColorUtil.makeReadable(PermissifyConstants.INVALID_ARGUMENT.replace("<ARGUMENT>", args[1])));
+                        return;
+                    }
                 }
             }
             if (sender instanceof CommandBlock && !plugin.getConfig().getBoolean("allow-command-block", false)) return;
@@ -74,8 +87,11 @@ public class PermissifyCommand implements CommandExecutor {
                     if (args.length >= 2) {
                         try {
                             page = Integer.parseInt(args[1]);
-                        } catch (NumberFormatException ignored) {}
+                        } catch (NumberFormatException ignored) {
+                        }
                     }
+                    page -= 1;
+                    if (page < 0) page = 0;
                     sendHelp(sender, page);
                     return;
                 } else if (args[0].equalsIgnoreCase("cache")) {
@@ -83,11 +99,12 @@ public class PermissifyCommand implements CommandExecutor {
                     sendResponse(response, sender);
                     return;
                 }
-            } else {
+            }
+
+            if (args.length < 2) {
                 sendHelp(sender);
                 return;
             }
-
             if (args[0].equalsIgnoreCase("group")) {
                 String response;
                 if (args[1].equalsIgnoreCase("create") || args[1].equalsIgnoreCase("add"))
@@ -126,7 +143,7 @@ public class PermissifyCommand implements CommandExecutor {
                 else if (args[1].equalsIgnoreCase("listgroups"))
                     response = plugin.getPlayerCommand().handleListGroups(sender, ArgumentUtil.getRemainingArgs(2, args));
                 else if (args[1].equalsIgnoreCase("removegroup")) response = plugin.getPlayerCommand().handleRemovePlayerFromGroup(sender, ArgumentUtil.getRemainingArgs(2, args));
-                else if (args[1].equalsIgnoreCase("setmain")) response = plugin.getPlayerCommand().handleSetMainGroup(sender, ArgumentUtil.getRemainingArgs(2, args));
+                else if (args[1].equalsIgnoreCase("primarygroup")) response = plugin.getPlayerCommand().handleSetOrGetPrimaryGroup(sender, ArgumentUtil.getRemainingArgs(2, args));
                 else {
                     sendHelp(sender);
                     return;
@@ -145,6 +162,7 @@ public class PermissifyCommand implements CommandExecutor {
     }
 
     private void sendResponse(String response, CommandSender source) {
+        if (response.equals("")) return;
         source.sendMessage(ColorUtil.makeReadable(response));  // XXX: Probably don't need ColorUtil anymore...
     }
 
@@ -153,11 +171,6 @@ public class PermissifyCommand implements CommandExecutor {
     }
 
     private void sendHelp(CommandSender player, int page) {
-        if (page < 0 || page > PermissifyConstants.PERMISSIFY_HELP_PAGES.size()) {
-            sendResponse(PermissifyConstants.INVALID_HELP_PAGE.replace("<PAGE>", String.valueOf(page)), player);
-            return;
-        }
-        page = page == 0 ? page : page - 1; // what
         sendResponse(PermissifyConstants.PERMISSIFY_HELP_HEADER, player);
         sendResponse(PermissifyConstants.PERMISSIFY_HELP_PAGES.get(page), player);
         sendResponse(PermissifyConstants.PERMISSIFY_HELP_FOOTER, player);

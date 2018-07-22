@@ -56,9 +56,8 @@ public class PermissifyConstants {
     public static final String PERMISSIFY_PLAYER_GROUP_ADD = "permissify.player.group.add";
     public static final String PERMISSIFY_PLAYER_GROUP_REMOVE = "permissify.player.group.remove";
     public static final String PERMISSIFY_PLAYER_GROUP_LIST = "permissify.player.group.list";
-    public static final String PERMISSIFY_PLAYER_SET_MAIN_GROUP = "permissify.player.group.setmain";
+    public static final String PERMISSIFY_PLAYER_SET_MAIN_GROUP = "permissify.player.group.primarygroup";
     public static final String PERMISSIFY_GROUP_DEFAULT = "permissify.group.default";
-    public static final String PERMISSIFY_FORMAT = "permissify.format";
     public static final String PERMISSIFY_CACHE = "permissify.cache";
     public static final String PERMISSIFY_ADMIN = "permissify.admin";
     public static final String PERMISSIFY_PROFILE = "permissify.profile";
@@ -72,6 +71,7 @@ public class PermissifyConstants {
     public static final String PLAYER_GROUP_LIST = PERMISSIFY_PREFIX + "&e&lGroups for <PLAYER>: <GROUPS>";
     public static final String CACHE_PURGED = PERMISSIFY_PREFIX + "&e&lCache has been purged!";
     public static final String CACHE_INFORMATION = PERMISSIFY_PREFIX + "&e&lCached groups: <GROUPS>, cached permissions: <PERMISSIONS>, default group: <DEFAULT>";
+    public static final String PRIMARY_GROUP_TEMPLATE = PERMISSIFY_PREFIX + "&e&lCurrent primary group: <GROUP>";
 
     public static final String PERMISSION_ADDED_GROUP = PERMISSIFY_PREFIX + "&e&lPermission <PERMISSION> has been added to <GROUP>!";
     public static final String PERMISSION_REMOVED_GROUP = PERMISSIFY_PREFIX + "&e&lPermission <PERMISSION> has been removed from <GROUP>!";
@@ -84,12 +84,14 @@ public class PermissifyConstants {
     public static final String MAIN_GROUP_SET = PERMISSIFY_PREFIX + "&e&lSet main group for <PLAYER> to <GROUP>!";
     public static final String PLAYER_ALREADY_HAS_PERMISSION = PERMISSIFY_PREFIX + "&c&lPlayer <PLAYER> already has permission <PERMISSION>";
     public static final String PLAYER_DOES_NOT_HAVE_PERMISSION = PERMISSIFY_PREFIX + "&c&lPlayer <PLAYER> does not have permission <PERMISSION>";
+    public static final String ALREADY_MAIN_GROUP = PERMISSIFY_PREFIX + "&c&l<GROUP> is already the main group!";
+    public static final String GROUP_ALREADY_EXISTS = PERMISSIFY_PREFIX + "&c&l<GROUP> already exists!";
 
     public static final String EMPTY_DEFAULT_GROUP_NAME = "&c&lNONE";
     public static final String DEFAULT_GROUP_RESPONSE = PERMISSIFY_PREFIX + "&e&lThe current default group is '<GROUP>&e&l'.";
     public static final String DEFAULT_GROUP_SET = PERMISSIFY_PREFIX + "&e&lThe default group has been set to '<GROUP>&e&l'.";
 
-    public static final String NOT_ENOUGH_ARGUMENTS_GROUP_CREATE = PERMISSIFY_PREFIX + "&c&lNot enough arguments! &e&l/permissify group create [name] [prefix] [suffix] [chat-color]";
+    public static final String NOT_ENOUGH_ARGUMENTS_GROUP_CREATE = PERMISSIFY_PREFIX + "&c&lNot enough arguments! &e&l/permissify group create [name] [display_name] [prefix] [suffix] [chat_color]";
     public static final String NOT_ENOUGH_ARGUMENTS_GROUP_REMOVE = PERMISSIFY_PREFIX + "&c&lNot enough arguments! &e&l/permissify group remove [name]";
     public static final String NOT_ENOUGH_ARGUMENTS_GROUP_PERMISSION_ADD = PERMISSIFY_PREFIX + "&c&lNot enough arguments! &e&l/permissify group addpermission [group] [permission]";
     public static final String NOT_ENOUGH_ARGUMENTS_GROUP_PERMISSION_REMOVE = PERMISSIFY_PREFIX + "&c&lNot enough arguments! &e&l/permissify group removepermission [group] [permission]";
@@ -101,10 +103,11 @@ public class PermissifyConstants {
     public static final String NOT_ENOUGH_ARGUMENTS_PLAYER_ADD_GROUP= PERMISSIFY_PREFIX + "&c&lNot enough arguments! &e&l/permissify player addgroup [player] [group]";
     public static final String NOT_ENOUGH_ARGUMENTS_PLAYER_REMOVE_GROUP= PERMISSIFY_PREFIX + "&c&lNot enough arguments! &e&l/permissify player removegroup [player] [group]";
     public static final String NOT_ENOUGH_ARGUMENTS_PLAYER_LIST_GROUP = PERMISSIFY_PREFIX + "&c&lNot enough arguments! &e&l/permissify player listgroup [player]";
-    public static final String NOT_ENOUGH_ARGUMENTS_SET_MAIN_GROUP = PERMISSIFY_PREFIX + "&c&lNot enough arguments! &e&l/permissify player setmain [player] [group]";
+    public static final String NOT_ENOUGH_ARGUMENTS_SET_MAIN_GROUP = PERMISSIFY_PREFIX + "&c&lNot enough arguments! &e&l/permissify player primarygroup <player> [group]";
     public static final String NOT_ENOUGH_ARGUMENTS_PROFILE = PERMISSIFY_PREFIX + "&c&lNot enough arguments! &e&l/permissify profile [save|load] [profile]";
     public static final String NOT_ENOUGH_ARGUMENTS_PROFILE_SAVE = PERMISSIFY_PREFIX + "&c&lNot enough arguments! &e&l/permissify profile save [fileName]";
     public static final String NOT_ENOUGH_ARGUMENTS_PROFILE_LOAD = PERMISSIFY_PREFIX + "&c&lNot enough arguments! &e&l/permissify profile load [source]";
+    public static final String NOT_ENOUGH_ARGUMENTS_SUPERADMIN = PERMISSIFY_PREFIX + "&c&l/Not enough arguments! &e&l/permissify superadmin <grant|remove> <player>";
 
     public static final String PROFILE_SAVED = PERMISSIFY_PREFIX + "&e&lSaved profile '<PROFILE>'.";
     public static final String PROFILE_NOT_SAVED = PERMISSIFY_PREFIX + "&c&lUnable to save profile '<PROFILE>'";
@@ -135,15 +138,16 @@ public class PermissifyConstants {
 
     public static final List<List<String>> PERMISSIFY_HELP_PAGES = new ArrayList<>(Arrays.asList(Arrays.asList(
             "&a&l/permissify help [page]",
-            "&a&l/permissify superadmin [player] - &c&lWARNING: &e&lSUPERADMIN GIVES PERMISSION FOR EVERYTHING!",
+            "&a&l/permissify superadmin grant <player> - &c&lWARNING: &e&lSUPERADMIN GIVES PERMISSION FOR EVERYTHING!",
+            "&a&l/permissify superadmin remove <player>",
             "&a&l/permissify cache",
             "&a&l/permissify cache purge",
-            "&a&l/permissify group create [name] [prefix] [suffix] [chatcolor]",
-            "&a&l/permissify group remove [name]",
-            "&a&l/permissify group addpermission [group] [permissions...] [(optional) lifespan]",
-            "&a&l/permissify group removepermission [group] [permissions...]"
+            "&a&l/permissify group create <name> <display_name> <prefix> <suffix> <chatcolor>",
+            "&a&l/permissify group remove <name>",
+            "&a&l/permissify group addpermission <group> <permissions...> [lifespan]",
+            "&a&l/permissify group removepermission <group> <permissions...>"
     ), Arrays.asList(
-            "&a&l/permissify group listpermissions [group]",
+            "&a&l/permissify group listpermissions <group>",
             "&a&l/permissify group list",
             "&a&l/permissify player addpermission [permission] [player]",
             "&a&l/permissify player removepermission [permission] [player]",
@@ -154,7 +158,15 @@ public class PermissifyConstants {
             "&a&l/permissify player setmain [player] [group]",
             "&a&l/permissify group default [group?]"
     ), Arrays.asList(
-            "&a&l/permissify debug [export] [include profile]"
+            "&a&l/permissify debug [export] [include profile]",
+            "&a&l/permissify player addpermission <permission> <player>",
+            "&a&l/permissify player removepermission <permission> <player>",
+            "&a&l/permissify player addgroup <player> <group>",
+            "&a&l/permissify player listpermissions <player>",
+            "&a&l/permissify player listgroups <player>",
+            "&a&l/permissify player removegroup <player> <group>",
+            "&a&l/permissify player primarygroup <player> [group]",
+            "&a&l/permissify group default [group]"
     )));
 
     // Error response

@@ -51,8 +51,7 @@ public class PermissionGroup {
      * @param permission the permission to remove
      */
     public void removePermission(String permission) {
-        Optional<Permission> perm = permissions.stream().filter(groupPermission -> groupPermission.getPermission().equals(permission)).findFirst();
-        perm.ifPresent(groupPermission -> groupPermission.setGranted(false));
+        permissions.removeIf(p -> p.getPermission().equals(permission));
     }
 
     /**

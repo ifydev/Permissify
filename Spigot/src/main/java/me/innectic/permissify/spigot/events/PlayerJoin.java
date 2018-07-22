@@ -33,6 +33,8 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 
+import java.util.Optional;
+
 /**
  * @author Innectic
  * @since 6/15/2017
@@ -41,7 +43,9 @@ public class PlayerJoin implements Listener {
 
     @EventHandler
     public void onPlayerJoinEvent(PlayerJoinEvent e) {
-        Bukkit.getScheduler().runTaskAsynchronously(PermissifyMain.getInstance(), () -> {
+        PermissifyMain plugin = PermissifyMain.getInstance();
+
+        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
             Player player = e.getPlayer();
             if (player == null) {
                 System.out.println("Player did not exist on join.");
@@ -49,8 +53,9 @@ public class PlayerJoin implements Listener {
             }
             // Set the permissions of the player
             PermissionUtil.clearPermissions(player);
-
             PermissibleUtil.injectPermissible(player);
+
+            plugin.getAttachmentManager().setAttachment(player.getUniqueId(), player.addAttachment(plugin), Optional.empty());
             PermissionUtil.applyPermissions(player);
         });
     }

@@ -25,6 +25,7 @@
 package me.innectic.permissify.spigot.commands.subcommand;
 
 import me.innectic.permissify.api.database.DatabaseHandler;
+import me.innectic.permissify.api.util.Tristate;
 import me.innectic.permissify.spigot.PermissifyMain;
 import me.innectic.permissify.api.PermissifyConstants;
 import me.innectic.permissify.api.permission.Permission;
@@ -65,8 +66,9 @@ public class GroupCommand {
         if (!ColorUtil.isValidChatColor(args[4])) return PermissifyConstants.INVALID_CHATCOLOR.replace("<COLOR>", args[4]);
 
         // Create the new group
-        boolean created = plugin.getPermissifyAPI().getDatabaseHandler().get().createGroup(args[0], args[1], args[2], args[3], args[4]);
-        if (created) return PermissifyConstants.GROUP_CREATED.replace("<GROUP>", args[0]);
+        Tristate created = plugin.getPermissifyAPI().getDatabaseHandler().get().createGroup(args[0], args[1], args[2], args[3], args[4]);
+        if (created == Tristate.TRUE) return PermissifyConstants.GROUP_CREATED.replace("<GROUP>", args[0]);
+        else if (created == Tristate.NONE) return PermissifyConstants.GROUP_ALREADY_EXISTS.replace("<GROUP>", args[0]);
         return PermissifyConstants.UNABLE_TO_CREATE.replace("<TYPE>", "group").replace("<REASON>", "Unable to connect to database.");
     }
 
@@ -92,11 +94,11 @@ public class GroupCommand {
         if (!group.isPresent()) return PermissifyConstants.INVALID_GROUP.replace("<GROUP>", args[0]);
 
         List<UUID> playersInGroup = group.get().getPlayers().entrySet().stream().map(Map.Entry::getKey).collect(Collectors.toList());
-        boolean removed = plugin.getPermissifyAPI().getDatabaseHandler().get().deleteGroup(args[0]);
-        if (removed) {
+        Tristate removed = plugin.getPermissifyAPI().getDatabaseHandler().get().deleteGroup(args[0]);
+        if (removed == Tristate.TRUE) {
             Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> playersInGroup.stream().map(Bukkit::getPlayer).filter(Objects::nonNull).forEach(PermissionUtil::applyPermissions));
             return PermissifyConstants.GROUP_REMOVED.replace("<GROUP>", args[0]);
-        }
+        } else if (removed == Tristate.NONE) return PermissifyConstants.INVALID_GROUP.replace("<GROUP>", args[0]);
         return PermissifyConstants.UNABLE_TO_REMOVE.replace("<TYPE>", "group").replace("<REASON>", "Unable to connect to database");
     }
 
@@ -119,11 +121,11 @@ public class GroupCommand {
             Optional<PermissionGroup> group = plugin.getPermissifyAPI().getDatabaseHandler().get().getGroup(args[0]);
             group.ifPresent(permissionGroup -> {
                 Arrays.stream(remaining).forEach(permissionGroup::addPermission);
-                Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> permissionGroup.getPlayers().entrySet().stream().map(Map.Entry::getKey).map(Bukkit::getPlayer).filter(Objects::nonNull).forEach(PermissionUtil::applyPermissions));
+                permissionGroup.getPlayers().entrySet().stream().map(Map.Entry::getKey).map(Bukkit::getPlayer).filter(Objects::nonNull).forEach(PermissionUtil::applyPermissions);
             });
         });
         return PermissifyConstants.PERMISSION_ADDED_GROUP.replace("<PERMISSION>",
-                String.join(", ", ArgumentUtil.getRemainingArgs(1, args)).replace("<GROUP>", args[0]));
+                String.join(", ", ArgumentUtil.getRemainingArgs(1, args))).replace("<GROUP>", args[0]);
     }
 
     public String handlePermissionRemove(CommandSender sender, String[] args) {
@@ -135,21 +137,21 @@ public class GroupCommand {
             return PermissifyConstants.UNABLE_TO_CREATE.replace("<TYPE>", "group").replace("<REASON>", "No database handler.");
 
         if (args.length < 2) return PermissifyConstants.NOT_ENOUGH_ARGUMENTS_GROUP_PERMISSION_REMOVE;
-        boolean added = plugin.getPermissifyAPI().getDatabaseHandler().get().removeGroupPermission(args[0], ArgumentUtil.getRemainingArgs(1, args));
+        String[] remaining = ArgumentUtil.getRemainingArgs(1, args);
+        boolean added = plugin.getPermissifyAPI().getDatabaseHandler().get().removeGroupPermission(args[0], remaining);
         if (!added) return PermissifyConstants.UNABLE_TO_ADD.replace("<REASON>", "Permission isn't on group!");
 
-        String[] remaining = ArgumentUtil.getRemainingArgs(1, args);
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
             if (!plugin.getPermissifyAPI().getDatabaseHandler().isPresent()) return;
             Optional<PermissionGroup> group = plugin.getPermissifyAPI().getDatabaseHandler().get().getGroup(args[0]);
             group.ifPresent(permissionGroup -> {
                 for (String permission : remaining) permissionGroup.removePermission(permission);
-                Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> permissionGroup.getPlayers().keySet().stream().map(Bukkit::getPlayer).filter(Objects::nonNull).forEach(PermissionUtil::applyPermissions));
+                permissionGroup.getPlayers().keySet().stream().map(Bukkit::getPlayer).filter(Objects::nonNull).forEach(PermissionUtil::applyPermissions);
             });
         });
 
         return PermissifyConstants.PERMISSION_REMOVED_GROUP.replace("<PERMISSION>",
-                String.join(", ", remaining).replace("<GROUP>", args[0]));
+                String.join(", ", remaining)).replace("<GROUP>", args[0]);
     }
 
     public String handleListPermissions(CommandSender sender, String[] args) {
@@ -196,8 +198,7 @@ public class GroupCommand {
             // If we only have one, show the default group.
             String defaultGroupName = handler.getDefaultGroup().map(group -> ChatColor.getByChar(group.getChatColor()) + group.getName())
                     .orElse(PermissifyConstants.EMPTY_DEFAULT_GROUP_NAME);
-            String response = PermissifyConstants.DEFAULT_GROUP_RESPONSE.replace("<GROUP>", defaultGroupName);
-            return response;
+            return PermissifyConstants.DEFAULT_GROUP_RESPONSE.replace("<GROUP>", defaultGroupName);
         }
 
         Optional<PermissionGroup> defaultGroup = handler.getGroup(args[0]);
