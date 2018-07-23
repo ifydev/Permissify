@@ -158,7 +158,7 @@ public abstract class DatabaseHandler {
      * @param group the group to add them to
      * @return if they were added
      */
-    public abstract boolean addPlayerToGroup(UUID uuid, PermissionGroup group);
+    public abstract Tristate addPlayerToGroup(UUID uuid, PermissionGroup group);
 
     /**
      * Remove a player from a group.
@@ -167,7 +167,7 @@ public abstract class DatabaseHandler {
      * @param group the group to remove from
      * @return if the player was removed
      */
-    public abstract boolean removePlayerFromGroup(UUID uuid, PermissionGroup group);
+    public abstract Tristate removePlayerFromGroup(UUID uuid, PermissionGroup group);
 
     /**
      * Get all permissions groups.

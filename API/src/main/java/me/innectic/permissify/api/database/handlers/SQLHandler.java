@@ -485,8 +485,8 @@ public class SQLHandler extends DatabaseHandler {
     }
 
     @Override
-    public boolean addPlayerToGroup(UUID uuid, PermissionGroup group) {
-        if (group.hasPlayer(uuid)) return false;
+    public Tristate addPlayerToGroup(UUID uuid, PermissionGroup group) {
+        if (group.hasPlayer(uuid)) return Tristate.NONE;
         group.addPlayer(uuid, false);
         // Update the cache
         cachedGroups.put(group.getName(), group);
@@ -494,7 +494,7 @@ public class SQLHandler extends DatabaseHandler {
         Optional<Connection> connection = getConnection();
         if (!connection.isPresent()) {
             PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.empty()));
-            return false;
+            return Tristate.FALSE;
         }
         try {
             PreparedStatement statement = connection.get().prepareStatement("INSERT INTO groupMembers (uuid,`group`,`primary`,ladderPosition) VALUES (?,?,?,?)");
@@ -507,26 +507,24 @@ public class SQLHandler extends DatabaseHandler {
             statement.execute();
             statement.close();
             connection.get().close();
-            return true;
+            return Tristate.TRUE;
         } catch (SQLException e) {
             PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.of(e)));
             e.printStackTrace();
         }
-        return false;
+        return Tristate.FALSE;
     }
 
     @Override
-    public boolean removePlayerFromGroup(UUID uuid, PermissionGroup group) {
-        if (!group.hasPlayer(uuid)) return false;
+    public Tristate removePlayerFromGroup(UUID uuid, PermissionGroup group) {
+        if (!group.hasPlayer(uuid)) return Tristate.NONE;
         group.removePlayer(uuid);
-        // Update the cache
-        cachedGroups.remove(group.getName());
-        cachedGroups.put(group.getName(), group);
+        System.out.println(group.getClass().hashCode() + " - " + cachedGroups.get(group.getName()).getClass().hashCode());
 
         Optional<Connection> connection = getConnection();
         if (!connection.isPresent()) {
             PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.empty()));
-            return false;
+            return Tristate.FALSE;
         }
         try {
             PreparedStatement statement = connection.get().prepareStatement("DELETE FROM groupMembers WHERE uuid=? AND `group`=?");
@@ -535,12 +533,12 @@ public class SQLHandler extends DatabaseHandler {
             statement.execute();
             statement.close();
             connection.get().close();
-            return true;
+            return Tristate.TRUE;
         } catch (SQLException e) {
             PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.of(e)));
             e.printStackTrace();
         }
-        return false;
+        return Tristate.FALSE;
     }
 
     @Override

@@ -2,10 +2,7 @@ package me.innectic.permissify.spigot.utils;
 
 import org.bukkit.permissions.PermissionAttachment;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * @author Innectic
@@ -13,7 +10,7 @@ import java.util.UUID;
  */
 public class AttachmentManager {
 
-    private Map<UUID, Map<String, PermissionAttachment>> attachments = new HashMap<>();
+    private static Map<UUID, Map<String, PermissionAttachment>> attachments = new HashMap<>();
 
     public Optional<PermissionAttachment> getAttachment(UUID uuid, Optional<String> groupName) {
         return Optional.ofNullable(attachments.getOrDefault(uuid, new HashMap<>()).getOrDefault(groupName.orElse(""), null));
@@ -22,10 +19,19 @@ public class AttachmentManager {
     public void setAttachment(UUID uuid, PermissionAttachment attachment, Optional<String> groupName) {
         Map<String, PermissionAttachment> attachments = new HashMap<>();
         attachments.put(groupName.orElse(""), attachment);
-        this.attachments.put(uuid, attachments);
+        AttachmentManager.attachments.put(uuid, attachments);
     }
 
     public void removeAttachment(UUID uuid) {
+        attachments.remove(uuid);
+    }
+
+    public Collection<PermissionAttachment> getAllAttachmentsForPlayer(UUID uuid) {
+        return attachments.get(uuid).values();
+    }
+
+    public void resetAllPermissibles(UUID uuid) {
+        attachments.get(uuid).values().forEach(attachment -> attachment.getPermissions().keySet().forEach(attachment::unsetPermission));
         attachments.remove(uuid);
     }
 }
