@@ -451,10 +451,8 @@ public class SQLHandler extends DatabaseHandler {
         if (!group.isPresent())
             return Tristate.NONE;
 
-        if (defaultGroup.isPresent() && defaultGroup.get().getName().equalsIgnoreCase(name)) {
-            setDefaultGroup(null);
-        }
-        Set<UUID> players = group.get().getPlayers().keySet();
+        if (defaultGroup.isPresent() && defaultGroup.get().getName().equalsIgnoreCase(name)) setDefaultGroup(null);
+        Set<UUID> players = new HashSet<>(group.get().getPlayers().keySet());
         // Delete from the cache
         cachedGroups.remove(name);
         players.forEach(uuid -> this.removePlayerFromGroup(uuid, group.get()));
@@ -519,7 +517,6 @@ public class SQLHandler extends DatabaseHandler {
     public Tristate removePlayerFromGroup(UUID uuid, PermissionGroup group) {
         if (!group.hasPlayer(uuid)) return Tristate.NONE;
         group.removePlayer(uuid);
-        System.out.println(group.getClass().hashCode() + " - " + cachedGroups.get(group.getName()).getClass().hashCode());
 
         Optional<Connection> connection = getConnection();
         if (!connection.isPresent()) {

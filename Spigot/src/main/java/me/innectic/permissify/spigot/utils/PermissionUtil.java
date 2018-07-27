@@ -31,6 +31,7 @@ import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.permissions.PermissionAttachment;
 
+import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -49,17 +50,24 @@ public class PermissionUtil {
         return sender instanceof CommandBlock || sender instanceof ConsoleCommandSender;
     }
 
+    private static void removeAllPermissions(Player player) {
+        player.getEffectivePermissions().stream().map(info -> {
+            if (info.getAttachment() == null) {
+                // When the attachment is null, this is something coming from default Spigot
+                return null;
+            }
+            return info.getAttachment();
+        }).filter(Objects::nonNull).forEach(PermissionAttachment::remove);
+    }
+
     public static void applyPermissions(Player player) {
         PermissifyMain plugin = PermissifyMain.getInstance();
 
-        System.out.println("FIRST");
-        plugin.getAttachmentManager().getAllAttachmentsForPlayer(player.getUniqueId()).forEach(entry -> entry.getPermissions().keySet().forEach(System.out::println));
-//        plugin.getAttachmentManager().removeAttachment(player.getUniqueId());
+        removeAllPermissions(player);
         plugin.getAttachmentManager().resetAllPermissibles(player.getUniqueId());
+
         plugin.getAttachmentManager().setAttachment(player.getUniqueId(), player.addAttachment(plugin), Optional.empty());
         player.recalculatePermissions();
-
-        plugin.getAttachmentManager().getAllAttachmentsForPlayer(player.getUniqueId()).forEach(attachment -> player.getEffectivePermissions().forEach(info -> attachment.unsetPermission(info.getPermission())));
 
         plugin.getPermissifyAPI().getDatabaseHandler().ifPresent(handler -> {
             // Check if the player should be in a default group.
@@ -71,24 +79,15 @@ public class PermissionUtil {
 
             // Add the player's "self" permissions
             plugin.getAttachmentManager().getAttachment(player.getUniqueId(), Optional.empty()).ifPresent(self ->
-                    handler.getPermissions(player.getUniqueId()).forEach(permission -> {
-                        System.out.println(permission.getPermission() + " -> " + permission.isGranted());
-                        self.setPermission(permission.getPermission(), permission.isGranted());
-                    }));
+                    handler.getPermissions(player.getUniqueId()).forEach(permission -> self.setPermission(permission.getPermission(), permission.isGranted())));
 
             // Add the player's group permissions
             handler.getGroups(player.getUniqueId()).forEach(group -> {
-                PermissionAttachment attachment = plugin.getAttachmentManager().getAttachment(player.getUniqueId(), Optional.of(group.getName())).orElse(player.addAttachment(plugin));
-                attachment.getPermissions().keySet().forEach(attachment::unsetPermission);
+                PermissionAttachment attachment = player.addAttachment(plugin);
 
-                group.getPermissions().forEach(permission -> {
-                    System.out.println(group.getName() + ": " + permission.getPermission() + " -> " + permission.isGranted());
-                    attachment.setPermission(permission.getPermission(), permission.isGranted());
-                });
+                group.getPermissions().forEach(permission -> attachment.setPermission(permission.getPermission(), permission.isGranted()));
                 plugin.getAttachmentManager().setAttachment(player.getUniqueId(), attachment, Optional.of(group.getName()));
             });
         });
-        System.out.println("SECOND");
-        plugin.getAttachmentManager().getAllAttachmentsForPlayer(player.getUniqueId()).forEach(entry -> entry.getPermissions().keySet().forEach(System.out::println));
     }
 }

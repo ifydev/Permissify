@@ -206,9 +206,7 @@ public class PlayerCommand {
         }
 
         plugin.getPermissifyAPI().getDatabaseHandler().get().removePermission(targetPlayer.getUniqueId(), args[1]);
-        if (targetPlayer.isOnline())
-            plugin.getAttachmentManager().getAttachment(targetPlayer.getUniqueId(), Optional.empty()).ifPresent(self ->
-                    self.unsetPermission(args[1]));
+        if (targetPlayer.isOnline()) PermissionUtil.applyPermissions(targetPlayer.getPlayer());
 
         plugin.getPermissifyAPI().getDatabaseHandler().get().updateCache(targetPlayer.getUniqueId());
         return PermissifyConstants.PERMISSION_REMOVED_PLAYER
