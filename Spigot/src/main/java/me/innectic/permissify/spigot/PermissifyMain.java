@@ -109,6 +109,7 @@ public class PermissifyMain extends JavaPlugin {
             if (!getDataFolder().exists()) {
                 boolean created = getDataFolder().mkdirs();
                 if (!created) getLogger().log(Level.SEVERE, "Could not create config!");
+                getDataFolder().toPath().resolve("profiles").toFile().mkdir();
             }
             File file = new File(getDataFolder(), "config.yml");
             if (!file.exists()) {
