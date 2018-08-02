@@ -24,10 +24,13 @@
  */
 package me.innectic.permissify.spigot.commands.subcommand;
 
-import me.innectic.permissify.spigot.PermissifyMain;
+import me.innectic.permissify.api.PermissifyAPI;
 import me.innectic.permissify.api.PermissifyConstants;
+import me.innectic.permissify.api.database.ConnectionError;
 import me.innectic.permissify.api.permission.Permission;
 import me.innectic.permissify.api.permission.PermissionGroup;
+import me.innectic.permissify.api.util.Tristate;
+import me.innectic.permissify.spigot.PermissifyMain;
 import me.innectic.permissify.spigot.utils.MiscUtil;
 import me.innectic.permissify.spigot.utils.PermissionUtil;
 import org.bukkit.Bukkit;
@@ -63,11 +66,16 @@ public class PlayerCommand {
         Optional<PermissionGroup> group = plugin.getPermissifyAPI().getDatabaseHandler().get().getGroup(args[1]);
         if (!group.isPresent()) return PermissifyConstants.INVALID_GROUP.replace("<GROUP>", args[1]);
 
-        plugin.getPermissifyAPI().getDatabaseHandler().get().addPlayerToGroup(targetPlayer.getUniqueId(), group.get());
-        if (targetPlayer.isOnline()) group.get().getPermissions().forEach(permission ->
-                targetPlayer.getPlayer().addAttachment(plugin, permission.getPermission(), permission.isGranted()));
+        Tristate added = plugin.getPermissifyAPI().getDatabaseHandler().get().addPlayerToGroup(targetPlayer.getUniqueId(), group.get());
+        if (added == Tristate.NONE)
+            return PermissifyConstants.UNABLE_TO_ADD.replace("<REASON>", "Player already in group.");
+        else if (added == Tristate.FALSE)
+            return PermissifyConstants.UNABLE_TO_ADD.replace("<REASON>", "No database handler.");
 
         plugin.getPermissifyAPI().getDatabaseHandler().get().updateCache(targetPlayer.getUniqueId());
+
+        if (targetPlayer.isOnline()) PermissionUtil.applyPermissions(targetPlayer.getPlayer());
+
         return PermissifyConstants.PLAYER_ADDED_TO_GROUP
                 .replace("<PLAYER>", targetPlayer.getName()).replace("<GROUP>", group.get().getName());
     }
@@ -75,7 +83,7 @@ public class PlayerCommand {
     public String handleRemovePlayerFromGroup(CommandSender sender, String[] args) {
         PermissifyMain plugin = PermissifyMain.getInstance();
         if (!plugin.getPermissifyAPI().getDatabaseHandler().isPresent())
-            return PermissifyConstants.UNABLE_TO_REMOVE.replace("<REASON>", "No database handler.");
+            return PermissifyConstants.UNABLE_TO_REMOVE.replace("<TYPE>", "player").replace("<REASON>", "No database handler.");
 
         if (!PermissionUtil.hasPermissionOrSuperAdmin(sender, PermissifyConstants.PERMISSIFY_PLAYER_GROUP_REMOVE))
             return PermissifyConstants.INSUFFICIENT_PERMISSIONS;
@@ -87,22 +95,33 @@ public class PlayerCommand {
 
         Optional<PermissionGroup> group = plugin.getPermissifyAPI().getDatabaseHandler().get().getGroup(args[1]);
         if (!group.isPresent()) return PermissifyConstants.INVALID_GROUP.replace("<GROUP>", args[1]);
-        plugin.getPermissifyAPI().getDatabaseHandler().get().removePlayerFromGroup(targetPlayer.getUniqueId(), group.get());
 
-        if (targetPlayer.isOnline()) group.get().getPermissions().forEach(permission ->
-                targetPlayer.getPlayer().addAttachment(plugin, permission.getPermission(), false));
+        Tristate removed = plugin.getPermissifyAPI().getDatabaseHandler().get().removePlayerFromGroup(targetPlayer.getUniqueId(), group.get());
+        if (removed == Tristate.NONE)
+            return PermissifyConstants.UNABLE_TO_REMOVE.replace("<TYPE>", "player").replace("<REASON>", "Player not in group.");
+        else if (removed == Tristate.FALSE)
+            return PermissifyConstants.UNABLE_TO_REMOVE.replace("<TYPE>", "player").replace("<REASON>", "No database handler.");
+
         plugin.getPermissifyAPI().getDatabaseHandler().get().updateCache(targetPlayer.getUniqueId());
+
+        if (targetPlayer.isOnline()) PermissionUtil.applyPermissions(targetPlayer.getPlayer());
         return PermissifyConstants.PLAYER_REMOVED_FROM_GROUP
                 .replace("<PLAYER>", targetPlayer.getName()).replace("<GROUP>", group.get().getName());
     }
 
-    public String handleSetMainGroup(CommandSender sender, String[] args) {
+    public String handleSetOrGetPrimaryGroup(CommandSender sender, String[] args) {
         PermissifyMain plugin = PermissifyMain.getInstance();
         if (!plugin.getPermissifyAPI().getDatabaseHandler().isPresent())
             return PermissifyConstants.UNABLE_TO_SET.replace("<REASON>", "No database handler.");
 
         if (!PermissionUtil.hasPermissionOrSuperAdmin(sender, PermissifyConstants.PERMISSIFY_PLAYER_SET_MAIN_GROUP))
             return PermissifyConstants.INSUFFICIENT_PERMISSIONS;
+
+        if (args.length == 1) {
+            // Get the primary group.
+            Optional<PermissionGroup> group = plugin.getPermissifyAPI().getDatabaseHandler().get().getDefaultGroup();
+            return PermissifyConstants.PRIMARY_GROUP_TEMPLATE.replace("<GROUP>", group.map(PermissionGroup::getName).orElse("&c&lNONE"));
+        }
 
         if (args.length < 2) return PermissifyConstants.NOT_ENOUGH_ARGUMENTS_SET_MAIN_GROUP;
 
@@ -114,13 +133,16 @@ public class PlayerCommand {
         if (!group.get().getPlayers().containsKey(player.getUniqueId()))
             return PermissifyConstants.PLAYER_NOT_IN_GROUP.replace("<PLAYER>", player.getName()).replace("<GROUP>", group.get().getName());
 
-        boolean groupSet = plugin.getPermissifyAPI().getDatabaseHandler().get().setPrimaryGroup(group.get(), player.getUniqueId());
+        Tristate groupSet = plugin.getPermissifyAPI().getDatabaseHandler().get().setPrimaryGroup(group.get(), player.getUniqueId());
         plugin.getPermissifyAPI().getDatabaseHandler().get().updateCache(player.getUniqueId());
 
-        if (groupSet)
+        if (groupSet == Tristate.TRUE)
             return PermissifyConstants.MAIN_GROUP_SET.replace("<PLAYER>", player.getName()).replace("<GROUP>", group.get().getName());
-        // Should be pretty much impossible to get here, unless the database isn't connected.
-        return PermissifyConstants.PLAYER_NOT_IN_GROUP.replace("<PLAYER>", player.getName()).replace("<GROUP>", group.get().getName());
+        else if (groupSet == Tristate.FALSE) {
+            PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.empty()));
+            return "";
+        }
+        return PermissifyConstants.ALREADY_MAIN_GROUP.replace("<GROUP>", group.get().getName());
     }
 
     public String handleAddPermission(CommandSender sender, String[] args) {
@@ -141,7 +163,7 @@ public class PlayerCommand {
             return PermissifyConstants.PLAYER_ALREADY_HAS_PERMISSION.replace("<PLAYER>", targetPlayer.getName()).replace("<PERMISSION>", args[1]);
         }
         plugin.getPermissifyAPI().getDatabaseHandler().get().addPermission(targetPlayer.getUniqueId(), args[1]);
-        if (targetPlayer.isOnline()) targetPlayer.getPlayer().addAttachment(plugin, args[1], true);
+        if (targetPlayer.isOnline()) PermissionUtil.applyPermissions(targetPlayer.getPlayer());
 
         if (args.length >= 3) {
             // Timed permission.
@@ -149,7 +171,7 @@ public class PlayerCommand {
             int time = Integer.parseInt(args[2]);
 
             Bukkit.getScheduler().runTaskLater(plugin, () -> {
-                targetPlayer.getPlayer().addAttachment(plugin, args[1], false);
+                if (targetPlayer.isOnline()) PermissionUtil.applyPermissions(targetPlayer.getPlayer());
                 if (!plugin.getPermissifyAPI().getDatabaseHandler().isPresent()) return;
                 plugin.getPermissifyAPI().getDatabaseHandler().get().removePermission(targetPlayer.getUniqueId(), args[1]);
                 plugin.getPermissifyAPI().getDatabaseHandler().get().updateCache(targetPlayer.getUniqueId());
@@ -184,7 +206,7 @@ public class PlayerCommand {
         }
 
         plugin.getPermissifyAPI().getDatabaseHandler().get().removePermission(targetPlayer.getUniqueId(), args[1]);
-        if (targetPlayer.isOnline()) targetPlayer.getPlayer().addAttachment(plugin, args[1], false);
+        if (targetPlayer.isOnline()) PermissionUtil.applyPermissions(targetPlayer.getPlayer());
 
         plugin.getPermissifyAPI().getDatabaseHandler().get().updateCache(targetPlayer.getUniqueId());
         return PermissifyConstants.PERMISSION_REMOVED_PLAYER

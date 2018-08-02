@@ -31,6 +31,7 @@ import me.innectic.permissify.api.permission.Permission;
 import me.innectic.permissify.api.database.ConnectionInformation;
 import me.innectic.permissify.api.permission.PermissionGroup;
 import me.innectic.permissify.api.profile.PermissifyProfile;
+import me.innectic.permissify.api.util.Tristate;
 
 import java.sql.*;
 import java.util.*;
@@ -43,21 +44,25 @@ import java.util.stream.Collectors;
  */
 public class SQLHandler extends DatabaseHandler {
 
-    private final String baseConnectionURL;
-    private boolean isUsingSqlite = false;
+    private boolean isUsingSQLite = false;
+    private String baseConnectionUrl;
 
     public SQLHandler(ConnectionInformation connectionInformation) {
         super(connectionInformation);
-        String type = "mysql";
-        String databaseUrl = "//" + connectionInformation.getUrl() + ":" + connectionInformation.getPort();
 
-        if(connectionInformation.getMeta().containsKey("sqlite")) {
+        String type;
+        String databaseURL;
+
+        if (connectionInformation.getMeta().containsKey("sqlite")) {
             type = "sqlite";
             Map sqliteData = (Map) connectionInformation.getMeta().get("sqlite");
-            databaseUrl = (String) sqliteData.get("file");
-            isUsingSqlite = true;
+            databaseURL = (String) sqliteData.get("file");
+            isUsingSQLite = true;
+        } else {
+            type = "mysql";
+            databaseURL = "//" + connectionInformation.getUrl() + ":" + connectionInformation.getPort();
         }
-        baseConnectionURL = "jdbc:" + type + ":" + databaseUrl;
+        baseConnectionUrl = "jdbc:" + type + ":" + databaseURL;
     }
 
     /**
@@ -66,13 +71,13 @@ public class SQLHandler extends DatabaseHandler {
      * @return an optional connection, filled if successful.
      */
     private Optional<Connection> getConnection() {
-        if (!connectionInformation.isPresent()) return Optional.empty();
         try {
-            if (isUsingSqlite) return Optional.ofNullable(DriverManager.getConnection(baseConnectionURL));
-            String connectionURL = baseConnectionURL + "/" + connectionInformation.get().getDatabase();
-            return Optional.ofNullable(DriverManager.getConnection(connectionURL, connectionInformation.get().getUsername(), connectionInformation.get().getPassword()));
+            if (isUsingSQLite) return Optional.ofNullable(DriverManager.getConnection(baseConnectionUrl));
+            String connectionURL = baseConnectionUrl + "/" + connectionInformation.getDatabase();
+            return Optional.ofNullable(DriverManager.getConnection(connectionURL, connectionInformation.getUsername(), connectionInformation.getPassword()));
         } catch (SQLException e) {
             PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.of(e)));
+            e.printStackTrace();
         }
         return Optional.empty();
     }
@@ -81,88 +86,79 @@ public class SQLHandler extends DatabaseHandler {
     public void initialize() {
         // Make sure that the cache is empty
         this.cachedPermissions = new HashMap<>();
-        // Make sure the database needed actually exists.
-        if (!connectionInformation.isPresent()) return;
 
         try {
-            Optional<Connection> connection;
-            if (isUsingSqlite) connection = Optional.ofNullable(DriverManager.getConnection(baseConnectionURL));
-            else connection = Optional.ofNullable(DriverManager.getConnection(baseConnectionURL, connectionInformation.get().getUsername(), connectionInformation.get().getPassword()));
-            if (!connection.isPresent()) return;
-            String database = connectionInformation.get().getDatabase();
-            if (!database.equals("")) database = ".";
-            // TODO: This should all be prepared statements, but that breaks for some reason
-            if (!isUsingSqlite) {
-                PreparedStatement databaseStatement = connection.get().prepareStatement("CREATE DATABASE IF NOT EXISTS " + database);
-                databaseStatement.execute();
-                databaseStatement.close();
+            Connection connection;
+            if (isUsingSQLite) connection = DriverManager.getConnection(baseConnectionUrl);
+            else connection = DriverManager.getConnection(baseConnectionUrl, connectionInformation.getUsername(), connectionInformation.getPassword());
+            if (connection == null) {
+                System.out.println("Could not connect to database during initialization.");
+                PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.empty()));
+                return;
             }
 
-            PreparedStatement groupMembersStatement = connection.get().prepareStatement("CREATE TABLE IF NOT EXISTS " + database +
+            String database = connectionInformation.getDatabase();
+
+            if (!isUsingSQLite) {
+                PreparedStatement statement = connection.prepareStatement("CREATE DATABASE IF NOT EXISTS " + database);
+                statement.execute();
+                statement.close();
+                database += ".";
+            } else database = "";
+
+            PreparedStatement groupMembersStatement = connection.prepareStatement("CREATE TABLE IF NOT EXISTS " + database +
                     "groupMembers (uuid VARCHAR(767) NOT NULL, `group` VARCHAR(700) NOT NULL, `primary` TINYINT NOT NULL, ladderPosition INTEGER NOT NULL)");
             groupMembersStatement.execute();
             groupMembersStatement.close();
 
-            PreparedStatement groupPermissionsStatement = connection.get().prepareStatement("CREATE TABLE IF NOT EXISTS " + database +"groupPermissions (groupName VARCHAR(767) NOT NULL, permission VARCHAR(767) NOT NULL)");
+            PreparedStatement groupPermissionsStatement = connection.prepareStatement("CREATE TABLE IF NOT EXISTS " + database +"groupPermissions (groupName VARCHAR(767) NOT NULL, permission VARCHAR(767) NOT NULL)");
             groupPermissionsStatement.execute();
             groupPermissionsStatement.close();
 
-            PreparedStatement groupsStatement = connection.get().prepareStatement("CREATE TABLE IF NOT EXISTS " + database +
-                    "groups (name VARCHAR(100) NOT NULL UNIQUE, displayName VARCHAR(100) NOT NULL UNIQUE, prefix VARCHAR(100) NOT NULL, suffix VARCHAR(100) NOT NULL, chatcolor VARCHAR(4) NOT NULL, defaultGroup TINYINT NOT NULL, ladder VARCHAR(767))");
+            PreparedStatement groupsStatement = connection.prepareStatement("CREATE TABLE IF NOT EXISTS " + database +
+                    "groups (name VARCHAR(100) NOT NULL UNIQUE, displayName VARCHAR(100) NOT NULL, prefix VARCHAR(100) NOT NULL, suffix VARCHAR(100) NOT NULL, chatcolor VARCHAR(4) NOT NULL, defaultGroup TINYINT NOT NULL, ladder VARCHAR(767))");
             groupsStatement.execute();
             groupsStatement.close();
 
-            PreparedStatement playerPermissionsStatement = connection.get().prepareStatement("CREATE TABLE IF NOT EXISTS " + database + "playerPermissions (uuid VARCHAR(767) NOT NULL, permission VARCHAR(767) NOT NULL, granted TINYINT NOT NULL)");
+            PreparedStatement playerPermissionsStatement = connection.prepareStatement("CREATE TABLE IF NOT EXISTS " + database + "playerPermissions (uuid VARCHAR(767) NOT NULL, permission VARCHAR(767) NOT NULL, granted TINYINT NOT NULL)");
             playerPermissionsStatement.execute();
             playerPermissionsStatement.close();
 
-            PreparedStatement superAdminStatement = connection.get().prepareStatement("CREATE TABLE IF NOT EXISTS " + database + "superAdmin (uuid VARCHAR(767) NOT NULL)");
+            PreparedStatement superAdminStatement = connection.prepareStatement("CREATE TABLE IF NOT EXISTS " + database + "superAdmin (uuid VARCHAR(767) NOT NULL)");
             superAdminStatement.execute();
             superAdminStatement.close();
 
-            PreparedStatement ladderStatement = connection.get().prepareStatement("CREATE TABLE IF NOT EXISTS " + database + "ladders (name VARCHAR(767))");
+            PreparedStatement ladderStatement = connection.prepareStatement("CREATE TABLE IF NOT EXISTS " + database + "ladders (name VARCHAR(767))");
             ladderStatement.execute();
             ladderStatement.close();
 
-            PreparedStatement ladderLevelStatement = connection.get().prepareStatement("CREATE TABLE IF NOT EXISTS " + database + "ladderLevels (ladder VARCHAR(767), name VARCHAR(767), power INTEGER)");
+            PreparedStatement ladderLevelStatement = connection.prepareStatement("CREATE TABLE IF NOT EXISTS " + database + "ladderLevels (ladder VARCHAR(767), name VARCHAR(767), power INTEGER)");
             ladderLevelStatement.execute();
             ladderLevelStatement.close();
 
-            if (!hasFormattingTable(connection.get(), database)) {
-                PreparedStatement formattingStatement = connection.get().prepareStatement("CREATE TABLE IF NOT EXISTS " + database + "formatting (`format` VARCHAR(400) NOT NULL, formatter VARCHAR(200) NOT NULL)");
+            if (!hasFormattingTable(connection, database)) {
+                PreparedStatement formattingStatement = connection.prepareStatement("CREATE TABLE IF NOT EXISTS " + database + "formatting (`format` VARCHAR(400) NOT NULL, formatter VARCHAR(200) NOT NULL)");
                 formattingStatement.execute();
                 formattingStatement.close();
 
-                PreparedStatement defaultChatFormat = connection.get().prepareStatement("INSERT INTO " + database + "formatting (`format`, formatter) VALUES (?,?)");
+                PreparedStatement defaultChatFormat = connection.prepareStatement("INSERT INTO " + database + "formatting (`format`, formatter) VALUES (?,?)");
                 defaultChatFormat.setString(1, "{group} {username}: {message}");
                 defaultChatFormat.setString(2, "chat");
                 defaultChatFormat.execute();
                 defaultChatFormat.close();
 
-                PreparedStatement defaultWhisperFormat = connection.get().prepareStatement("INSERT INTO " + database + "formatting (`format`, formatter) VALUES (?,?)");
+                PreparedStatement defaultWhisperFormat = connection.prepareStatement("INSERT INTO " + database + "formatting (`format`, formatter) VALUES (?,?)");
                 defaultWhisperFormat.setString(1, "{senderGroup} {username} > {receiverGroup} {to}: {message}");
                 defaultWhisperFormat.setString(2, "whisper");
                 defaultWhisperFormat.execute();
                 defaultWhisperFormat.close();
             }
 
-            connection.get().close();
+            connection.close();
         } catch (SQLException e) {
+            PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.DATABASE_EXCEPTION, Optional.of(e)));
             e.printStackTrace();
         }
-    }
-
-    @Override
-    public boolean connect() {
-        Optional<Connection> connection = getConnection();
-        boolean connected = connection.isPresent();
-
-        connection.ifPresent(c -> {
-            try {
-                c.close();
-            } catch (SQLException ignored) {}
-        });
-        return connected;
     }
 
     @Override
@@ -224,6 +220,7 @@ public class SQLHandler extends DatabaseHandler {
             groupResults.close();
             groupStatement.close();
         } catch (SQLException e) {
+            PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.DATABASE_EXCEPTION, Optional.of(e)));
             e.printStackTrace();
         }
     }
@@ -246,7 +243,8 @@ public class SQLHandler extends DatabaseHandler {
             adminStatement.close();
             connection.get().close();
         } catch (SQLException e) {
-            PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.of(e)));
+            PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.DATABASE_EXCEPTION, Optional.of(e)));
+            e.printStackTrace();
         }
     }
 
@@ -289,13 +287,12 @@ public class SQLHandler extends DatabaseHandler {
         // Put the permissions into the cache
         List<Permission> playerPermissions = cachedPermissions.getOrDefault(uuid, new ArrayList<>());
 
+        Optional<Connection> connection = getConnection();
+        if (!connection.isPresent()) {
+            PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.empty()));
+            return;
+        }
         for (String permission : permissions) {
-            Optional<Connection> connection = getConnection();
-            if (!connection.isPresent()) {
-                PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.empty()));
-                return;
-            }
-
             Permission perm = new Permission(permission, true);
             playerPermissions.add(perm);
 
@@ -308,7 +305,8 @@ public class SQLHandler extends DatabaseHandler {
                 statement.close();
                 connection.get().close();
             } catch (SQLException e) {
-                PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.of(e)));
+                PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.DATABASE_EXCEPTION, Optional.of(e)));
+                e.printStackTrace();
                 return;
             }
         }
@@ -338,7 +336,8 @@ public class SQLHandler extends DatabaseHandler {
                 statement.close();
                 connection.get().close();
             } catch (SQLException e) {
-                PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.of(e)));
+                PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.DATABASE_EXCEPTION, Optional.of(e)));
+                e.printStackTrace();
             }
         }
     }
@@ -371,7 +370,8 @@ public class SQLHandler extends DatabaseHandler {
             connection.get().close();
             return granted;
         } catch (SQLException e) {
-            PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.of(e)));
+            PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.DATABASE_EXCEPTION, Optional.of(e)));
+            e.printStackTrace();
         }
         return false;
     }
@@ -406,53 +406,61 @@ public class SQLHandler extends DatabaseHandler {
             cachedPermissions.put(uuid, permissions);
             return permissions;
         } catch (SQLException e) {
-            PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.of(e)));
+            PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.DATABASE_EXCEPTION, Optional.of(e)));
+            e.printStackTrace();
         }
         return new ArrayList<>();
     }
 
     @Override
-    public boolean createGroup(String name, String displayName, String prefix, String suffix, String chatColor) {
+    public Tristate createGroup(String name, String displayName, String prefix, String suffix, String chatColor) {
         // Make sure that this group doesn't already exist
-        if (cachedGroups.getOrDefault(name, null) != null) return false;
+        if (cachedGroups.getOrDefault(name, null) != null) return Tristate.NONE;
         // Add the new group to the cache
         cachedGroups.put(name, new PermissionGroup(name, displayName, chatColor, prefix, suffix));
 
         Optional<Connection> connection = getConnection();
         if (!connection.isPresent()) {
             PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.empty()));
-            return false;
+            return Tristate.FALSE;
         }
 
         try {
-            PreparedStatement statement = connection.get().prepareStatement("INSERT INTO groups (name,prefix,suffix,chatcolor,defaultGroup) VALUES (?,?,?,?,?)");
+            PreparedStatement statement = connection.get().prepareStatement("INSERT INTO groups (name,displayName,prefix,suffix,chatcolor,defaultGroup) VALUES (?,?,?,?,?,?)");
             statement.setString(1, name);
-            statement.setString(2, prefix);
-            statement.setString(3, suffix);
-            statement.setString(4, chatColor);
-            statement.setBoolean(5, false);
+            statement.setString(2, displayName);
+            statement.setString(3, prefix);
+            statement.setString(4, suffix);
+            statement.setString(5, chatColor);
+            statement.setBoolean(6, false);
             // Cleanup
             statement.execute();
             statement.close();
             connection.get().close();
         } catch (SQLException e) {
-            PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.of(e)));
+            PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.DATABASE_EXCEPTION, Optional.of(e)));
+            e.printStackTrace();
         }
 
-        return true;
+        return Tristate.TRUE;
     }
 
     @Override
-    public boolean deleteGroup(String name) {
-        if (getGroups().entrySet().stream().map(Map.Entry::getValue).noneMatch(group -> group.getName().equalsIgnoreCase(name)))
-            return false;
+    public Tristate deleteGroup(String name) {
+        Optional<PermissionGroup> group = getGroups().entrySet().stream().map(Map.Entry::getValue).filter(g -> g.getName().equalsIgnoreCase(name)).findFirst();
+        if (!group.isPresent())
+            return Tristate.NONE;
+
+        if (defaultGroup.isPresent() && defaultGroup.get().getName().equalsIgnoreCase(name)) setDefaultGroup(null);
+        Set<UUID> players = new HashSet<>(group.get().getPlayers().keySet());
         // Delete from the cache
         cachedGroups.remove(name);
+        players.forEach(uuid -> this.removePlayerFromGroup(uuid, group.get()));
 
         Optional<Connection> connection = getConnection();
         if (!connection.isPresent()) {
             PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.empty()));
-            return false;
+            return Tristate.FALSE;
         }
         try {
             PreparedStatement statement = connection.get().prepareStatement("DELETE FROM groups WHERE name=?");
@@ -460,11 +468,13 @@ public class SQLHandler extends DatabaseHandler {
             statement.execute();
             statement.close();
             connection.get().close();
+
+            return Tristate.TRUE;
         } catch (SQLException e) {
-            PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.of(e)));
-            return false;
+            PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.DATABASE_EXCEPTION, Optional.of(e)));
+            e.printStackTrace();
         }
-        return true;
+        return Tristate.FALSE;
     }
 
     @Override
@@ -473,8 +483,8 @@ public class SQLHandler extends DatabaseHandler {
     }
 
     @Override
-    public boolean addPlayerToGroup(UUID uuid, PermissionGroup group) {
-        if (group.hasPlayer(uuid)) return false;
+    public Tristate addPlayerToGroup(UUID uuid, PermissionGroup group) {
+        if (group.hasPlayer(uuid)) return Tristate.NONE;
         group.addPlayer(uuid, false);
         // Update the cache
         cachedGroups.put(group.getName(), group);
@@ -482,35 +492,36 @@ public class SQLHandler extends DatabaseHandler {
         Optional<Connection> connection = getConnection();
         if (!connection.isPresent()) {
             PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.empty()));
-            return false;
+            return Tristate.FALSE;
         }
         try {
-            PreparedStatement statement = connection.get().prepareStatement("INSERT INTO groupMembers (uuid,`group`,`primary`) VALUES (?,?,?)");
+            PreparedStatement statement = connection.get().prepareStatement("INSERT INTO groupMembers (uuid,`group`,`primary`,ladderPosition) VALUES (?,?,?,?)");
+
             statement.setString(1, uuid.toString());
             statement.setString(2, group.getName());
             statement.setBoolean(3, false);
+            statement.setInt(4, 0); // TODO: 1.1
+
             statement.execute();
             statement.close();
             connection.get().close();
-            return true;
+            return Tristate.TRUE;
         } catch (SQLException e) {
             PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.of(e)));
+            e.printStackTrace();
         }
-        return false;
+        return Tristate.FALSE;
     }
 
     @Override
-    public boolean removePlayerFromGroup(UUID uuid, PermissionGroup group) {
-        if (!group.hasPlayer(uuid)) return false;
+    public Tristate removePlayerFromGroup(UUID uuid, PermissionGroup group) {
+        if (!group.hasPlayer(uuid)) return Tristate.NONE;
         group.removePlayer(uuid);
-        // Update the cache
-        cachedGroups.remove(group.getName());
-        cachedGroups.put(group.getName(), group);
 
         Optional<Connection> connection = getConnection();
         if (!connection.isPresent()) {
             PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.empty()));
-            return false;
+            return Tristate.FALSE;
         }
         try {
             PreparedStatement statement = connection.get().prepareStatement("DELETE FROM groupMembers WHERE uuid=? AND `group`=?");
@@ -519,11 +530,12 @@ public class SQLHandler extends DatabaseHandler {
             statement.execute();
             statement.close();
             connection.get().close();
-            return true;
+            return Tristate.TRUE;
         } catch (SQLException e) {
             PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.of(e)));
+            e.printStackTrace();
         }
-        return false;
+        return Tristate.FALSE;
     }
 
     @Override
@@ -537,15 +549,15 @@ public class SQLHandler extends DatabaseHandler {
     }
 
     @Override
-    public boolean setPrimaryGroup(PermissionGroup group, UUID uuid) {
-        // @Return: Should primary group put the player in the group if they're not already in it?
-        if (!group.hasPlayer(uuid)) return false;
-        if (group.isPrimaryGroup(uuid)) return false;
+    public Tristate setPrimaryGroup(PermissionGroup group, UUID uuid) {
+        if (!group.hasPlayer(uuid)) addPlayerToGroup(uuid, group);
+        if (group.isPrimaryGroup(uuid)) return Tristate.NONE;
         group.setPrimaryGroup(uuid, true);
+
         Optional<Connection> connection = getConnection();
         if (!connection.isPresent()) {
             PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.empty()));
-            return false;
+            return Tristate.FALSE;
         }
 
         try {
@@ -553,13 +565,17 @@ public class SQLHandler extends DatabaseHandler {
             statement.setBoolean(1, true);
             statement.setString(2, uuid.toString());
             statement.setString(3, group.getName());
+
             statement.execute();
             statement.close();
             connection.get().close();
+
+            return Tristate.TRUE;
         } catch (SQLException e) {
-            PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.of(e)));
+            PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.DATABASE_EXCEPTION, Optional.of(e)));
+            e.printStackTrace();
         }
-        return true;
+        return Tristate.FALSE;
     }
 
     @Override
@@ -606,7 +622,8 @@ public class SQLHandler extends DatabaseHandler {
             statement.close();
             connection.get().close();
         } catch (SQLException e) {
-            PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.of(e)));
+            PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.DATABASE_EXCEPTION, Optional.of(e)));
+            e.printStackTrace();
         }
     }
 
@@ -633,12 +650,14 @@ public class SQLHandler extends DatabaseHandler {
                 connection.get().close();
 
                 permissionGroup.get().addPermission(permission);
+
+                return true;
             } catch (SQLException e) {
-                PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.of(e)));
-                return false;
+                PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.DATABASE_EXCEPTION, Optional.of(e)));
+                e.printStackTrace();
             }
         }
-        return true;
+        return false;
     }
 
     @Override
@@ -647,27 +666,29 @@ public class SQLHandler extends DatabaseHandler {
                 .filter(permission -> permission.getName().equalsIgnoreCase(group)).findFirst();
         if (!permissionGroup.isPresent()) return false;
 
-        for (String permission : permissions) {
-            if (!permissionGroup.get().hasPermission(permission)) return false;
-            permissionGroup.get().removePermission(permission);
-            Optional<Connection> connection = getConnection();
-            if (!connection.isPresent()) {
-                PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.empty()));
-                return false;
-            }
-            try {
+        Optional<Connection> connection = getConnection();
+        if (!connection.isPresent()) {
+            PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.empty()));
+            return false;
+        }
+        try {
+            for (String permission : permissions) {
+                if (!permissionGroup.get().hasPermission(permission)) return false;
+                permissionGroup.get().removePermission(permission);
+
                 PreparedStatement statement = connection.get().prepareStatement("DELETE FROM groupPermissions WHERE groupName=? AND permission=?");
                 statement.setString(1, group);
                 statement.setString(2, permission);
                 statement.execute();
                 statement.close();
-                connection.get().close();
-            } catch (SQLException e) {
-                PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.of(e)));
-                return false;
             }
+            connection.get().close();
+            return true;
+        } catch (SQLException e) {
+                PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.of(e)));
+                e.printStackTrace();
         }
-        return true;
+        return false;
     }
 
     @Override
@@ -680,6 +701,7 @@ public class SQLHandler extends DatabaseHandler {
     @Override
     public void addSuperAdmin(UUID uuid) {
         if (uuid == null) return;
+        if (superAdmins.contains(uuid)) return;
         // Update the cache
         superAdmins.add(uuid);
         // Update mysql
@@ -695,7 +717,8 @@ public class SQLHandler extends DatabaseHandler {
             statement.close();
             connection.get().close();
         } catch (SQLException e) {
-            PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.of(e)));
+            PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.DATABASE_EXCEPTION, Optional.of(e)));
+            e.printStackTrace();
         }
     }
 
@@ -706,12 +729,8 @@ public class SQLHandler extends DatabaseHandler {
 
     @Override
     public void removeSuperAdmin(UUID uuid) {
-
-    }
-
-    @Override
-    public void setDefaultGroup(PermissionGroup group) {
-        defaultGroup = Optional.of(group);
+        if (uuid == null) return;
+        superAdmins.removeIf(u -> u.equals(uuid));
 
         Optional<Connection> connection = getConnection();
         if (!connection.isPresent()) {
@@ -719,30 +738,55 @@ public class SQLHandler extends DatabaseHandler {
             return;
         }
         try {
-            PreparedStatement removeDefaultsStatement = connection.get().prepareStatement("UPDATE groups SET defaultGroup=FALSE WHERE defaultGroup=TRUE");
+            PreparedStatement statement = connection.get().prepareStatement("DELETE FROM superAdmin WHERE uuid=?");
+            statement.setString(1, uuid.toString());
+            statement.execute();
+            statement.close();
+            connection.get().close();
+        } catch (SQLException e) {
+            PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.DATABASE_EXCEPTION, Optional.of(e)));
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void setDefaultGroup(PermissionGroup group) {
+        defaultGroup = Optional.ofNullable(group);
+
+        Optional<Connection> connection = getConnection();
+        if (!connection.isPresent()) {
+            PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.empty()));
+            return;
+        }
+        try {
+            PreparedStatement removeDefaultsStatement = connection.get().prepareStatement("UPDATE groups SET defaultGroup=? WHERE defaultGroup=?");
+            removeDefaultsStatement.setBoolean(1, false);
+            removeDefaultsStatement.setBoolean(2, true);
             removeDefaultsStatement.execute();
             removeDefaultsStatement.close();
 
             PreparedStatement setDefaultStatement = connection.get().prepareStatement("UPDATE groups SET defaultGroup=? WHERE name=?");
             setDefaultStatement.setBoolean(1, true);
-            setDefaultStatement.setString(2, group.getName());
+            setDefaultStatement.setString(2, defaultGroup.map(PermissionGroup::getName).orElse(""));
             setDefaultStatement.execute();
             setDefaultStatement.close();
             connection.get().close();
         } catch (SQLException e) {
+            PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.DATABASE_EXCEPTION, Optional.of(e)));
             e.printStackTrace();
         }
     }
 
     private boolean hasFormattingTable(Connection connection, String database) {
         try {
-            if (isUsingSqlite) {
+            if (isUsingSQLite) {
                 PreparedStatement statement = connection.prepareStatement("SELECT name FROM sqlite_master WHERE type='table' AND name=?");
                 statement.setString(1, "formatting");
                 return statement.executeQuery().next();
             }
             return connection.getMetaData().getTables(database, null, "formatting", new String[]{"TABLE"}).next();
         } catch (SQLException e) {
+            PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.DATABASE_EXCEPTION, Optional.of(e)));
             e.printStackTrace();
         }
         return false;
