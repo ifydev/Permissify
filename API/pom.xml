@@ -5,7 +5,7 @@
     <parent>
         <artifactId>Permissify</artifactId>
         <groupId>me.innectic</groupId>
-        <version>1.0-SNAPSHOT</version>
+        <version>1.0.1</version>
     </parent>
 
     <artifactId>PermissifyAPI</artifactId>

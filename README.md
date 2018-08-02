@@ -7,7 +7,7 @@ and most importantly, *no errors caused by the plugin*.
 
 # Builds
 
-You can download the latest version of Permissify from the [releases](https://github.com/Innectic/Permissify/releases) page.
+You can download the latest version of Permissify from the [releases](https://github.com/IfyDev/Permissify/releases) page.
 
 # Contributing
 
@@ -50,17 +50,20 @@ player.sendMessage("Wow, you're cool!");
 
 #### Don't
 ```java
-
 public void things()
 {
-    // stuff
+    if (something)
+    {
+        // Stuff
+    }
 }
 ```
 
 #### Do:
 ```java
-
 public void things() {
-    // stuff
+    if (something) {
+        // stuff
+    }
 }
 ```
