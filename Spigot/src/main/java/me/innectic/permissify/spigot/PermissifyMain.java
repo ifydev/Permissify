@@ -111,16 +111,14 @@ public class PermissifyMain extends JavaPlugin {
                 if (!created) getLogger().log(Level.SEVERE, "Could not create config!");
                 getDataFolder().toPath().resolve("profiles").toFile().mkdir();
             }
+
             File file = new File(getDataFolder(), "config.yml");
             if (!file.exists()) {
                 getLogger().info("Config.yml not found, creating!");
                 saveDefaultConfig();
-            } else {
-                getLogger().info("Config.yml found, loading!");
-            }
+            } else getLogger().info("Config.yml found, loading!");
         } catch (Exception e) {
             e.printStackTrace();
-
         }
     }
 
