@@ -38,6 +38,9 @@ public class PermissifyCommand implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String s, String[] args) {
         PermissifyMain plugin = PermissifyMain.getInstance();
+
+        // Ensure the user even has permissions to see the help
+
         return false;
     }
 }
