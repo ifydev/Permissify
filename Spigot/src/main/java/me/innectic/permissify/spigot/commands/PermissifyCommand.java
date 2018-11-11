@@ -24,10 +24,18 @@
  */
 package me.innectic.permissify.spigot.commands;
 
+import me.innectic.permissify.api.PermissifyConstants;
+import me.innectic.permissify.api.util.ArgumentUtil;
+import me.innectic.permissify.api.util.HelpUtil;
 import me.innectic.permissify.spigot.PermissifyMain;
+import me.innectic.permissify.spigot.commands.subcommands.SuperAdminSubCommand;
+import me.innectic.permissify.spigot.utils.ColorUtil;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+
+import java.util.List;
+import java.util.Optional;
 
 /**
  * @author Innectic
@@ -35,12 +43,38 @@ import org.bukkit.command.CommandSender;
  */
 public class PermissifyCommand implements CommandExecutor {
 
+    private SuperAdminSubCommand superAdminSubCommand = new SuperAdminSubCommand();
+
     @Override
     public boolean onCommand(CommandSender sender, Command command, String s, String[] args) {
         PermissifyMain plugin = PermissifyMain.getInstance();
 
-        // Ensure the user even has permissions to see the help
+        // Handle no arguments
+        if (args.length == 0) {
+            Optional<List<String>> helpData = HelpUtil.getHelpInformationAtPage(0);
+            if (!helpData.isPresent()) {
+                sender.sendMessage(ColorUtil.makeReadable(PermissifyConstants.INVALID_HELP_PAGE_INDEX.replace("<PAGE>", "0")));
+                return false;
+            }
+            helpData.get().stream().map(ColorUtil::makeReadable).forEach(sender::sendMessage);
+            return true;
+        }
+
+        String section = args[0].toLowerCase();
+
+        if (section.equals("superadmin")) sender.sendMessage(
+                ColorUtil.makeReadable(superAdminSubCommand.handle(sender, ArgumentUtil.skipFirst(args))));
+        else sendDefaultHelpInformation(sender);
 
         return false;
+    }
+
+    private void sendDefaultHelpInformation(CommandSender sender) {
+        Optional<List<String>> helpData = HelpUtil.getHelpInformationAtPage(0);
+        if (!helpData.isPresent()) {
+            sender.sendMessage(ColorUtil.makeReadable(PermissifyConstants.INVALID_HELP_PAGE_INDEX.replace("<PAGE>", "0")));
+            return;
+        }
+        helpData.get().stream().map(ColorUtil::makeReadable).forEach(sender::sendMessage);
     }
 }

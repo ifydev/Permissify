@@ -45,4 +45,8 @@ public class ArgumentUtil {
         List<String> args = new ArrayList<>(Arrays.asList(arguments));
         return args.subList(starting, args.size()).toArray(new String[]{});
     }
+
+    public static String[] skipFirst(String[] arguments) {
+        return getRemainingArgs(1, arguments);
+    }
 }
