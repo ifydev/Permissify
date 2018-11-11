@@ -75,6 +75,8 @@ public class PermissifyCommand implements CommandExecutor {
             sender.sendMessage(ColorUtil.makeReadable(PermissifyConstants.INVALID_HELP_PAGE_INDEX.replace("<PAGE>", "0")));
             return;
         }
+        sender.sendMessage(ColorUtil.makeReadable(PermissifyConstants.PERMISSIFY_HELP_HEADER));
         helpData.get().stream().map(ColorUtil::makeReadable).forEach(sender::sendMessage);
+        sender.sendMessage(ColorUtil.makeReadable(PermissifyConstants.PERMISSIFY_HELP_FOOTER));
     }
 }
