@@ -26,7 +26,19 @@ public class GroupSubCommand implements AbstractSubCommand {
         args = ArgumentUtil.skipFirst(args);
 
         if (segment.equals("permission")) return permissionSubCommand(sender, args);
+        else if (segment.equals("list")) return listGroups(sender, args);
         return PermissifyConstants.INVALID_ARGUMENT_SUPER_ADMIN;
+    }
+
+    private String listGroups(CommandSender sender, String[] args) {
+        if (!sender.hasPermission(PermissifyConstants.GROUP_LIST)) return PermissifyConstants.YOU_DONT_HAVE_PERMISSION;
+        PermissifyMain plugin = PermissifyMain.getInstance();
+
+        Optional<DatabaseHandler> handler = plugin.getPermissifyAPI().getDatabaseHandler();
+        if (!handler.isPresent()) return PermissifyConstants.HANDLER_IS_NOT_PRESENT;
+
+        String groups = String.join(", ", handler.get().getGroups().keySet());
+        return PermissifyConstants.GROUP_LIST.replace("<GROUPS>", groups);
     }
 
     private String permissionSubCommand(CommandSender sender, String[] args) {

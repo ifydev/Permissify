@@ -47,9 +47,6 @@ import java.util.Optional;
  */
 public class PermissifyCommand implements CommandExecutor {
 
-    private SuperAdminSubCommand superAdminSubCommand = new SuperAdminSubCommand();
-    private GroupSubCommand groupSubCommand = new GroupSubCommand();
-
     private Map<String, AbstractSubCommand> subcommands = new HashMap<>();
 
     public PermissifyCommand() {

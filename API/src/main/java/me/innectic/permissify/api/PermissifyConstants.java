@@ -73,6 +73,7 @@ public class PermissifyConstants {
     public static final String PERMISSION_ADDED_TO_GROUP = PERMISSIFY_PREFIX + "&e&lPermission<s> added to group!";
     public static final String PERMISSION_REMOVED_FROM_GROUP = PERMISSIFY_PREFIX + "&e&lPermission<s> removed from group!";
     public static final String GROUP_PERMISSION_LIST = PERMISSIFY_PREFIX + "&e&lPermissions for <GROUP>: <GROUP_PERMISSION_LIST>";
+    public static final String GROUP_LIST = PERMISSIFY_PREFIX + "&e&lList of groups: <GROUPS>";
 
     private static final String NOT_ENOUGH_ARGUMENTS = PERMISSIFY_PREFIX + "&c&lNot enough arguments! ";
     public static final String NOT_ENOUGH_ARGS_SUPER_ADMIN = NOT_ENOUGH_ARGUMENTS + PERMISSIFY_HELP_PAGES.get(11);
