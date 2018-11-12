@@ -43,7 +43,6 @@ public class PermissifyProfile {
     private final Map<String, PermissionGroup> groups;
     private Map<UUID, List<Permission>> playerPermissions;
     private PermissionGroup defaultGroup;
-    private List<UUID> superAdmins;
     private int version;
 
     @Override
@@ -52,7 +51,6 @@ public class PermissifyProfile {
                 "groups=" + groups +
                 ", playerPermissions=" + playerPermissions +
                 ", defaultGroup=" + defaultGroup +
-                ", superAdmins=" + superAdmins +
                 ", version=" + version +
                 " ]";
     }

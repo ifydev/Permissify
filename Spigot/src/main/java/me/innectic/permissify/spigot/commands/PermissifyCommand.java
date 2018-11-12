@@ -63,10 +63,10 @@ public class PermissifyCommand implements CommandExecutor {
                     if (player == null || !player.isOnline()) return;
 
                     if (args[1].equalsIgnoreCase("grant")) {
-                        plugin.getPermissifyAPI().getDatabaseHandler().get().addSuperAdmin(player.getUniqueId());
+                        plugin.getPermissifyAPI().getDatabaseHandler().get().addPermission(player.getUniqueId(), PermissifyConstants.PERMISSIFY_STAR);
                         return;
                     } else if (args[1].equalsIgnoreCase("remove")) {
-                        plugin.getPermissifyAPI().getDatabaseHandler().get().removeSuperAdmin(player.getUniqueId());
+                        plugin.getPermissifyAPI().getDatabaseHandler().get().removePermission(player.getUniqueId(), PermissifyConstants.PERMISSIFY_STAR);
                         return;
                     } else {
                         sender.sendMessage(ColorUtil.makeReadable(PermissifyConstants.INVALID_ARGUMENT.replace("<ARGUMENT>", args[1])));

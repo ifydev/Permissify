@@ -46,7 +46,6 @@ public abstract class DatabaseHandler {
     @Getter protected Map<String, PermissionGroup> cachedGroups = new HashMap<>();
     @Getter protected Optional<PermissionGroup> defaultGroup = Optional.empty();
     @Getter protected final ConnectionInformation connectionInformation;
-    @Getter protected List<UUID> superAdmins = new ArrayList<>();
 
     /**
      * Initialize the database handler
@@ -64,11 +63,6 @@ public abstract class DatabaseHandler {
      * Load all groups
      */
     protected abstract void loadGroups();
-
-    /**
-     * Load all super admins
-     */
-    protected abstract void loadSuperAdmins();
 
     /**
      * Drop all values from the handler.
@@ -233,27 +227,6 @@ public abstract class DatabaseHandler {
      * @return if the group has the permission
      */
     public abstract boolean hasGroupPermission(String group, String permission);
-
-    /**
-     * Set the super admin
-     *
-     * @param uuid the uuid of the player to be super admin
-     */
-    public abstract void addSuperAdmin(UUID uuid);
-
-    /**
-     * Get the player who's super admin
-     *
-     * @return if the uuid is a super admin
-     */
-    public abstract boolean isSuperAdmin(UUID uuid);
-
-    /***
-     * Remove a superadmin.
-     *
-     * @param uuid the uuid of the player to remove
-     */
-    public abstract void removeSuperAdmin(UUID uuid);
 
     /**
      * Set the default group players are in when they join for the first time

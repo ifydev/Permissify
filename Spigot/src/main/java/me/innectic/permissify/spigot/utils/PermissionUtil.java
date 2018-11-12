@@ -24,7 +24,6 @@
  */
 package me.innectic.permissify.spigot.utils;
 
-import me.innectic.permissify.api.permission.PermissionGroup;
 import me.innectic.permissify.spigot.PermissifyMain;
 import org.bukkit.block.CommandBlock;
 import org.bukkit.command.CommandSender;
@@ -43,12 +42,7 @@ import java.util.Optional;
 public class PermissionUtil {
 
     public static boolean hasPermissionOrSuperAdmin(CommandSender sender, String permission) {
-        if (sender instanceof Player) {
-            Player player = (Player) sender;
-            return player.hasPermission(permission) ||
-                    (PermissifyMain.getInstance().getPermissifyAPI().getDatabaseHandler().map(handler ->
-                            handler.isSuperAdmin(player.getUniqueId())).orElse(false));
-        }
+        if (sender instanceof Player) return sender.hasPermission(permission);
         return sender instanceof CommandBlock || sender instanceof ConsoleCommandSender;
     }
 
