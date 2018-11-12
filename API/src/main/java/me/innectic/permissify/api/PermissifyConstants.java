@@ -115,7 +115,7 @@ public class PermissifyConstants {
     public static final String PERMISSIFY_GROUP_PLAYER_LIST = "permissify.group.player.list";
     public static final String PERMISSIFY_GROUP_CREATE = "permissify.group.create";
     public static final String PERMISSIFY_GROUP_DELETE = "permissify.group.delete";
-
+    public static final String PERMISSIFY_STAR = "permissify.star";
 
     // Error response
     public static final List<String> PERMISSIFY_ERROR = new ArrayList<>(Arrays.asList(

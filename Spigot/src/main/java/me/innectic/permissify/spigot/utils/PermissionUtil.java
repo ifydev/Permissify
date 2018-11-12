@@ -24,6 +24,7 @@
  */
 package me.innectic.permissify.spigot.utils;
 
+import me.innectic.permissify.api.permission.PermissionGroup;
 import me.innectic.permissify.spigot.PermissifyMain;
 import org.bukkit.Bukkit;
 import org.bukkit.block.CommandBlock;

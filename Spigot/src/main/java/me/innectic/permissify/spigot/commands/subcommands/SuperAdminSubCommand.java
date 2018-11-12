@@ -38,7 +38,7 @@ public class SuperAdminSubCommand implements AbstractSubCommand {
         Optional<DatabaseHandler> handler = PermissifyMain.getInstance().getPermissifyAPI().getDatabaseHandler();
         if (!handler.isPresent()) return PermissifyConstants.HANDLER_IS_NOT_PRESENT;
         // We have a handler, so we can make it happen!
-        handler.get().addSuperAdmin(player.getUniqueId());
+        handler.get().addPermission(player.getUniqueId(), PermissifyConstants.PERMISSIFY_STAR);
         return PermissifyConstants.PLAYER_ADDED_AS_SUPER_ADMIN.replace("<PLAYER>", player.getName());
     }
 
@@ -53,7 +53,7 @@ public class SuperAdminSubCommand implements AbstractSubCommand {
         Optional<DatabaseHandler> handler = PermissifyMain.getInstance().getPermissifyAPI().getDatabaseHandler();
         if (!handler.isPresent()) return PermissifyConstants.HANDLER_IS_NOT_PRESENT;
         // We have a handler, so we can make it happen!
-        handler.get().removeSuperAdmin(player.getUniqueId());
+        handler.get().removePermission(player.getUniqueId(), PermissifyConstants.PERMISSIFY_STAR);
         return PermissifyConstants.PLAYER_REMOVED_FROM_SUPER_ADMIN.replace("<PLAYER>", player.getName());
     }
 }
