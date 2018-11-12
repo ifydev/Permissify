@@ -5,6 +5,7 @@ import me.innectic.permissify.api.database.DatabaseHandler;
 import me.innectic.permissify.api.permission.Permission;
 import me.innectic.permissify.api.permission.PermissionGroup;
 import me.innectic.permissify.api.util.ArgumentUtil;
+import me.innectic.permissify.api.util.Tristate;
 import me.innectic.permissify.spigot.PermissifyMain;
 import me.innectic.permissify.spigot.utils.PermissionUtil;
 import org.bukkit.Bukkit;
@@ -25,7 +26,7 @@ public class GroupSubCommand implements AbstractSubCommand {
     public String handle(CommandSender sender, String[] args) {
         if (args.length == 0) return PermissifyConstants.NOT_ENOUGH_ARGS_GROUP;
 
-        String segment = args[1].toLowerCase();
+        String segment = args[0].toLowerCase();
         args = ArgumentUtil.skipFirst(args);
 
         switch (segment) {
@@ -35,8 +36,45 @@ public class GroupSubCommand implements AbstractSubCommand {
                 return listGroups(sender, args);
             case "player":
                 return playerSubCommand(sender, args);
+            case "create":
+                return createGroup(sender, args);
+            case "remove":
+                return removeGroup(sender, args);
+            default:
+                return PermissifyConstants.INVALID_ARGUMENT_GROUP;
         }
-        return PermissifyConstants.INVALID_ARGUMENT_SUPER_ADMIN;
+    }
+
+    private String createGroup(CommandSender sender, String[] args) {
+        if (!sender.hasPermission(PermissifyConstants.PERMISSIFY_GROUP_CREATE)) return PermissifyConstants.YOU_DONT_HAVE_PERMISSION;
+        if (args.length < 1) return PermissifyConstants.NOT_ENOUGH_ARGS_GROUP_CREATE_DELETE;
+
+        String name = args[0];
+
+        // Make sure we can access the Permissify API
+        PermissifyMain plugin = PermissifyMain.getInstance();
+        Optional<DatabaseHandler> handler = plugin.getPermissifyAPI().getDatabaseHandler();
+        if (!handler.isPresent()) return PermissifyConstants.HANDLER_IS_NOT_PRESENT;
+
+        // :group_rewrite
+        Tristate state = handler.get().createGroup(name, "", "", "", "");
+        return "THIS IS A USEFUL DEBUG MESSAGE WOW LOOK AT ME " + state;
+    }
+
+    private String removeGroup(CommandSender sender, String[] args) {
+        if (!sender.hasPermission(PermissifyConstants.PERMISSIFY_GROUP_DELETE)) return PermissifyConstants.YOU_DONT_HAVE_PERMISSION;
+        if (args.length < 1) return PermissifyConstants.NOT_ENOUGH_ARGS_GROUP_CREATE_DELETE;
+
+        String name = args[0];
+
+        // Make sure we can access the Permissify API
+        PermissifyMain plugin = PermissifyMain.getInstance();
+        Optional<DatabaseHandler> handler = plugin.getPermissifyAPI().getDatabaseHandler();
+        if (!handler.isPresent()) return PermissifyConstants.HANDLER_IS_NOT_PRESENT;
+
+        // :group_rewrite
+        Tristate state = handler.get().deleteGroup(name);
+        return "THIS IS A USEFUL DEBUG MESSAGE WOW LOOK AT ME 2 " + state;
     }
 
     private String playerSubCommand(CommandSender sender, String[] args) {

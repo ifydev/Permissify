@@ -88,6 +88,7 @@ public class PermissifyConstants {
     public static final String NOT_ENOUGH_ARGS_GROUP_PLAYER_ADD = NOT_ENOUGH_ARGUMENTS + "/permissify group player add <group> <players...>";
     public static final String NOT_ENOUGH_ARGS_GROUP_PLAYER_REMOVE = NOT_ENOUGH_ARGUMENTS + "/permissify group player remove <group> <players...>";
     public static final String NOT_ENOUGH_ARGS_GROUP_PLAYER_LIST = NOT_ENOUGH_ARGUMENTS + "/permissify group player list <group>";
+    public static final String NOT_ENOUGH_ARGS_GROUP_CREATE_DELETE = NOT_ENOUGH_ARGUMENTS + "/permissify group <create|delete> <name>";
 
     private static final String INVALID_ARGUMENT = PERMISSIFY_PREFIX + "&c&lInvalid argument! ";
     public static final String INVALID_ARGUMENT_SUPER_ADMIN = INVALID_ARGUMENT + PERMISSIFY_HELP_PAGES.get(11);
@@ -112,6 +113,8 @@ public class PermissifyConstants {
     public static final String PERMISSIFY_GROUP_PLAYER_ADD = "permissify.group.player.add";
     public static final String PERMISSIFY_GROUP_PLAYER_REMOVE = "permissify.group.player.remove";
     public static final String PERMISSIFY_GROUP_PLAYER_LIST = "permissify.group.player.list";
+    public static final String PERMISSIFY_GROUP_CREATE = "permissify.group.create";
+    public static final String PERMISSIFY_GROUP_DELETE = "permissify.group.delete";
 
     // Error response
     public static final List<String> PERMISSIFY_ERROR = new ArrayList<>(Arrays.asList(

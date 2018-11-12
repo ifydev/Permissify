@@ -29,10 +29,6 @@ import lombok.Setter;
 import me.innectic.permissify.api.PermissifyAPI;
 import me.innectic.permissify.api.database.handlers.FullHandler;
 import me.innectic.permissify.spigot.commands.PermissifyCommand;
-import me.innectic.permissify.spigot.commands.subcommand.CacheCommand;
-import me.innectic.permissify.spigot.commands.subcommand.GroupCommand;
-import me.innectic.permissify.spigot.commands.subcommand.PlayerCommand;
-import me.innectic.permissify.spigot.commands.subcommand.ProfileCommand;
 import me.innectic.permissify.spigot.events.PlayerJoin;
 import me.innectic.permissify.spigot.events.PlayerLeave;
 import me.innectic.permissify.spigot.utils.AttachmentManager;
@@ -56,11 +52,6 @@ public class PermissifyMain extends JavaPlugin {
 
     private ConfigVerifier configVerifier;
     @Getter private PermissifyAPI permissifyAPI;
-
-    @Getter private GroupCommand groupCommand;
-    @Getter private PlayerCommand playerCommand;
-    @Getter private CacheCommand cacheCommand;
-    @Getter private ProfileCommand profileCommand;
 
     @Getter @Setter private boolean useWildcards;
     @Getter @Setter private boolean debugMode;
@@ -136,11 +127,6 @@ public class PermissifyMain extends JavaPlugin {
     }
 
     private void registerCommands() {
-        groupCommand = new GroupCommand();
-        playerCommand = new PlayerCommand();
-        cacheCommand = new CacheCommand();
-        profileCommand = new ProfileCommand();
-
         getCommand("permissify").setExecutor(new PermissifyCommand());
     }
 
