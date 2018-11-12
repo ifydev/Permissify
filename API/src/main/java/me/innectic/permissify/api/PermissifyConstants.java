@@ -97,6 +97,7 @@ public class PermissifyConstants {
     public static final String PERMISSIFY_GROUP = "permissify.group";
     public static final String PERMISSIFY_GROUP_ADD_PERMS = "permissify.group.permission.add";
     public static final String PERMISSIFY_GROUP_REMOVE_PERMS = "permissify.group.permission.remove";
+    public static final String PERMISSIFY_GROUP_LIST_PERMS = "permissify.group.permission.list";
 
     // Error response
     public static final List<String> PERMISSIFY_ERROR = new ArrayList<>(Arrays.asList(

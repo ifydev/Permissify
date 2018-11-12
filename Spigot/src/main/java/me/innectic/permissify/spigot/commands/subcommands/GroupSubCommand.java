@@ -70,7 +70,7 @@ public class GroupSubCommand implements AbstractSubCommand {
     }
 
     private String removePermissionFromGroup(CommandSender sender, String[] args) {
-        if (!sender.hasPermission(PermissifyConstants.PERMISSIFY_GROUP_ADD_PERMS)) return PermissifyConstants.YOU_DONT_HAVE_PERMISSION;
+        if (!sender.hasPermission(PermissifyConstants.PERMISSIFY_GROUP_REMOVE_PERMS)) return PermissifyConstants.YOU_DONT_HAVE_PERMISSION;
         if (args.length < 1) return PermissifyConstants.MUST_PROVIDE_GROUP;
         if (args.length < 2) return PermissifyConstants.NOT_ENOUGH_ARGS_GROUP_PERMISSION_ADD_REMOVE;
 
@@ -92,8 +92,8 @@ public class GroupSubCommand implements AbstractSubCommand {
     }
 
     private String listPermissionsForGroup(CommandSender sender, String[] args) {
-        if (!sender.hasPermission(PermissifyConstants.PERMISSIFY_GROUP_ADD_PERMS)) return PermissifyConstants.YOU_DONT_HAVE_PERMISSION;
-        if (args.length < 1) return PermissifyConstants.MUST_PROVIDE_GROUP;
+        if (!sender.hasPermission(PermissifyConstants.PERMISSIFY_GROUP_LIST_PERMS)) return PermissifyConstants.YOU_DONT_HAVE_PERMISSION;
+        if (args.length < 1) return PermissifyConstants.NOT_ENOUGH_ARGS_GROUP_LIST_PERMISSIONS;
 
         PermissifyMain plugin = PermissifyMain.getInstance();
         Optional<DatabaseHandler> handler = plugin.getPermissifyAPI().getDatabaseHandler();
