@@ -124,10 +124,6 @@ public class SQLHandler extends DatabaseHandler {
             playerPermissionsStatement.execute();
             playerPermissionsStatement.close();
 
-            PreparedStatement superAdminStatement = connection.prepareStatement("CREATE TABLE IF NOT EXISTS " + database + "superAdmin (uuid VARCHAR(767) NOT NULL)");
-            superAdminStatement.execute();
-            superAdminStatement.close();
-
             PreparedStatement ladderStatement = connection.prepareStatement("CREATE TABLE IF NOT EXISTS " + database + "ladders (name VARCHAR(767))");
             ladderStatement.execute();
             ladderStatement.close();
@@ -165,9 +161,7 @@ public class SQLHandler extends DatabaseHandler {
     public void reload(List<UUID> onlinePlayers) {
         cachedGroups = new HashMap<>();
         cachedPermissions = new HashMap<>();
-        superAdmins = new ArrayList<>();
 
-        loadSuperAdmins();
         loadGroups();
 
         onlinePlayers.forEach(this::getPermissions);
@@ -226,33 +220,9 @@ public class SQLHandler extends DatabaseHandler {
     }
 
     @Override
-    protected void loadSuperAdmins() {
-        Optional<Connection> connection = getConnection();
-        if (!connection.isPresent()) {
-            PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.empty()));
-            return;
-        }
-        try {
-            // Load all super admins
-            PreparedStatement adminStatement = connection.get().prepareStatement("SELECT uuid FROM superAdmin");
-            ResultSet adminResults = adminStatement.executeQuery();
-            while (adminResults.next()) {
-                superAdmins.add(UUID.fromString(adminResults.getString("uuid")));
-            }
-            adminResults.close();
-            adminStatement.close();
-            connection.get().close();
-        } catch (SQLException e) {
-            PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.DATABASE_EXCEPTION, Optional.of(e)));
-            e.printStackTrace();
-        }
-    }
-
-    @Override
     public void drop() {
         cachedGroups = new HashMap<>();
         cachedPermissions = new HashMap<>();
-        superAdmins = new ArrayList<>();
     }
 
     @Override
@@ -278,7 +248,6 @@ public class SQLHandler extends DatabaseHandler {
             // Add the players to the group
             group.getPlayers().forEach(created.get()::addPlayer);
         });
-        superAdmins = profile.getSuperAdmins();
         defaultGroup = Optional.ofNullable(profile.getDefaultGroup());
     }
 
@@ -701,57 +670,6 @@ public class SQLHandler extends DatabaseHandler {
         Optional<PermissionGroup> permissionGroup = getGroups().entrySet().stream().map(Map.Entry::getValue)
                 .filter(perm -> perm.getName().equalsIgnoreCase(group)).findFirst();
         return permissionGroup.map(groupPermission -> groupPermission.hasPermission(permission)).orElse(false);
-    }
-
-    @Override
-    public void addSuperAdmin(UUID uuid) {
-        if (uuid == null) return;
-        if (superAdmins.contains(uuid)) return;
-        // Update the cache
-        superAdmins.add(uuid);
-        // Update mysql
-        Optional<Connection> connection = getConnection();
-        if (!connection.isPresent()) {
-            PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.empty()));
-            return;
-        }
-        try {
-            PreparedStatement statement = connection.get().prepareStatement("INSERT INTO superAdmin (uuid) VALUES (?)");
-            statement.setString(1, uuid.toString());
-            statement.execute();
-            statement.close();
-            connection.get().close();
-        } catch (SQLException e) {
-            PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.DATABASE_EXCEPTION, Optional.of(e)));
-            e.printStackTrace();
-        }
-    }
-
-    @Override
-    public boolean isSuperAdmin(UUID uuid) {
-        return superAdmins.contains(uuid);
-    }
-
-    @Override
-    public void removeSuperAdmin(UUID uuid) {
-        if (uuid == null) return;
-        superAdmins.removeIf(u -> u.equals(uuid));
-
-        Optional<Connection> connection = getConnection();
-        if (!connection.isPresent()) {
-            PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.empty()));
-            return;
-        }
-        try {
-            PreparedStatement statement = connection.get().prepareStatement("DELETE FROM superAdmin WHERE uuid=?");
-            statement.setString(1, uuid.toString());
-            statement.execute();
-            statement.close();
-            connection.get().close();
-        } catch (SQLException e) {
-            PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.DATABASE_EXCEPTION, Optional.of(e)));
-            e.printStackTrace();
-        }
     }
 
     @Override

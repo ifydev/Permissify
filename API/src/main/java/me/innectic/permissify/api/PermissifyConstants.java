@@ -116,6 +116,7 @@ public class PermissifyConstants {
     public static final String PERMISSIFY_GROUP_CREATE = "permissify.group.create";
     public static final String PERMISSIFY_GROUP_DELETE = "permissify.group.delete";
 
+
     // Error response
     public static final List<String> PERMISSIFY_ERROR = new ArrayList<>(Arrays.asList(
             "&c&lError encountered: <ERROR_TYPE>",
