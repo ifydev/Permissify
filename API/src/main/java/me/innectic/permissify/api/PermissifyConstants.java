@@ -61,6 +61,7 @@ public class PermissifyConstants {
     public static final String PERMISSIFY_CACHE = "permissify.cache";
     public static final String PERMISSIFY_ADMIN = "permissify.admin";
     public static final String PERMISSIFY_PROFILE = "permissify.profile";
+    public static final String PERMISSIFY_STAR = "permissify.*";
 
     public static final String INSUFFICIENT_PERMISSIONS = PERMISSIFY_PREFIX + "&c&lInsufficient permissions!";
 

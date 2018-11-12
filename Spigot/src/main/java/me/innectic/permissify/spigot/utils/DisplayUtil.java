@@ -47,7 +47,7 @@ public class DisplayUtil implements me.innectic.permissify.api.util.DisplayUtil 
                 .map(part -> part.replace("<ERROR_TYPE>", error.getDisplay()))
                 .map(part -> part.replace("<SHOULD_REPORT>", reportable))
                 .map(ColorUtil::makeReadable).collect(Collectors.toList());
-        List<Player> players = Bukkit.getOnlinePlayers().stream().filter(player -> PermissionUtil.hasPermissionOrSuperAdmin(player, PermissifyConstants.PERMISSIFY_ADMIN)).collect(Collectors.toList());
+        List<Player> players = Bukkit.getOnlinePlayers().stream().filter(player -> player.hasPermission(PermissifyConstants.PERMISSIFY_ADMIN)).collect(Collectors.toList());
         messages.forEach(message -> players.forEach(player -> player.sendMessage(message)));
     }
 
