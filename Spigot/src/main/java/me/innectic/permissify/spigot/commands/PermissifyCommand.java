@@ -28,6 +28,7 @@ import me.innectic.permissify.api.PermissifyConstants;
 import me.innectic.permissify.api.util.ArgumentUtil;
 import me.innectic.permissify.api.util.HelpUtil;
 import me.innectic.permissify.spigot.PermissifyMain;
+import me.innectic.permissify.spigot.commands.subcommands.AbstractSubCommand;
 import me.innectic.permissify.spigot.commands.subcommands.GroupSubCommand;
 import me.innectic.permissify.spigot.commands.subcommands.SuperAdminSubCommand;
 import me.innectic.permissify.spigot.utils.ColorUtil;
@@ -35,7 +36,9 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -46,6 +49,13 @@ public class PermissifyCommand implements CommandExecutor {
 
     private SuperAdminSubCommand superAdminSubCommand = new SuperAdminSubCommand();
     private GroupSubCommand groupSubCommand = new GroupSubCommand();
+
+    private Map<String, AbstractSubCommand> subcommands = new HashMap<>();
+
+    public PermissifyCommand() {
+        subcommands.put("superadmin", new SuperAdminSubCommand());
+        subcommands.put("group", new GroupSubCommand());
+    }
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String s, String[] args) {
@@ -64,19 +74,11 @@ public class PermissifyCommand implements CommandExecutor {
 
         String section = args[0].toLowerCase();
 
-        switch (section) {
-            case "superadmin":
-                sender.sendMessage(
-                        ColorUtil.makeReadable(superAdminSubCommand.handle(sender, ArgumentUtil.skipFirst(args))));
-                break;
-            case "group":
-                sender.sendMessage(
-                        ColorUtil.makeReadable(groupSubCommand.handle(sender, ArgumentUtil.skipFirst(args))));
-                break;
-            default:
-                sendDefaultHelpInformation(sender);
-                break;
+        if (!subcommands.containsKey(section)) {
+            sendDefaultHelpInformation(sender);
+            return false;
         }
+        sender.sendMessage(ColorUtil.makeReadable(subcommands.get(section).handle(sender, ArgumentUtil.skipFirst(args))));
 
         return false;
     }
