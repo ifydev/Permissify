@@ -28,6 +28,7 @@ import me.innectic.permissify.api.PermissifyConstants;
 import me.innectic.permissify.api.util.ArgumentUtil;
 import me.innectic.permissify.api.util.HelpUtil;
 import me.innectic.permissify.spigot.PermissifyMain;
+import me.innectic.permissify.spigot.commands.subcommands.GroupSubCommand;
 import me.innectic.permissify.spigot.commands.subcommands.SuperAdminSubCommand;
 import me.innectic.permissify.spigot.utils.ColorUtil;
 import org.bukkit.command.Command;
@@ -44,6 +45,7 @@ import java.util.Optional;
 public class PermissifyCommand implements CommandExecutor {
 
     private SuperAdminSubCommand superAdminSubCommand = new SuperAdminSubCommand();
+    private GroupSubCommand groupSubCommand = new GroupSubCommand();
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String s, String[] args) {
@@ -62,9 +64,19 @@ public class PermissifyCommand implements CommandExecutor {
 
         String section = args[0].toLowerCase();
 
-        if (section.equals("superadmin")) sender.sendMessage(
-                ColorUtil.makeReadable(superAdminSubCommand.handle(sender, ArgumentUtil.skipFirst(args))));
-        else sendDefaultHelpInformation(sender);
+        switch (section) {
+            case "superadmin":
+                sender.sendMessage(
+                        ColorUtil.makeReadable(superAdminSubCommand.handle(sender, ArgumentUtil.skipFirst(args))));
+                break;
+            case "group":
+                sender.sendMessage(
+                        ColorUtil.makeReadable(groupSubCommand.handle(sender, ArgumentUtil.skipFirst(args))));
+                break;
+            default:
+                sendDefaultHelpInformation(sender);
+                break;
+        }
 
         return false;
     }

@@ -26,6 +26,7 @@ package me.innectic.permissify.spigot.utils;
 
 import me.innectic.permissify.api.permission.PermissionGroup;
 import me.innectic.permissify.spigot.PermissifyMain;
+import org.bukkit.Bukkit;
 import org.bukkit.block.CommandBlock;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
@@ -84,7 +85,7 @@ public class PermissionUtil {
         player.recalculatePermissions();
     }
 
-    public static Optional<PermissionAttachment> findAttachmentByPermission(Player player, String permission) {
-        return player.getEffectivePermissions().stream().filter(p -> p.getPermission().equalsIgnoreCase(permission)).map(PermissionAttachmentInfo::getAttachment).findFirst();
+    public static void updateGroupPermissions(PermissionGroup group) {
+        group.getPlayers().keySet().stream().map(Bukkit::getPlayer).filter(Objects::nonNull).forEach(PermissionUtil::applyPermissions);
     }
 }

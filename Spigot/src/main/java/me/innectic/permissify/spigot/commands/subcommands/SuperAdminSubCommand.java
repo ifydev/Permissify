@@ -14,17 +14,17 @@ import java.util.Optional;
  * @author Innectic
  * @since 11/09/2018
  */
-public class SuperAdminSubCommand {
+public class SuperAdminSubCommand implements AbstractSubCommand {
 
     public String handle(CommandSender sender, String[] args) {
-        if (args.length == 0) return PermissifyConstants.NEA_SUPER_ADMIN;
+        if (args.length == 0) return PermissifyConstants.NOT_ENOUGH_ARGS_SUPER_ADMIN;
 
         String segment = args[1].toLowerCase();
         args = ArgumentUtil.skipFirst(args);
 
         if (segment.equals("grant")) return grantSuperAdmin(sender, args);
         else if (segment.equals("revoke")) return revokeSuperAdmin(sender, args);
-        return PermissifyConstants.INV_SUPER_ADMIN;
+        return PermissifyConstants.INVALID_ARGUMENT_SUPER_ADMIN;
     }
 
     private String grantSuperAdmin(CommandSender sender, String[] args) {
