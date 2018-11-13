@@ -2,6 +2,8 @@ package me.innectic.permissify.spigot.utils;
 
 import org.bukkit.Bukkit;
 
+import java.util.Optional;
+
 /**
  * @author Innectic
  * @since 8/26/2017
@@ -12,24 +14,21 @@ public class MiscUtil {
 
     static {
         Class serverClass = Bukkit.getServer().getClass();
-        if (!serverClass.getSimpleName().equals("CraftServer")) {
-            version = null;
-        } else if (serverClass.getName().equals("org.bukkit.craftbukkit.CraftServer")) {
-            version = ".";
-        } else {
+        if (!serverClass.getSimpleName().equals("CraftServer")) version = null;
+        else if (serverClass.getName().equals("org.bukkit.craftbukkit.CraftServer")) version = ".";
+        else {
             String name = serverClass.getName();
             name = name.substring("org.bukkit.craftbukkit".length());
-            name = name.substring(0, name.length() - "CraftServer".length());
-            version = name;
+            version = name.substring(0, name.length() - "CraftServer".length());
         }
     }
 
-    public static boolean isInt(String checking) {
+    public static Optional<Integer> isInt(String checking) {
         try {
-            Integer.parseInt(checking);
-            return true;
+            int value = Integer.parseInt(checking);
+            return Optional.of(value);
         } catch (NumberFormatException e) {
-            return false;
+            return Optional.empty();
         }
     }
 

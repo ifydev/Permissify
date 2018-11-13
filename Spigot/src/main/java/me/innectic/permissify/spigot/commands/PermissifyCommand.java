@@ -30,6 +30,7 @@ import me.innectic.permissify.api.util.HelpUtil;
 import me.innectic.permissify.spigot.PermissifyMain;
 import me.innectic.permissify.spigot.commands.subcommands.AbstractSubCommand;
 import me.innectic.permissify.spigot.commands.subcommands.GroupSubCommand;
+import me.innectic.permissify.spigot.commands.subcommands.PlayerSubCommand;
 import me.innectic.permissify.spigot.commands.subcommands.SuperAdminSubCommand;
 import me.innectic.permissify.spigot.utils.ColorUtil;
 import org.bukkit.command.Command;
@@ -52,6 +53,7 @@ public class PermissifyCommand implements CommandExecutor {
     public PermissifyCommand() {
         subcommands.put("superadmin", new SuperAdminSubCommand());
         subcommands.put("group", new GroupSubCommand());
+        subcommands.put("player", new PlayerSubCommand());
     }
 
     @Override

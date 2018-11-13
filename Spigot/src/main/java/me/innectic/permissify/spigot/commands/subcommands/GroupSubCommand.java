@@ -40,9 +40,21 @@ public class GroupSubCommand implements AbstractSubCommand {
                 return createGroup(sender, args);
             case "remove":
                 return removeGroup(sender, args);
+            case "group":
+                return groupOption(sender, args);
             default:
                 return PermissifyConstants.INVALID_ARGUMENT_GROUP;
         }
+    }
+
+    private String groupOption(CommandSender sender, String[] args) {
+        if (!sender.hasPermission(PermissifyConstants.PERMISSIFY_GROUP_OPTION)) return PermissifyConstants.YOU_DONT_HAVE_PERMISSION;
+        if (args.length < 2) return PermissifyConstants.NOT_ENOUGH_ARGS_GROUP_OPTION;
+
+        String key = args[0];
+        String value = args[1];
+        // :custom_group_options
+        return key + " " + value;
     }
 
     private String createGroup(CommandSender sender, String[] args) {

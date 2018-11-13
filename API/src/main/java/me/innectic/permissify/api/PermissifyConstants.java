@@ -51,7 +51,8 @@ public class PermissifyConstants {
             "/permissify group player <add|remove> <group> <players...>",
             "/permissify group player list <group>",
             "/permissify group option <option_name> <value>",
-            "/permissify player permission <add|remove> <player> <seconds> <permissions...>",
+            "/permissify player permission <add|remove> <player> <permissions...>",
+            "/permissify player permission timed <player> <time> <permissions...>",
             "/permissify player permission list <player>",
             "/permissify player groups list <player>",
             "/permissify player groups main [group]",
@@ -77,6 +78,10 @@ public class PermissifyConstants {
     public static final String PLAYER_ADDED_TO_GROUP = "&e&lPlayer has been added to the group!";
     public static final String PLAYER_REMOVED_FROM_GROUP = "&e&lPlayer has been removed from the group!";
     public static final String PLAYERS_IN_GROUP = "&e&lPlayers in <GROUP>: <PLAYERS>";
+    public static final String PERMISSIONS_FOR_PLAYER = "&e&lPermissions for <PLAYER>: <PERMISSIONS>";
+    public static final String NO_PERMISSIONS = "&e&lNo permissions present!";
+    public static final String PERMISSION_ADDED_TO_PLAYER = "&e&lPermissions have been added to <PLAYER>!";
+    public static final String PERMISSION_REMOVED_FROM_PLAYER = "&e&lPermissions have been removed from <PLAYER>!";
 
     private static final String NOT_ENOUGH_ARGUMENTS = PERMISSIFY_PREFIX + "&c&lNot enough arguments! ";
     public static final String NOT_ENOUGH_ARGS_SUPER_ADMIN = NOT_ENOUGH_ARGUMENTS + PERMISSIFY_HELP_PAGES.get(11);
@@ -89,21 +94,31 @@ public class PermissifyConstants {
     public static final String NOT_ENOUGH_ARGS_GROUP_PLAYER_REMOVE = NOT_ENOUGH_ARGUMENTS + "/permissify group player remove <group> <players...>";
     public static final String NOT_ENOUGH_ARGS_GROUP_PLAYER_LIST = NOT_ENOUGH_ARGUMENTS + "/permissify group player list <group>";
     public static final String NOT_ENOUGH_ARGS_GROUP_CREATE_DELETE = NOT_ENOUGH_ARGUMENTS + "/permissify group <create|delete> <name>";
+    public static final String NOT_ENOUGH_ARGS_GROUP_OPTION = NOT_ENOUGH_ARGUMENTS + "/permissify group <option> <value>";
+    public static final String NOT_ENOUGH_ARGS_PLAYER = NOT_ENOUGH_ARGUMENTS + "/permissify player <permission|groups|timed|list> <args...>";
+    public static final String NOT_ENOUGH_ARGS_PLAYER_PERMISSION = NOT_ENOUGH_ARGUMENTS + "/permissify player permission <add|remove|timed> <player> <permissions...>";
+    public static final String NOT_ENOUGH_ARGS_PLAYER_PERMISSION_LIST = NOT_ENOUGH_ARGUMENTS + "/permissify player permission list <player>";
+    public static final String NOT_ENOUGH_ARGS_PLAYER_PERMISSION_ADD_REMOVE = NOT_ENOUGH_ARGUMENTS + "/permissify player permission <add|remove|timed> <player> <permissions...>";
+    public static final String NOT_ENOUGH_ARGS_PLAYER_PERMISSION_TIMED = NOT_ENOUGH_ARGUMENTS + "/permissify player permission timed <player> <time> <permissions...>";
 
     private static final String INVALID_ARGUMENT = PERMISSIFY_PREFIX + "&c&lInvalid argument! ";
     public static final String INVALID_ARGUMENT_SUPER_ADMIN = INVALID_ARGUMENT + PERMISSIFY_HELP_PAGES.get(11);
     public static final String INVALID_ARGUMENT_GROUP = INVALID_ARGUMENT + "/permissify group <permission|create|delete|list> <args...>";
     public static final String INVALID_ARGUMENT_GROUP_PLAYER = INVALID_ARGUMENT + "/permissify group player <add|remove|list> <args...>";
     public static final String INVALID_GROUP = PERMISSIFY_PREFIX + "&c&lInvalid group!";
+    public static final String INVALID_ARGUMENT_PLAYER = INVALID_ARGUMENT + "/permissify player <permission|groups|timed|list> <args...>";
+    public static final String INVALID_ARGUMENT_PLAYER_PERMISSION = INVALID_ARGUMENT + "/permissify player permission <add|remove|timed|list> <args...>";
 
     public static final String INVALID_PLAYER = INVALID_ARGUMENT + "That player has not played before!";
     public static final String MUST_PROVIDE_PLAYER = INVALID_ARGUMENT + "Must specify a player!";
     public static final String MUST_PROVIDE_GROUP = INVALID_ARGUMENT + "Must specify a group!";
     public static final String PLAYER_ALREADY_IN_GROUP = PERMISSIFY_PREFIX + "&c&lPlayer is already in group!";
     public static final String PLAYER_NOT_IN_GROUP = PERMISSIFY_PREFIX + "&c&lPlayer is not in group!";
+    public static final String THAT_IS_NOT_TIME = PERMISSIFY_PREFIX + "&c&lMust provide a valid time in seconds.";
 
     // Permissions
     public static final String PERMISSIFY_ADMIN = "permissify.admin";
+    public static final String PERMISSIFY_STAR = "permissify.star";
     public static final String PERMISSIFY_SUPERADMIN_GRANT = "permissify.superadmin.grant";
     public static final String PERMISSIFY_SUPERADMIN_REVOKE = "permissify.superadmin.revoke";
     public static final String PERMISSIFY_GROUP_ADD_PERMS = "permissify.group.permission.add";
@@ -115,7 +130,11 @@ public class PermissifyConstants {
     public static final String PERMISSIFY_GROUP_PLAYER_LIST = "permissify.group.player.list";
     public static final String PERMISSIFY_GROUP_CREATE = "permissify.group.create";
     public static final String PERMISSIFY_GROUP_DELETE = "permissify.group.delete";
-    public static final String PERMISSIFY_STAR = "permissify.star";
+    public static final String PERMISSIFY_GROUP_OPTION = "permissify.group.option";
+    public static final String PERMISSIFY_PLAYER_PERMISSIONS_LIST = "permissify.player.permissions.list";
+    public static final String PERMISSIFY_PLAYER_PERMISSIONS_ADD = "permissify.player.permissions.add";
+    public static final String PERMISSIFY_PLAYER_PERMISSIONS_REMOVE = "permissify.player.permissions.remove";
+    public static final String PERMISSIFY_PLAYER_PERMISSIONS_TIMED = "permissify.player.permission.timed";
 
     // Error response
     public static final List<String> PERMISSIFY_ERROR = new ArrayList<>(Arrays.asList(
