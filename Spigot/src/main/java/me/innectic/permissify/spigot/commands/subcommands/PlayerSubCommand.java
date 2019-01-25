@@ -3,6 +3,7 @@ package me.innectic.permissify.spigot.commands.subcommands;
 import me.innectic.permissify.api.PermissifyConstants;
 import me.innectic.permissify.api.database.DatabaseHandler;
 import me.innectic.permissify.api.permission.Permission;
+import me.innectic.permissify.api.permission.PermissionGroup;
 import me.innectic.permissify.api.util.ArgumentUtil;
 import me.innectic.permissify.spigot.PermissifyMain;
 import me.innectic.permissify.spigot.utils.MiscUtil;
@@ -149,6 +150,60 @@ public class PlayerSubCommand implements AbstractSubCommand {
     }
 
     private String groupsSubCommand(CommandSender sender, String[] args) {
+        if (args.length < 1) return PermissifyConstants.NOT_ENOUGH_ARGS_PLAYER_GROUP;
+
+        String segment = args[0];
+        args = ArgumentUtil.skipFirst(args);
+
+        switch (segment) {
+            case "list":
+                return listPlayerGroups(sender, args);
+            case "main":
+                return mainPlayerGroup(sender, args);
+            default:
+                return PermissifyConstants.INVALID_ARGUMENT_PLAYER_GROUP;
+        }
+    }
+
+    private String listPlayerGroups(CommandSender sender, String[] args) {
+        if (!sender.hasPermission(PermissifyConstants.PERMISSIFY_PLAYER_GROUP_LIST)) return PermissifyConstants.YOU_DONT_HAVE_PERMISSION;
+        if (args.length == 0) return PermissifyConstants.NOT_ENOUGH_ARGS_PLAYER_GROUP_LIST;
+
+        String playerName = args[0];
+        OfflinePlayer player = Bukkit.getOfflinePlayer(playerName);
+        if (player == null || !player.hasPlayedBefore()) return PermissifyConstants.INVALID_PLAYER;
+
+        PermissifyMain plugin = PermissifyMain.getInstance();
+        Optional<DatabaseHandler> handler = plugin.getPermissifyAPI().getDatabaseHandler();
+        if (!handler.isPresent()) return PermissifyConstants.HANDLER_IS_NOT_PRESENT;
+
+        List<PermissionGroup> groups = handler.get().getGroups(player.getUniqueId());
+        if (groups.size() == 0) return PermissifyConstants.NO_GROUPS;
+        String groupsString = String.join(", ", groups.stream().map(PermissionGroup::getName).collect(Collectors.toList()));
+
+        return PermissifyConstants.PLAYER_GROUPS
+                .replace("<s>", groups.size() > 1 ? "s" : "")
+                .replace("<GROUPS>", groupsString);
+    }
+
+    private String mainPlayerGroup(CommandSender sender, String[] args) {
+        if (!sender.hasPermission(PermissifyConstants.PERMISSIFY_PLAYER_GROUP_MAIN)) return PermissifyConstants.YOU_DONT_HAVE_PERMISSION;
+        if (args.length == 0) return PermissifyConstants.NOT_ENOUGH_ARGS_PLAYER_GROUP_MAIN;
+
+        String playerName = args[0];
+        OfflinePlayer player = Bukkit.getOfflinePlayer(playerName);
+
+        if (player == null || !player.hasPlayedBefore()) return PermissifyConstants.INVALID_PLAYER;
+
+        PermissifyMain plugin = PermissifyMain.getInstance();
+        Optional<DatabaseHandler> handler = plugin.getPermissifyAPI().getDatabaseHandler();
+        if (!handler.isPresent()) return PermissifyConstants.HANDLER_IS_NOT_PRESENT;
+
+        if (args.length == 1) {
+            Optional<PermissionGroup> mainGroup = handler.get().getPrimaryGroup(player.getUniqueId());
+            return mainGroup.map(permissionGroup -> PermissifyConstants.PLAYER_MAIN_GROUP.replace("<PLAYER>", player.getName())
+                    .replace("<GROUP>", permissionGroup.getName())).orElse(PermissifyConstants.PLAYER_DOES_NOT_HAVE_MAIN_GROUP);
+        }
         return "";
     }
 }

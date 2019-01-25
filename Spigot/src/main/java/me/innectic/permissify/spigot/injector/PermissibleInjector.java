@@ -41,7 +41,7 @@ import java.util.Optional;
 @AllArgsConstructor
 public class PermissibleInjector {
 
-    private final boolean copy;
+    private final boolean copy;  // :revisit remove that?
 
     private Optional<Field> getPermissibleFieldForPlayer(Player player) throws NoSuchFieldException {
         Class<?> entity = MiscUtil.getBukkitClass("entity.CraftHumanEntity");

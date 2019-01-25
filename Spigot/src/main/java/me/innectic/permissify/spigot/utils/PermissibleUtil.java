@@ -16,7 +16,7 @@ public class PermissibleUtil {
         if (!PermissifyMain.getInstance().isUseWildcards()) return;
 
         try {
-            PermissifyPermissible permissible = new PermissifyPermissible(player, PermissifyMain.getInstance());
+            PermissifyPermissible permissible = new PermissifyPermissible(player);
             Optional<Permissible> old = injector.inject(player, permissible);
             old.ifPresent(permissible::setPreviousPermissible);
 

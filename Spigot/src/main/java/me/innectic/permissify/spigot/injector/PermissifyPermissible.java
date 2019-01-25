@@ -19,20 +19,17 @@ import java.util.*;
 public class PermissifyPermissible extends PermissibleBase {
 
     private final Player owner;
-    private final PermissifyMain plugin;
     @Getter @Setter private Permissible previousPermissible;
 
-    public PermissifyPermissible(Player owner, PermissifyMain plugin) {
+    public PermissifyPermissible(Player owner) {
         super(owner);
 
         this.owner = owner;
-        this.plugin = plugin;
     }
 
     @Override
     public boolean isPermissionSet(String permission) {
         Optional<DatabaseHandler> database = PermissifyMain.getInstance().getPermissifyAPI().getDatabaseHandler();
-        System.out.println(database.map(databaseHandler -> databaseHandler.hasPermission(owner.getUniqueId(), permission)).orElse(false));
         return database.map(databaseHandler -> databaseHandler.hasPermission(owner.getUniqueId(), permission)).orElse(false);
     }
 

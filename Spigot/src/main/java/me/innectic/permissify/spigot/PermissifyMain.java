@@ -113,12 +113,9 @@ public class PermissifyMain extends JavaPlugin {
             if (!file.exists()) {
                 getLogger().info("Config.yml not found, creating!");
                 saveDefaultConfig();
-            } else {
-                getLogger().info("Config.yml found, loading!");
-            }
+            } else getLogger().info("Config.yml found, loading!");
         } catch (Exception e) {
             e.printStackTrace();
-
         }
     }
 
