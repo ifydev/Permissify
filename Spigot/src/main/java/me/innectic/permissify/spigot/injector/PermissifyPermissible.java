@@ -32,7 +32,6 @@ public class PermissifyPermissible extends PermissibleBase {
     @Override
     public boolean isPermissionSet(String permission) {
         Optional<DatabaseHandler> database = PermissifyMain.getInstance().getPermissifyAPI().getDatabaseHandler();
-        System.out.println(database.map(databaseHandler -> databaseHandler.hasPermission(owner.getUniqueId(), permission)).orElse(false));
         return database.map(databaseHandler -> databaseHandler.hasPermission(owner.getUniqueId(), permission)).orElse(false);
     }
 

@@ -211,9 +211,12 @@ public class PlayerCommand {
         }
 
         plugin.getPermissifyAPI().getDatabaseHandler().get().removePermission(targetPlayer.getUniqueId(), args[1]);
-        if (targetPlayer.isOnline())
+        if (targetPlayer.isOnline()) {
             plugin.getAttachmentManager().getAttachment(targetPlayer.getUniqueId(), Optional.empty()).ifPresent(self ->
                     self.unsetPermission(args[1]));
+            ((Player) targetPlayer).removeAttachment();
+            ((Player) targetPlayer).recalculatePermissions();
+        }
 
         plugin.getPermissifyAPI().getDatabaseHandler().get().updateCache(targetPlayer.getUniqueId());
         Bukkit.getPluginManager().callEvent(new PlayerPermissionChangeEvent(targetPlayer, args[1], ChangeType.REMOVED));
