@@ -84,10 +84,14 @@ public class PermissionUtil {
             handler.getGroups(player.getUniqueId()).forEach(group -> {
                 PermissionAttachment attachment = player.addAttachment(plugin);
 
+                if (group.isPrimaryGroup(player.getUniqueId())) {
+                    // For a player's primary group, automatically add `group.<name>` permission node. This is handy for servers that restrict
+                    // areas by a permission node. This is mostly a convenience feature so that users don't have to manually add this node themselves
+                    attachment.setPermission("group." + group.getName(), true);
+                }
+
                 group.getPermissions().forEach(permission -> attachment.setPermission(permission.getPermission(), permission.isGranted()));
                 plugin.getAttachmentManager().setAttachment(player.getUniqueId(), attachment, Optional.of(group.getName()));
-
-                // TODO: Add permission node for the player's primary group here
             });
         });
     }
