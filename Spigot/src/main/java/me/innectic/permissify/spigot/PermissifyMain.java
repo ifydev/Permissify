@@ -75,7 +75,7 @@ public class PermissifyMain extends JavaPlugin {
         }
         Optional<FullHandler> handler = configVerifier.verifyConnectionInformation();
         // Initialize the API
-        if (!handler.isPresent() || !handler.get().getHandlerType().isPresent()) {
+        if (handler.isEmpty() || handler.get().getHandlerType().isEmpty()) {
             getLogger().log(Level.SEVERE, ChatColor.RED + "Internal Permissify Error: No handler / type present!");
             return;
         }

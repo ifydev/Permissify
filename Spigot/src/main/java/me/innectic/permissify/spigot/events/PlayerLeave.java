@@ -15,9 +15,6 @@ public class PlayerLeave implements Listener {
     @EventHandler
     public void onPlayerQuitEvent(PlayerQuitEvent e) {
         PermissifyMain plugin = PermissifyMain.getInstance();
-        if (plugin == null) return;
-
-        if (e.getPlayer() == null) return;
         Player player = e.getPlayer();
 
         plugin.getAttachmentManager().removeAttachment(player.getUniqueId());

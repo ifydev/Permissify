@@ -47,7 +47,7 @@ public class CacheCommand {
             return PermissifyConstants.INSUFFICIENT_PERMISSIONS;
 
         if (args.length >= 1 && args[0].equalsIgnoreCase("purge")) return handleCachePurge(sender, ArgumentUtil.getRemainingArgs(1, args));
-        if (!PermissifyMain.getInstance().getPermissifyAPI().getDatabaseHandler().isPresent())
+        if (PermissifyMain.getInstance().getPermissifyAPI().getDatabaseHandler().isEmpty())
             return PermissifyConstants.UNABLE_OTHER.replace("<REASON>", "No database handler");
 
         // Show information about the current cache
@@ -58,7 +58,7 @@ public class CacheCommand {
     }
 
     private String handleCachePurge(CommandSender sender, String[] args) {
-        if (!PermissifyMain.getInstance().getPermissifyAPI().getDatabaseHandler().isPresent())
+        if (PermissifyMain.getInstance().getPermissifyAPI().getDatabaseHandler().isEmpty())
             return PermissifyConstants.UNABLE_OTHER.replace("<REASON>", "No database handler");
 
         PermissifyMain.getInstance().getPermissifyAPI().getDatabaseHandler().get().reload(Bukkit.getOnlinePlayers().stream().map(Player::getUniqueId).collect(Collectors.toList()));

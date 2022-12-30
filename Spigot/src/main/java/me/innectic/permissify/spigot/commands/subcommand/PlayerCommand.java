@@ -52,7 +52,7 @@ public class PlayerCommand {
     public String handleAddPlayerToGroup(CommandSender sender, String[] args) {
         PermissifyMain plugin = PermissifyMain.getInstance();
 
-        if (!plugin.getPermissifyAPI().getDatabaseHandler().isPresent())
+        if (plugin.getPermissifyAPI().getDatabaseHandler().isEmpty())
             return PermissifyConstants.UNABLE_TO_ADD.replace("<REASON>", "No database handler.");
 
         if (!PermissionUtil.hasPermissionOrSuperAdmin(sender, PermissifyConstants.PERMISSIFY_PLAYER_GROUP_ADD))
@@ -64,7 +64,7 @@ public class PlayerCommand {
         if (targetPlayer == null || !targetPlayer.hasPlayedBefore()) return PermissifyConstants.INVALID_PLAYER;
 
         Optional<PermissionGroup> group = plugin.getPermissifyAPI().getDatabaseHandler().get().getGroup(args[1]);
-        if (!group.isPresent()) return PermissifyConstants.INVALID_GROUP.replace("<GROUP>", args[1]);
+        if (group.isEmpty()) return PermissifyConstants.INVALID_GROUP.replace("<GROUP>", args[1]);
 
         Tristate added = plugin.getPermissifyAPI().getDatabaseHandler().get().addPlayerToGroup(targetPlayer.getUniqueId(), group.get());
         if (added == Tristate.NONE)
@@ -82,7 +82,7 @@ public class PlayerCommand {
 
     public String handleRemovePlayerFromGroup(CommandSender sender, String[] args) {
         PermissifyMain plugin = PermissifyMain.getInstance();
-        if (!plugin.getPermissifyAPI().getDatabaseHandler().isPresent())
+        if (plugin.getPermissifyAPI().getDatabaseHandler().isEmpty())
             return PermissifyConstants.UNABLE_TO_REMOVE.replace("<TYPE>", "player").replace("<REASON>", "No database handler.");
 
         if (!PermissionUtil.hasPermissionOrSuperAdmin(sender, PermissifyConstants.PERMISSIFY_PLAYER_GROUP_REMOVE))
@@ -94,7 +94,7 @@ public class PlayerCommand {
         if (targetPlayer == null || !targetPlayer.hasPlayedBefore()) return PermissifyConstants.INVALID_PLAYER;
 
         Optional<PermissionGroup> group = plugin.getPermissifyAPI().getDatabaseHandler().get().getGroup(args[1]);
-        if (!group.isPresent()) return PermissifyConstants.INVALID_GROUP.replace("<GROUP>", args[1]);
+        if (group.isEmpty()) return PermissifyConstants.INVALID_GROUP.replace("<GROUP>", args[1]);
 
         Tristate removed = plugin.getPermissifyAPI().getDatabaseHandler().get().removePlayerFromGroup(targetPlayer.getUniqueId(), group.get());
         if (removed == Tristate.NONE)
@@ -111,7 +111,7 @@ public class PlayerCommand {
 
     public String handleSetOrGetPrimaryGroup(CommandSender sender, String[] args) {
         PermissifyMain plugin = PermissifyMain.getInstance();
-        if (!plugin.getPermissifyAPI().getDatabaseHandler().isPresent())
+        if (plugin.getPermissifyAPI().getDatabaseHandler().isEmpty())
             return PermissifyConstants.UNABLE_TO_SET.replace("<REASON>", "No database handler.");
 
         if (!PermissionUtil.hasPermissionOrSuperAdmin(sender, PermissifyConstants.PERMISSIFY_PLAYER_SET_MAIN_GROUP))
@@ -129,7 +129,7 @@ public class PlayerCommand {
         if (player == null || !player.hasPlayedBefore()) return PermissifyConstants.INVALID_PLAYER;
         Optional<PermissionGroup> group = plugin.getPermissifyAPI().getDatabaseHandler().get().getGroup(args[1]);
 
-        if (!group.isPresent()) return PermissifyConstants.INVALID_GROUP.replace("<GROUP>", args[1]);
+        if (group.isEmpty()) return PermissifyConstants.INVALID_GROUP.replace("<GROUP>", args[1]);
         if (!group.get().getPlayers().containsKey(player.getUniqueId()))
             return PermissifyConstants.PLAYER_NOT_IN_GROUP.replace("<PLAYER>", player.getName()).replace("<GROUP>", group.get().getName());
 
@@ -147,7 +147,7 @@ public class PlayerCommand {
 
     public String handleAddPermission(CommandSender sender, String[] args) {
         PermissifyMain plugin = PermissifyMain.getInstance();
-        if (!plugin.getPermissifyAPI().getDatabaseHandler().isPresent())
+        if (plugin.getPermissifyAPI().getDatabaseHandler().isEmpty())
             return PermissifyConstants.UNABLE_TO_ADD.replace("<REASON>", "No database handler.");
 
         if (!PermissionUtil.hasPermissionOrSuperAdmin(sender, PermissifyConstants.PERMISSIFY_PLAYER_PERMISSION_ADD))
@@ -175,7 +175,7 @@ public class PlayerCommand {
                 if (!plugin.getPermissifyAPI().getDatabaseHandler().isPresent()) return;
                 plugin.getPermissifyAPI().getDatabaseHandler().get().removePermission(targetPlayer.getUniqueId(), args[1]);
                 plugin.getPermissifyAPI().getDatabaseHandler().get().updateCache(targetPlayer.getUniqueId());
-            }, time * 1000);
+            }, time * 1000L);
 
             return PermissifyConstants.PERMISSION_ADDED_PLAYER_TIMED
                     .replace("<PLAYER>", targetPlayer.getName())
@@ -190,7 +190,7 @@ public class PlayerCommand {
 
     public String handleRemovePermission(CommandSender sender, String[] args) {
         PermissifyMain plugin = PermissifyMain.getInstance();
-        if (!plugin.getPermissifyAPI().getDatabaseHandler().isPresent())
+        if (plugin.getPermissifyAPI().getDatabaseHandler().isEmpty())
             return PermissifyConstants.UNABLE_TO_ADD.replace("<REASON>", "No database handler.");
 
         if (!PermissionUtil.hasPermissionOrSuperAdmin(sender, PermissifyConstants.PERMISSIFY_PLAYER_PERMISSION_REMOVE))
@@ -215,7 +215,7 @@ public class PlayerCommand {
 
     public String handleListGroups(CommandSender sender, String[] args) {
         PermissifyMain plugin = PermissifyMain.getInstance();
-        if (!plugin.getPermissifyAPI().getDatabaseHandler().isPresent())
+        if (plugin.getPermissifyAPI().getDatabaseHandler().isEmpty())
             return PermissifyConstants.UNABLE_TO_LIST.replace("<REASON>", "No database handler.");
 
         if (!PermissionUtil.hasPermissionOrSuperAdmin(sender, PermissifyConstants.PERMISSIFY_PLAYER_GROUP_LIST))
@@ -240,7 +240,7 @@ public class PlayerCommand {
         if (!PermissionUtil.hasPermissionOrSuperAdmin(sender, PermissifyConstants.PERMISSIFY_PLAYER_PERMISSION_LIST))
             return PermissifyConstants.INSUFFICIENT_PERMISSIONS;
 
-        if (!plugin.getPermissifyAPI().getDatabaseHandler().isPresent())
+        if (plugin.getPermissifyAPI().getDatabaseHandler().isEmpty())
             return PermissifyConstants.UNABLE_TO_LIST.replace("<REASON>", "No database handler.");
 
         if (args.length < 1) return PermissifyConstants.NOT_ENOUGH_ARGUMENTS_PLAYER_LIST_PERMISSIONS;

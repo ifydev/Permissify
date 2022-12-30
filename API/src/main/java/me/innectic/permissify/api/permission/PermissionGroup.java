@@ -42,8 +42,8 @@ public class PermissionGroup {
     @Getter @NonNull private String prefix;
     @Getter @NonNull private String suffix;
 
-    @Getter private List<Permission> permissions = new ArrayList<>();
-    @Getter private Map<UUID, Boolean> players = new HashMap<>();
+    @Getter private final List<Permission> permissions = new ArrayList<>();
+    @Getter private final Map<UUID, Boolean> players = new HashMap<>();
 
     /**
      * Remove a permission from the group

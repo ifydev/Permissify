@@ -49,7 +49,7 @@ public class PermissifyCommand implements CommandExecutor {
     public boolean onCommand(CommandSender sender, Command command, String s, String[] args) {
         PermissifyMain plugin = PermissifyMain.getInstance();
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
-            if (!plugin.getPermissifyAPI().getDatabaseHandler().isPresent()) {
+            if (plugin.getPermissifyAPI().getDatabaseHandler().isEmpty()) {
                 sendResponse(PermissifyConstants.UNABLE_OTHER.replace("<REASON>", "No database handler"), sender);
                 return;
             }

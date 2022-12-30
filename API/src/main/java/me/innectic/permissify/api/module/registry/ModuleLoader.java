@@ -43,7 +43,6 @@ public class ModuleLoader {
                 ModuleFile moduleFile = gson.fromJson(reader, ModuleFile.class);
 
                 Class loading = Class.forName(moduleFile.getMain(), true, child);
-                if (loading == null) return;
                 PermissifyAPI.get().ifPresent(api ->
                         api.getModuleProvider().registerModule(loading, moduleFile.getName(), plugin));
             } catch (ClassNotFoundException | IOException e) {

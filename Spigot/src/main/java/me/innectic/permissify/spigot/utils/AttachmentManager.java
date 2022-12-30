@@ -10,7 +10,7 @@ import java.util.*;
  */
 public class AttachmentManager {
 
-    private static Map<UUID, Map<String, PermissionAttachment>> attachments = new HashMap<>();
+    private static final Map<UUID, Map<String, PermissionAttachment>> attachments = new HashMap<>();
 
     public Optional<PermissionAttachment> getAttachment(UUID uuid, Optional<String> groupName) {
         return Optional.ofNullable(attachments.getOrDefault(uuid, new HashMap<>()).getOrDefault(groupName.orElse(""), null));

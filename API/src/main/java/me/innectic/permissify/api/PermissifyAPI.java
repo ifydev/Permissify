@@ -70,7 +70,7 @@ public class PermissifyAPI {
         } catch (NoSuchMethodException | InvocationTargetException | InstantiationException | IllegalAccessException e) {
             e.printStackTrace();
         }
-        if (!databaseHandler.isPresent()) throw new Exception("No data handler present.");
+        if (databaseHandler.isEmpty()) throw new Exception("No data handler present.");
         databaseHandler.ifPresent(handler -> {
             handler.initialize();
             handler.reload(new ArrayList<>());

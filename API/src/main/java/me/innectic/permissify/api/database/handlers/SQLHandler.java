@@ -45,7 +45,7 @@ import java.util.stream.Collectors;
 public class SQLHandler extends DatabaseHandler {
 
     private boolean isUsingSQLite = false;
-    private String baseConnectionUrl;
+    private final String baseConnectionUrl;
 
     public SQLHandler(ConnectionInformation connectionInformation) {
         super(connectionInformation);
@@ -176,7 +176,7 @@ public class SQLHandler extends DatabaseHandler {
     @Override
     protected void loadGroups() {
         Optional<Connection> connection = getConnection();
-        if (!connection.isPresent()) {
+        if (connection.isEmpty()) {
             PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.empty()));
             return;
         }
@@ -228,7 +228,7 @@ public class SQLHandler extends DatabaseHandler {
     @Override
     protected void loadSuperAdmins() {
         Optional<Connection> connection = getConnection();
-        if (!connection.isPresent()) {
+        if (connection.isEmpty()) {
             PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.empty()));
             return;
         }
@@ -266,7 +266,7 @@ public class SQLHandler extends DatabaseHandler {
         profile.getGroups().forEach((key, group) -> {
             createGroup(group.getName(), group.getDisplayName(), group.getPrefix(), group.getSuffix(), group.getChatColor());
             Optional<PermissionGroup> created = getGroup(group.getName());
-            if (!created.isPresent()) {
+            if (created.isEmpty()) {
                 PermissifyAPI.get().ifPresent(api -> api.getLogger().log(Level.WARNING, "Profile group was never created?"));
                 return;
             }
@@ -288,7 +288,7 @@ public class SQLHandler extends DatabaseHandler {
         List<Permission> playerPermissions = cachedPermissions.getOrDefault(uuid, new ArrayList<>());
 
         Optional<Connection> connection = getConnection();
-        if (!connection.isPresent()) {
+        if (connection.isEmpty()) {
             PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.empty()));
             return;
         }
@@ -322,7 +322,7 @@ public class SQLHandler extends DatabaseHandler {
             cachedPermissions.put(uuid, playerPermissions);
             // Attempt to remove from MySQL
             Optional<Connection> connection = getConnection();
-            if (!connection.isPresent()) {
+            if (connection.isEmpty()) {
                 PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.empty()));
                 return;
             }
@@ -351,7 +351,7 @@ public class SQLHandler extends DatabaseHandler {
                     .allMatch(Permission::isGranted);
         // Cache didn't have it, see if the database does.
         Optional<Connection> connection = getConnection();
-        if (!connection.isPresent()) {
+        if (connection.isEmpty()) {
             PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.empty()));
             return false;
         }
@@ -387,7 +387,7 @@ public class SQLHandler extends DatabaseHandler {
         Optional<Connection> connection = getConnection();
         List<Permission> permissions = new ArrayList<>();
 
-        if (!connection.isPresent()) {
+        if (connection.isEmpty()) {
             PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.empty()));
             return permissions;
         }
@@ -420,7 +420,7 @@ public class SQLHandler extends DatabaseHandler {
         cachedGroups.put(name, new PermissionGroup(name, displayName, chatColor, prefix, suffix));
 
         Optional<Connection> connection = getConnection();
-        if (!connection.isPresent()) {
+        if (connection.isEmpty()) {
             PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.empty()));
             return Tristate.FALSE;
         }
@@ -447,8 +447,8 @@ public class SQLHandler extends DatabaseHandler {
 
     @Override
     public Tristate deleteGroup(String name) {
-        Optional<PermissionGroup> group = getGroups().entrySet().stream().map(Map.Entry::getValue).filter(g -> g.getName().equalsIgnoreCase(name)).findFirst();
-        if (!group.isPresent())
+        Optional<PermissionGroup> group = getGroups().values().stream().filter(g -> g.getName().equalsIgnoreCase(name)).findFirst();
+        if (group.isEmpty())
             return Tristate.NONE;
 
         if (defaultGroup.isPresent() && defaultGroup.get().getName().equalsIgnoreCase(name)) setDefaultGroup(null);
@@ -458,7 +458,7 @@ public class SQLHandler extends DatabaseHandler {
         players.forEach(uuid -> this.removePlayerFromGroup(uuid, group.get()));
 
         Optional<Connection> connection = getConnection();
-        if (!connection.isPresent()) {
+        if (connection.isEmpty()) {
             PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.empty()));
             return Tristate.FALSE;
         }
@@ -490,7 +490,7 @@ public class SQLHandler extends DatabaseHandler {
         cachedGroups.put(group.getName(), group);
 
         Optional<Connection> connection = getConnection();
-        if (!connection.isPresent()) {
+        if (connection.isEmpty()) {
             PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.empty()));
             return Tristate.FALSE;
         }
@@ -519,7 +519,7 @@ public class SQLHandler extends DatabaseHandler {
         group.removePlayer(uuid);
 
         Optional<Connection> connection = getConnection();
-        if (!connection.isPresent()) {
+        if (connection.isEmpty()) {
             PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.empty()));
             return Tristate.FALSE;
         }
@@ -545,7 +545,7 @@ public class SQLHandler extends DatabaseHandler {
 
     @Override
     public List<PermissionGroup> getGroups(UUID uuid) {
-        return cachedGroups.entrySet().stream().map(Map.Entry::getValue).filter(group -> group.hasPlayer(uuid)).collect(Collectors.toList());
+        return cachedGroups.values().stream().filter(group -> group.hasPlayer(uuid)).collect(Collectors.toList());
     }
 
     @Override
@@ -555,7 +555,7 @@ public class SQLHandler extends DatabaseHandler {
         group.setPrimaryGroup(uuid, true);
 
         Optional<Connection> connection = getConnection();
-        if (!connection.isPresent()) {
+        if (connection.isEmpty()) {
             PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.empty()));
             return Tristate.FALSE;
         }
@@ -586,7 +586,7 @@ public class SQLHandler extends DatabaseHandler {
     @Override
     public void updateCache(UUID uuid) {
         Optional<Connection> connection = getConnection();
-        if (!connection.isPresent()) {
+        if (connection.isEmpty()) {
             PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.empty()));
             return;
         }
@@ -598,7 +598,7 @@ public class SQLHandler extends DatabaseHandler {
                 String groupName = results.getString("group");
                 Optional<PermissionGroup> group = getGroup(groupName);
                 // Get the group from the database, if we don't have have it already
-                if (!group.isPresent()) {
+                if (group.isEmpty()) {
                     PreparedStatement groupStatement = connection.get().prepareStatement("SELECT prefix,suffix,chatcolor FROM groups WHERE name=?");
                     groupStatement.setString(1, groupName);
                     ResultSet groupResults = groupStatement.executeQuery();
@@ -632,11 +632,11 @@ public class SQLHandler extends DatabaseHandler {
         // Make sure this is a valid group
         Optional<PermissionGroup> permissionGroup = getGroups().entrySet().stream().map(Map.Entry::getValue)
                 .filter(permission -> permission.getName().equalsIgnoreCase(group)).findFirst();
-        if (!permissionGroup.isPresent()) return false;
+        if (permissionGroup.isEmpty()) return false;
         // Update the cache
         for (String permission : permissions) {
             Optional<Connection> connection = getConnection();
-            if (!connection.isPresent()) {
+            if (connection.isEmpty()) {
                 PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.empty()));
                 return false;
             }
@@ -664,10 +664,10 @@ public class SQLHandler extends DatabaseHandler {
     public boolean removeGroupPermission(String group, String... permissions) {
         Optional<PermissionGroup> permissionGroup = getGroups().entrySet().stream().map(Map.Entry::getValue)
                 .filter(permission -> permission.getName().equalsIgnoreCase(group)).findFirst();
-        if (!permissionGroup.isPresent()) return false;
+        if (permissionGroup.isEmpty()) return false;
 
         Optional<Connection> connection = getConnection();
-        if (!connection.isPresent()) {
+        if (connection.isEmpty()) {
             PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.empty()));
             return false;
         }
@@ -706,7 +706,7 @@ public class SQLHandler extends DatabaseHandler {
         superAdmins.add(uuid);
         // Update mysql
         Optional<Connection> connection = getConnection();
-        if (!connection.isPresent()) {
+        if (connection.isEmpty()) {
             PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.empty()));
             return;
         }
@@ -733,7 +733,7 @@ public class SQLHandler extends DatabaseHandler {
         superAdmins.removeIf(u -> u.equals(uuid));
 
         Optional<Connection> connection = getConnection();
-        if (!connection.isPresent()) {
+        if (connection.isEmpty()) {
             PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.empty()));
             return;
         }
@@ -754,7 +754,7 @@ public class SQLHandler extends DatabaseHandler {
         defaultGroup = Optional.ofNullable(group);
 
         Optional<Connection> connection = getConnection();
-        if (!connection.isPresent()) {
+        if (connection.isEmpty()) {
             PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.empty()));
             return;
         }

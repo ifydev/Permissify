@@ -52,6 +52,6 @@ public class DisplayUtil implements me.innectic.permissify.api.util.DisplayUtil 
     }
 
     private boolean shouldReport(ConnectionError error) {
-        return error != ConnectionError.REJECTED && error == ConnectionError.DATABASE_EXCEPTION;
+        return error == ConnectionError.DATABASE_EXCEPTION;
     }
 }

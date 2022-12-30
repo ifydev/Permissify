@@ -77,7 +77,7 @@ public class ProfileSerializer {
     public Optional<PermissifyProfile> deserialize(String profile, String baseDirectory) {
         Optional<PermissifyProfile> deserialized = Optional.empty();
         try {
-            Reader reader = new FileReader(new File(baseDirectory + "/profiles/" + profile + ".permissify"));
+            Reader reader = new FileReader(baseDirectory + "/profiles/" + profile + ".permissify");
             deserialized = Optional.ofNullable(gson.fromJson(reader, PermissifyProfile.class));
         } catch (FileNotFoundException e) {
             e.printStackTrace();

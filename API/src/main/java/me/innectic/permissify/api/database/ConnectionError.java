@@ -35,5 +35,5 @@ import lombok.Getter;
 public enum ConnectionError {
     REJECTED("Connection to database rejected"), DATABASE_EXCEPTION("Exception in a database handler");
 
-    @Getter private String display;
+    @Getter private final String display;
 }

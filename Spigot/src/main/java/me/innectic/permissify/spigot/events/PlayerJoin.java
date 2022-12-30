@@ -46,10 +46,7 @@ public class PlayerJoin implements Listener {
 
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
             Player player = e.getPlayer();
-            if (player == null) {
-                System.out.println("Player did not exist on join");
-                return;
-            }
+
             plugin.getAttachmentManager().setAttachment(player.getUniqueId(), player.addAttachment(plugin), Optional.empty());
             PermissionUtil.applyPermissions(player);
         });

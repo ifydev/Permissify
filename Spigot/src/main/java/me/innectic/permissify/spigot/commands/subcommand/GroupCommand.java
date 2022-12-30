@@ -59,7 +59,7 @@ public class GroupCommand {
         if (!PermissionUtil.hasPermissionOrSuperAdmin(sender, PermissifyConstants.PERMISSIFY_GROUP_CREATE))
             return PermissifyConstants.INSUFFICIENT_PERMISSIONS;
 
-        if (!plugin.getPermissifyAPI().getDatabaseHandler().isPresent())
+        if (plugin.getPermissifyAPI().getDatabaseHandler().isEmpty())
             return PermissifyConstants.UNABLE_TO_CREATE.replace("<TYPE>", "group").replace("<REASON>", "No database handler.");
 
         if (args.length < 5) return PermissifyConstants.NOT_ENOUGH_ARGUMENTS_GROUP_CREATE;
@@ -91,9 +91,9 @@ public class GroupCommand {
 
         if (args.length < 1) return PermissifyConstants.NOT_ENOUGH_ARGUMENTS_GROUP_REMOVE;
         Optional<PermissionGroup> group = plugin.getPermissifyAPI().getDatabaseHandler().get().getGroup(args[0]);
-        if (!group.isPresent()) return PermissifyConstants.INVALID_GROUP.replace("<GROUP>", args[0]);
+        if (group.isEmpty()) return PermissifyConstants.INVALID_GROUP.replace("<GROUP>", args[0]);
 
-        List<UUID> playersInGroup = group.get().getPlayers().entrySet().stream().map(Map.Entry::getKey).collect(Collectors.toList());
+        List<UUID> playersInGroup = group.get().getPlayers().keySet().stream().collect(Collectors.toList());
         Tristate removed = plugin.getPermissifyAPI().getDatabaseHandler().get().deleteGroup(args[0]);
         if (removed == Tristate.TRUE) {
             Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> playersInGroup.stream().map(Bukkit::getPlayer).filter(Objects::nonNull).forEach(PermissionUtil::applyPermissions));
@@ -104,7 +104,7 @@ public class GroupCommand {
 
     public String handlePermissionAdd(CommandSender sender, String[] args) {
         PermissifyMain plugin = PermissifyMain.getInstance();
-        if (!plugin.getPermissifyAPI().getDatabaseHandler().isPresent())
+        if (plugin.getPermissifyAPI().getDatabaseHandler().isEmpty())
             return PermissifyConstants.UNABLE_TO_CREATE.replace("<TYPE>", "group").replace("<REASON>", "No database handler.");
 
         if (!PermissionUtil.hasPermissionOrSuperAdmin(sender, PermissifyConstants.PERMISSIFY_GROUP_PERMISSION_ADD))
@@ -117,11 +117,11 @@ public class GroupCommand {
 
         String[] remaining = ArgumentUtil.getRemainingArgs(1, args);
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
-            if (!plugin.getPermissifyAPI().getDatabaseHandler().isPresent()) return;
+            if (plugin.getPermissifyAPI().getDatabaseHandler().isEmpty()) return;
             Optional<PermissionGroup> group = plugin.getPermissifyAPI().getDatabaseHandler().get().getGroup(args[0]);
             group.ifPresent(permissionGroup -> {
                 Arrays.stream(remaining).forEach(permissionGroup::addPermission);
-                permissionGroup.getPlayers().entrySet().stream().map(Map.Entry::getKey).map(Bukkit::getPlayer).filter(Objects::nonNull).forEach(PermissionUtil::applyPermissions);
+                permissionGroup.getPlayers().keySet().stream().map(Bukkit::getPlayer).filter(Objects::nonNull).forEach(PermissionUtil::applyPermissions);
             });
         });
         return PermissifyConstants.PERMISSION_ADDED_GROUP.replace("<PERMISSION>",
@@ -133,7 +133,7 @@ public class GroupCommand {
         if (!PermissionUtil.hasPermissionOrSuperAdmin(sender, PermissifyConstants.PERMISSIFY_GROUP_PERMISSION_REMOVE))
             return PermissifyConstants.INSUFFICIENT_PERMISSIONS;
 
-        if (!plugin.getPermissifyAPI().getDatabaseHandler().isPresent())
+        if (plugin.getPermissifyAPI().getDatabaseHandler().isEmpty())
             return PermissifyConstants.UNABLE_TO_CREATE.replace("<TYPE>", "group").replace("<REASON>", "No database handler.");
 
         if (args.length < 2) return PermissifyConstants.NOT_ENOUGH_ARGUMENTS_GROUP_PERMISSION_REMOVE;
@@ -142,7 +142,7 @@ public class GroupCommand {
         if (!added) return PermissifyConstants.UNABLE_TO_REMOVE.replace("<TYPE>", "permission").replace("<REASON>", "Permission isn't on group!");
 
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
-            if (!plugin.getPermissifyAPI().getDatabaseHandler().isPresent()) return;
+            if (plugin.getPermissifyAPI().getDatabaseHandler().isEmpty()) return;
             Optional<PermissionGroup> group = plugin.getPermissifyAPI().getDatabaseHandler().get().getGroup(args[0]);
             group.ifPresent(permissionGroup -> {
                 for (String permission : remaining) permissionGroup.removePermission(permission);
@@ -159,13 +159,13 @@ public class GroupCommand {
         if (!PermissionUtil.hasPermissionOrSuperAdmin(sender, PermissifyConstants.PERMISSIFY_GROUP_PERMISSION_LIST))
             return PermissifyConstants.INSUFFICIENT_PERMISSIONS;
 
-        if (!plugin.getPermissifyAPI().getDatabaseHandler().isPresent())
+        if (plugin.getPermissifyAPI().getDatabaseHandler().isEmpty())
             return PermissifyConstants.UNABLE_TO_LIST.replace("<REASON>", "No database handler");
 
         if (args.length < 1) return PermissifyConstants.NOT_ENOUGH_ARGUMENTS_GROUP_PERMISSION_LIST;
 
         Optional<PermissionGroup> group = plugin.getPermissifyAPI().getDatabaseHandler().get().getGroup(args[0]);
-        if (!group.isPresent()) return PermissifyConstants.INVALID_GROUP.replace("<GROUP>", args[0]);
+        if (group.isEmpty()) return PermissifyConstants.INVALID_GROUP.replace("<GROUP>", args[0]);
 
         List<String> groupPermissions = group.get().getPermissions().stream().map(Permission::getPermission).collect(Collectors.toList());
         return PermissifyConstants.GROUP_PERMISSIONS.replace("<GROUP>", group.get().getName())
@@ -177,7 +177,7 @@ public class GroupCommand {
         if (!PermissionUtil.hasPermissionOrSuperAdmin(sender, PermissifyConstants.PERMISSIFY_GROUP_LIST))
             return PermissifyConstants.INSUFFICIENT_PERMISSIONS;
 
-        if (!plugin.getPermissifyAPI().getDatabaseHandler().isPresent())
+        if (plugin.getPermissifyAPI().getDatabaseHandler().isEmpty())
             return PermissifyConstants.UNABLE_TO_LIST.replace("<REASON>", "No database handler");
 
         Map<String, PermissionGroup> groups = plugin.getPermissifyAPI().getDatabaseHandler().get().getGroups();
@@ -189,7 +189,7 @@ public class GroupCommand {
         if (!PermissionUtil.hasPermissionOrSuperAdmin(sender, PermissifyConstants.PERMISSIFY_GROUP_DEFAULT))
             return PermissifyConstants.INSUFFICIENT_PERMISSIONS;
 
-        if (!plugin.getPermissifyAPI().getDatabaseHandler().isPresent())
+        if (plugin.getPermissifyAPI().getDatabaseHandler().isEmpty())
             return PermissifyConstants.UNABLE_TO_SET.replace("<REASON>", "No database handler");
 
         DatabaseHandler handler = plugin.getPermissifyAPI().getDatabaseHandler().get();
@@ -202,8 +202,7 @@ public class GroupCommand {
         }
 
         Optional<PermissionGroup> defaultGroup = handler.getGroup(args[0]);
-        if (!defaultGroup.isPresent())
-            return PermissifyConstants.INVALID_GROUP.replace("<GROUP>", args[0]);
+        if (defaultGroup.isEmpty()) return PermissifyConstants.INVALID_GROUP.replace("<GROUP>", args[0]);
 
         handler.setDefaultGroup(defaultGroup.get());
         return PermissifyConstants.DEFAULT_GROUP_SET.replace("<GROUP>", args[0]);

@@ -41,8 +41,7 @@ import java.util.Optional;
 public class PermissionUtil {
 
     public static boolean hasPermissionOrSuperAdmin(CommandSender sender, String permission) {
-        if (sender instanceof Player) {
-            Player player = (Player) sender;
+        if (sender instanceof Player player) {
             return player.hasPermission(permission) ||
                     (PermissifyMain.getInstance().getPermissifyAPI().getDatabaseHandler().map(handler ->
                             handler.isSuperAdmin(player.getUniqueId())).orElse(false));
@@ -87,6 +86,8 @@ public class PermissionUtil {
 
                 group.getPermissions().forEach(permission -> attachment.setPermission(permission.getPermission(), permission.isGranted()));
                 plugin.getAttachmentManager().setAttachment(player.getUniqueId(), attachment, Optional.of(group.getName()));
+
+                // TODO: Add permission node for the player's primary group here
             });
         });
     }

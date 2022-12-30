@@ -53,7 +53,7 @@ public class ProfileCommand {
 
     private String handleSaveProfile(CommandSender sender, String[] args) {
         if (args.length < 1) return PermissifyConstants.NOT_ENOUGH_ARGUMENTS_PROFILE_SAVE;
-        if (!PermissifyMain.getInstance().getPermissifyAPI().getDatabaseHandler().isPresent())
+        if (PermissifyMain.getInstance().getPermissifyAPI().getDatabaseHandler().isEmpty())
             return PermissifyConstants.UNABLE_TO_SET.replace("<REASON>", "No database handler");
 
         boolean saved = saveProfile(args[0]);
@@ -63,7 +63,7 @@ public class ProfileCommand {
 
     private String handleLoadProfile(CommandSender sender, String[] args) {
         if (args.length < 1) return PermissifyConstants.NOT_ENOUGH_ARGUMENTS_PROFILE_LOAD;
-        if (!PermissifyMain.getInstance().getPermissifyAPI().getDatabaseHandler().isPresent())
+        if (PermissifyMain.getInstance().getPermissifyAPI().getDatabaseHandler().isEmpty())
             return PermissifyConstants.UNABLE_TO_SET.replace("<REASON>", "No database handler");
         Logger logger = PermissifyMain.getInstance().getPermissifyAPI().getLogger();
 
@@ -78,7 +78,7 @@ public class ProfileCommand {
         Optional<PermissifyProfile> profile = PermissifyMain.getInstance().getPermissifyAPI().getProfileSerializer().deserialize(args[0], baseDir);
         long end = System.currentTimeMillis();
         logger.info("Loaded profile in " + (end - originalStart) + " ms.");
-        if (!profile.isPresent()) return PermissifyConstants.PROFILE_NOT_LOADED.replace("<PROFILE>", args[0]);
+        if (profile.isEmpty()) return PermissifyConstants.PROFILE_NOT_LOADED.replace("<PROFILE>", args[0]);
 
         long start = System.currentTimeMillis();
         handler.drop();
@@ -91,7 +91,7 @@ public class ProfileCommand {
     }
 
     private boolean saveProfile(String name) {
-        if (!PermissifyMain.getInstance().getPermissifyAPI().getDatabaseHandler().isPresent()) return false;
+        if (PermissifyMain.getInstance().getPermissifyAPI().getDatabaseHandler().isEmpty()) return false;
         DatabaseHandler handler = PermissifyMain.getInstance().getPermissifyAPI().getDatabaseHandler().get();
         Logger logger = PermissifyMain.getInstance().getPermissifyAPI().getLogger();
 
