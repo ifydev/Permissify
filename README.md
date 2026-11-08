@@ -11,6 +11,11 @@ You can download the latest version of Permissify from the [releases](https://gi
 
 ## Commands
 
+Permissify commands over RCON require `allow-rcon: true` in the plugin's
+`config.yml`. The default is `false`, including when the option is absent
+from an existing config. Restart after changing it. This setting applies to
+Permissify commands; the local server console remains available.
+
 Player commands use the player name first, for example:
 
 ```

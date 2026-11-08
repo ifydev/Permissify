@@ -1,6 +1,7 @@
 language: en_US
 storage: sqlite
 allow-command-block: false
+allow-rcon: false
 connection:
   host: localhost
   port: 3306

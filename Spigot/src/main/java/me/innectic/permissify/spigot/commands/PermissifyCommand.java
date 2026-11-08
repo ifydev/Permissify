@@ -35,6 +35,7 @@ import org.bukkit.command.BlockCommandSender;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.RemoteConsoleCommandSender;
 import org.bukkit.OfflinePlayer;
 import me.innectic.permissify.spigot.utils.PlayerUtil;
 
@@ -61,6 +62,10 @@ public class PermissifyCommand implements CommandExecutor {
 
     private void execute(CommandSender sender, String[] args, Language language) {
         PermissifyMain plugin = PermissifyMain.getInstance();
+        if (sender instanceof RemoteConsoleCommandSender && !plugin.getConfig().getBoolean("allow-rcon", false)) {
+            sendResponse(language.getMessage("RCON_DISABLED"), sender);
+            return;
+        }
         if (plugin.getPermissifyAPI().getDatabaseHandler().isEmpty()) {
             sendResponse(language.getMessage("UNABLE_OTHER").replace("<REASON>", language.getMessage("NO_DATABASE_HANDLER")), sender);
             return;

@@ -13,6 +13,7 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.command.BlockCommandSender;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.RemoteConsoleCommandSender;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
 
@@ -35,6 +36,7 @@ public class PermissifyTabCompleter implements TabCompleter {
 
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
+        if (sender instanceof RemoteConsoleCommandSender && !plugin.getConfig().getBoolean("allow-rcon", false)) return List.of();
         if (args.length == 0 || !allowed(sender, PermissifyConstants.PERMISSIFY_BASIC)) return List.of();
         if (sender instanceof BlockCommandSender && !plugin.getConfig().getBoolean("allow-command-block", false)) return List.of();
         var handler = plugin.getPermissifyAPI().getDatabaseHandler();

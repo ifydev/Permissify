@@ -109,5 +109,6 @@
   "SUPERADMIN_GRANTED": "<PREFIX>&e&lGranted superadmin to <PLAYER>.",
   "SUPERADMIN_REMOVED": "<PREFIX>&e&lRemoved superadmin from <PLAYER>.",
   "COMMAND_FAILED": "<PREFIX>&c&lUnable to run this command. Check the server log.",
-  "HELP_NO_COMMANDS": "<PREFIX>&e&lNo commands available."
+  "HELP_NO_COMMANDS": "<PREFIX>&e&lNo commands available.",
+  "RCON_DISABLED": "<PREFIX>&c&lPermissify commands over RCON are disabled. Set allow-rcon to true in config.yml to enable them."
 }
