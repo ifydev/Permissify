@@ -28,6 +28,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import me.innectic.permissify.api.permission.Permission;
 import me.innectic.permissify.api.permission.PermissionGroup;
+import me.innectic.permissify.api.permission.RankTrack;
 
 import java.util.List;
 import java.util.Map;
@@ -44,6 +45,12 @@ public class PermissifyProfile {
     @Getter private PermissionGroup defaultGroup;
     @Getter private List<UUID> superAdmins;
     @Getter private int version;
+    @Getter private Map<String, RankTrack> tracks;
+
+    public PermissifyProfile(Map<String, PermissionGroup> groups, Map<UUID, List<Permission>> playerPermissions,
+                             PermissionGroup defaultGroup, List<UUID> superAdmins, int version) {
+        this(groups, playerPermissions, defaultGroup, superAdmins, version, Map.of());
+    }
 
     @Override
     public String toString() {

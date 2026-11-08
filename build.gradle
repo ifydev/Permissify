@@ -1,0 +1,45 @@
+plugins {
+    id 'base'
+}
+
+allprojects {
+    group = 'me.innectic'
+    version = '1.0.1'
+}
+
+subprojects {
+    apply plugin: 'java-library'
+
+    repositories {
+        mavenCentral()
+    }
+
+    java {
+        toolchain {
+            languageVersion = JavaLanguageVersion.of(25)
+        }
+    }
+
+    dependencies {
+        compileOnly 'org.projectlombok:lombok:1.18.48'
+        annotationProcessor 'org.projectlombok:lombok:1.18.48'
+    }
+
+    tasks.withType(JavaCompile).configureEach {
+        options.encoding = 'UTF-8'
+        options.release = 25
+        options.compilerArgs += '-parameters'
+    }
+}
+
+tasks.named('assemble') {
+    dependsOn subprojects.collect { it.tasks.named('assemble') }
+}
+
+tasks.named('check') {
+    dependsOn subprojects.collect { it.tasks.named('check') }
+}
+
+tasks.named('clean') {
+    dependsOn subprojects.collect { it.tasks.named('clean') }
+}

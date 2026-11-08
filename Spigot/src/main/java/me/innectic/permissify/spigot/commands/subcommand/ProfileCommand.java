@@ -25,6 +25,7 @@
 package me.innectic.permissify.spigot.commands.subcommand;
 
 import me.innectic.permissify.api.PermissifyConstants;
+import me.innectic.permissify.api.language.Language;
 import me.innectic.permissify.api.database.DatabaseHandler;
 import me.innectic.permissify.api.profile.PermissifyProfile;
 import me.innectic.permissify.api.util.ArgumentUtil;
@@ -41,34 +42,34 @@ import java.util.logging.Logger;
  */
 public class ProfileCommand {
 
-    public String handleProfile(CommandSender sender, String[] args) {
+    public String handleProfile(CommandSender sender, String[] args, Language language) {
         if (!PermissionUtil.hasPermissionOrSuperAdmin(sender, PermissifyConstants.PERMISSIFY_PROFILE))
-            return PermissifyConstants.INSUFFICIENT_PERMISSIONS;
+            return language.getMessage("INSUFFICIENT_PERMISSIONS");
 
-        if (args.length < 1) return PermissifyConstants.NOT_ENOUGH_ARGUMENTS_PROFILE;
-        if (args[0].equalsIgnoreCase("save")) return handleSaveProfile(sender, ArgumentUtil.getRemainingArgs(1, args));
-        else if (args[0].equalsIgnoreCase("load")) return handleLoadProfile(sender, ArgumentUtil.getRemainingArgs(1, args));
-        return PermissifyConstants.INVALID_ARGUMENT.replace("<ARGUMENT>", args[0]);
+        if (args.length < 1) return language.getMessage("NOT_ENOUGH_ARGUMENTS_PROFILE");
+        if (args[0].equalsIgnoreCase("save")) return handleSaveProfile(ArgumentUtil.getRemainingArgs(1, args), language);
+        else if (args[0].equalsIgnoreCase("load")) return handleLoadProfile(ArgumentUtil.getRemainingArgs(1, args), language);
+        return language.getMessage("INVALID_ARGUMENT").replace("<ARGUMENT>", args[0]);
     }
 
-    private String handleSaveProfile(CommandSender sender, String[] args) {
-        if (args.length < 1) return PermissifyConstants.NOT_ENOUGH_ARGUMENTS_PROFILE_SAVE;
-        if (!PermissifyMain.getInstance().getPermissifyAPI().getDatabaseHandler().isPresent())
-            return PermissifyConstants.UNABLE_TO_SET.replace("<REASON>", "No database handler");
+    private String handleSaveProfile(String[] args, Language language) {
+        if (args.length < 1) return language.getMessage("NOT_ENOUGH_ARGUMENTS_PROFILE_SAVE");
+        if (PermissifyMain.getInstance().getPermissifyAPI().getDatabaseHandler().isEmpty())
+            return language.getMessage("UNABLE_TO_SET").replace("<REASON>", language.getMessage("NO_DATABASE_HANDLER"));
 
         boolean saved = saveProfile(args[0]);
-        if (saved) return PermissifyConstants.PROFILE_SAVED.replace("<PROFILE>", args[0]);
-        return PermissifyConstants.PROFILE_NOT_SAVED.replace("<PROFILE>", args[0]);
+        if (saved) return language.getMessage("PROFILE_SAVED").replace("<PROFILE>", args[0]);
+        return language.getMessage("PROFILE_NOT_SAVED").replace("<PROFILE>", args[0]);
     }
 
-    private String handleLoadProfile(CommandSender sender, String[] args) {
-        if (args.length < 1) return PermissifyConstants.NOT_ENOUGH_ARGUMENTS_PROFILE_LOAD;
-        if (!PermissifyMain.getInstance().getPermissifyAPI().getDatabaseHandler().isPresent())
-            return PermissifyConstants.UNABLE_TO_SET.replace("<REASON>", "No database handler");
+    private String handleLoadProfile(String[] args, Language language) {
+        if (args.length < 1) return language.getMessage("NOT_ENOUGH_ARGUMENTS_PROFILE_LOAD");
+        if (PermissifyMain.getInstance().getPermissifyAPI().getDatabaseHandler().isEmpty())
+            return language.getMessage("UNABLE_TO_SET").replace("<REASON>", language.getMessage("NO_DATABASE_HANDLER"));
         Logger logger = PermissifyMain.getInstance().getPermissifyAPI().getLogger();
 
         boolean saved = saveProfile(args[0] + "-pre-load");
-        if (!saved) return PermissifyConstants.PROFILE_NOT_SAVED.replace("<PROFILE>", args[0]);
+        if (!saved) return language.getMessage("PROFILE_NOT_SAVED").replace("<PROFILE>", args[0]);
 
         DatabaseHandler handler = PermissifyMain.getInstance().getPermissifyAPI().getDatabaseHandler().get();
 
@@ -78,29 +79,34 @@ public class ProfileCommand {
         Optional<PermissifyProfile> profile = PermissifyMain.getInstance().getPermissifyAPI().getProfileSerializer().deserialize(args[0], baseDir);
         long end = System.currentTimeMillis();
         logger.info("Loaded profile in " + (end - originalStart) + " ms.");
-        if (!profile.isPresent()) return PermissifyConstants.PROFILE_NOT_LOADED.replace("<PROFILE>", args[0]);
+        if (profile.isEmpty()) return language.getMessage("PROFILE_NOT_LOADED").replace("<PROFILE>", args[0]);
 
         long start = System.currentTimeMillis();
-        handler.drop();
-        handler.loadProfile(profile.get());
+        try {
+            handler.loadProfile(profile.get());
+        } catch (RuntimeException e) {
+            logger.log(java.util.logging.Level.SEVERE, "Unable to load profile", e);
+            return language.getMessage("PROFILE_NOT_LOADED").replace("<PROFILE>", args[0]);
+        }
+        org.bukkit.Bukkit.getOnlinePlayers().forEach(PermissionUtil::applyPermissions);
         end = System.currentTimeMillis();
         logger.info("Parsed profile in " + (end - start) + " ms.");
 
-        return PermissifyConstants.PROFILE_LOADED.replace("<PROFILE>", args[0])
+        return language.getMessage("PROFILE_LOADED").replace("<PROFILE>", args[0])
                 .replace("<TIME>", Long.toString(end - originalStart));
     }
 
     private boolean saveProfile(String name) {
-        if (!PermissifyMain.getInstance().getPermissifyAPI().getDatabaseHandler().isPresent()) return false;
+        if (PermissifyMain.getInstance().getPermissifyAPI().getDatabaseHandler().isEmpty()) return false;
         DatabaseHandler handler = PermissifyMain.getInstance().getPermissifyAPI().getDatabaseHandler().get();
         Logger logger = PermissifyMain.getInstance().getPermissifyAPI().getLogger();
 
         // Generate the profile
         logger.info("Generating profile...");
         long start = System.currentTimeMillis();
-        PermissifyProfile profile = new PermissifyProfile(handler.getGroups(), handler.getCachedPermissions(),
+        PermissifyProfile profile = new PermissifyProfile(handler.getGroups(), handler.getAllPermissions(),
                 handler.getDefaultGroup().isPresent() ? handler.getDefaultGroup().get() : null, handler.getSuperAdmins(),
-                PermissifyConstants.PERMISSIFY_PROFILE_VERSION);
+                PermissifyConstants.PERMISSIFY_PROFILE_VERSION, handler.getTracks());
         long end = System.currentTimeMillis();
         logger.info("Generated profile in " + (end - start) + " ms.");
 

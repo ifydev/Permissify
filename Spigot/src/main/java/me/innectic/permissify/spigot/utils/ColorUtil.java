@@ -39,10 +39,7 @@ public class ColorUtil {
      * @return if the string is a valid chatcolor
      */
     public static boolean isValidChatColor(String check) {
-        for (ChatColor color : ChatColor.values()) {
-            if (color.toString().endsWith(check)) return true;
-        }
-        return false;
+        return check != null && check.matches("(?i)[&§]?[0-9a-fk-or]");
     }
 
     public static String makeReadable(String convert) {

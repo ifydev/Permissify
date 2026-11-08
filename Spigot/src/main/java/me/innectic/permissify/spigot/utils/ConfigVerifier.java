@@ -43,7 +43,6 @@ public class ConfigVerifier implements VerifyConfig {
     @Override
     public boolean verifyBasicInformation() {
         PermissifyMain plugin = PermissifyMain.getInstance();
-        if (plugin.getConfig() == null) return false;
         if (plugin.getConfig().getString("storage") == null) return false;
 
         Optional<HandlerType> type = HandlerType.findType(plugin.getConfig().getString("storage"));
@@ -54,7 +53,7 @@ public class ConfigVerifier implements VerifyConfig {
     public Optional<FullHandler> verifyConnectionInformation() {
         PermissifyMain plugin = PermissifyMain.getInstance();
         Optional<HandlerType> type = HandlerType.findType(plugin.getConfig().getString("storage", "sqlite"));
-        if  (!type.isPresent()) return Optional.empty();
+        if  (type.isEmpty()) return Optional.empty();
 
         Optional<ConnectionInformation> connectionInformation = Optional.empty();
         if (type.get().getHandler() == SQLHandler.class) {

@@ -18,7 +18,7 @@ Take a look at the `Issues` page to get started! Make sure to follow the code st
 The standards for Permissify's code are really simple.
 
 Make sure things that will be used between the different implementations are in the API
-Make sure messages & permissions are in the constants file.
+Keep messages in the language files and permissions in the constants file.
 Use your brain...
 
 Pull requests that don't follow the standards will be ignored until they meet the standards.

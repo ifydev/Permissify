@@ -47,7 +47,7 @@ public class ModuleProvider {
     }
 
     public void end(Object plugin) {
-        modules.entrySet().stream().map(Map.Entry::getValue).forEach(module -> module.deinitialize(plugin));
+        modules.values().stream().forEach(module -> module.deinitialize(plugin));
     }
 
     public Object pushEvent(String event, Object... arguments) {

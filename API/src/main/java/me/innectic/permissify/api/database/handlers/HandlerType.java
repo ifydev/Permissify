@@ -40,8 +40,8 @@ public enum HandlerType {
 
     MYSQL(SQLHandler.class, "MySQL"), SQLITE(SQLHandler.class, "SQLite");
 
-    @Getter private Class<? extends DatabaseHandler> handler;
-    @Getter private String displayName;
+    @Getter private final Class<? extends DatabaseHandler> handler;
+    @Getter private final String displayName;
 
     /**
      * Get the type of a handler from a name
