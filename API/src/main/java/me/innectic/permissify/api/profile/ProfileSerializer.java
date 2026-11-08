@@ -105,7 +105,6 @@ public class ProfileSerializer {
                     entries.stream().map(PermissionData::toPermission).collect(java.util.stream.Collectors.toCollection(java.util.ArrayList::new))));
             return Optional.of(new PermissifyProfile(groups, permissions, defaultGroup, List.copyOf(data.superAdmins()), data.version()));
         } catch (IOException | RuntimeException e) {
-            e.printStackTrace();
             return Optional.empty();
         }
     }

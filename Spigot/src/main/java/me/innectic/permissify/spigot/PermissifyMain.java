@@ -27,6 +27,7 @@ package me.innectic.permissify.spigot;
 import lombok.Getter;
 
 import me.innectic.permissify.spigot.commands.PermissifyCommand;
+import me.innectic.permissify.spigot.commands.PermissifyTabCompleter;
 import me.innectic.permissify.spigot.commands.subcommand.*;
 import me.innectic.permissify.spigot.events.PlayerJoin;
 import me.innectic.permissify.api.PermissifyAPI;
@@ -160,6 +161,7 @@ public class PermissifyMain extends JavaPlugin {
         profileCommand = new ProfileCommand();
 
         getCommand("permissify").setExecutor(new PermissifyCommand());
+        getCommand("permissify").setTabCompleter(new PermissifyTabCompleter(this));
     }
 
     private void registerListeners() {

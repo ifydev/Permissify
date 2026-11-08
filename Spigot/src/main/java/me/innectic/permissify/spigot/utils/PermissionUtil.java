@@ -29,6 +29,7 @@ import org.bukkit.command.BlockCommandSender;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
+import org.bukkit.command.RemoteConsoleCommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.permissions.PermissionAttachment;
 
@@ -40,13 +41,17 @@ import java.util.Optional;
  */
 public class PermissionUtil {
 
+    public static boolean isConsole(CommandSender sender) {
+        return sender instanceof ConsoleCommandSender || sender instanceof RemoteConsoleCommandSender;
+    }
+
     public static boolean hasPermissionOrSuperAdmin(CommandSender sender, String permission) {
         if (sender instanceof Player player) {
             return player.hasPermission(permission) ||
                     (PermissifyMain.getInstance().getPermissifyAPI().getDatabaseHandler().map(handler ->
                             handler.isSuperAdmin(player.getUniqueId())).orElse(false));
         }
-        return sender instanceof BlockCommandSender || sender instanceof ConsoleCommandSender;
+        return sender instanceof BlockCommandSender || isConsole(sender);
     }
 
     public static void applyPermissions(Player player) {
@@ -60,7 +65,6 @@ public class PermissionUtil {
         plugin.getAttachmentManager().resetAllPermissibles(player.getUniqueId());
 
         plugin.getAttachmentManager().setAttachment(player.getUniqueId(), player.addAttachment(plugin), Optional.empty());
-        player.recalculatePermissions();
 
         plugin.getPermissifyAPI().getDatabaseHandler().ifPresent(handler -> {
             // Check if the player should be in a default group.
@@ -90,5 +94,7 @@ public class PermissionUtil {
                     handler.getPermissions(player.getUniqueId()).forEach(permission -> self.setPermission(permission.getPermission(), permission.isGranted())));
 
         });
+        player.recalculatePermissions();
+        player.updateCommands();
     }
 }

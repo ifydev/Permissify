@@ -81,6 +81,10 @@
       "&a&l/permissify player removegroup <player> <group>",
       "&a&l/permissify player primarygroup <player> [group]",
       "&a&l/permissify group default [group]"
+    ],
+    [
+      "&a&l/permissify profile save <profile>",
+      "&a&l/permissify profile load <profile>"
     ]
   ],
   "PERMISSIFY_ERROR": [
@@ -104,5 +108,6 @@
   "GROUP_MISSING_PERMISSION": "Permission isn't on group!",
   "SUPERADMIN_GRANTED": "<PREFIX>&e&lGranted superadmin to <PLAYER>.",
   "SUPERADMIN_REMOVED": "<PREFIX>&e&lRemoved superadmin from <PLAYER>.",
-  "COMMAND_FAILED": "<PREFIX>&c&lUnable to run this command. Check the server log."
+  "COMMAND_FAILED": "<PREFIX>&c&lUnable to run this command. Check the server log.",
+  "HELP_NO_COMMANDS": "<PREFIX>&e&lNo commands available."
 }

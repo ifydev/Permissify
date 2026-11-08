@@ -20,7 +20,7 @@ Player commands use the player name first, for example:
 ```
 
 Names match exactly, ignoring case. Online players and players known to this
-server can be targeted. `/perm` is an alias for `/permissify`.
+server can be targeted. /perm is an alias for /permissify.
 
 Profile loads merge the saved groups, memberships and permissions into the
 current database. They preserve unrelated records and save a backup first.

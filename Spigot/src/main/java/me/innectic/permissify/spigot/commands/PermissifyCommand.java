@@ -35,7 +35,6 @@ import org.bukkit.command.BlockCommandSender;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
-import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.OfflinePlayer;
 import me.innectic.permissify.spigot.utils.PlayerUtil;
 
@@ -66,7 +65,7 @@ public class PermissifyCommand implements CommandExecutor {
             sendResponse(language.getMessage("UNABLE_OTHER").replace("<REASON>", language.getMessage("NO_DATABASE_HANDLER")), sender);
             return;
         }
-        if (sender instanceof ConsoleCommandSender) {
+        if (PermissionUtil.isConsole(sender)) {
             if (args.length > 0 && args[0].equalsIgnoreCase("superadmin")) {
                 if (args.length < 3) {
                     sendResponse(language.getMessage("NOT_ENOUGH_ARGUMENTS_SUPERADMIN"), sender);
@@ -198,7 +197,7 @@ public class PermissifyCommand implements CommandExecutor {
 
     private void sendHelp(CommandSender player, int page, Language language) {
         sendResponse(language.getMessage("PERMISSIFY_HELP_HEADER"), player);
-        List<List<String>> pages = language.getPages("PERMISSIFY_HELP_PAGES");
+        List<List<String>> pages = PermissifyHelp.getPages(player, language);
         sendResponse(pages.get(Math.max(0, Math.min(page, pages.size() - 1))), player);
         sendResponse(language.getMessage("PERMISSIFY_HELP_FOOTER"), player);
     }
