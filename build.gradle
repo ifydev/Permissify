@@ -4,7 +4,7 @@ plugins {
 
 allprojects {
     group = 'me.innectic'
-    version = '1.0.1'
+    version = '1.1.0'
 }
 
 subprojects {
