@@ -1,0 +1,30 @@
+base {
+    archivesName = 'PermissifySpigot'
+}
+
+repositories {
+    maven {
+        url = uri('https://hub.spigotmc.org/nexus/repository/snapshots/')
+        content {
+            includeGroup 'org.spigotmc'
+        }
+    }
+}
+
+dependencies {
+    compileOnly 'org.spigotmc:spigot-api:26.3-R0.1-SNAPSHOT'
+    implementation project(':API')
+}
+
+def pluginVersion = project.version.toString()
+tasks.named('processResources') {
+    inputs.property 'version', pluginVersion
+    filesMatching('plugin.yml') {
+        expand(version: pluginVersion)
+    }
+}
+
+tasks.named('jar') {
+    archiveFileName = 'PermissifySpigot.jar'
+    from project(':API').sourceSets.main.output
+}
