@@ -1,5 +1,6 @@
 name: Permissify
-version: 1.0.1
+version: ${version}
+api-version: '26.3'
 authors: [Innectic]
 description: Permissify is a dead-simple, next-generation permission plugin.
 main: me.innectic.permissify.spigot.PermissifyMain
