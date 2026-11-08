@@ -25,6 +25,7 @@
 package me.innectic.permissify.api.permission;
 
 import lombok.Getter;
+import lombok.Setter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
@@ -42,6 +43,8 @@ public class PermissionGroup {
     @Getter @NonNull private String prefix;
     @Getter @NonNull private String suffix;
 
+    @Getter @Setter private int weight;
+
     @Getter private final List<Permission> permissions = new ArrayList<>();
     @Getter private final Set<String> parents = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
     @Getter private final Map<UUID, Boolean> players = new HashMap<>();
@@ -53,7 +56,7 @@ public class PermissionGroup {
      * @param permission the permission to remove
      */
     public void removePermission(String permission) {
-        permissions.removeIf(p -> p.getPermission().equals(permission));
+        permissions.removeIf(p -> p.getPermission().equalsIgnoreCase(permission));
     }
 
     /**
@@ -62,22 +65,18 @@ public class PermissionGroup {
      * @param permission the permission to add
      */
     public void addPermission(String permission) {
-        Optional<Permission> perm = permissions.stream().filter(groupPermission -> groupPermission.getPermission().equals(permission)).findFirst();
+        Optional<Permission> perm = permissions.stream().filter(groupPermission -> groupPermission.getPermission().equalsIgnoreCase(permission)).findFirst();
         if (perm.isPresent()) perm.get().setGranted(true);
         else permissions.add(new Permission(permission, true));
     }
 
     public boolean hasPermission(String permission) {
-        return permissions.stream().anyMatch(perm -> perm.getPermission().equals(permission));
+        return permissions.stream().anyMatch(perm -> perm.getPermission().equalsIgnoreCase(permission));
     }
 
-    public void addPlayer(UUID uuid, boolean isPrimary) {
-        addPlayer(uuid, isPrimary, 0);
-    }
-
-    public void addPlayer(UUID uuid, boolean isPrimary, long expiresAt) {
+    public void addPlayer(UUID uuid, long expiresAt) {
         if (expiresAt < 0) throw new IllegalArgumentException("Invalid membership expiry");
-        players.put(uuid, isPrimary);
+        players.put(uuid, false);
         playerExpirations.put(uuid, expiresAt);
     }
 
@@ -89,14 +88,6 @@ public class PermissionGroup {
     public boolean hasPlayer(UUID uuid) {
         long expiry = playerExpirations.getOrDefault(uuid, 0L);
         return players.containsKey(uuid) && (expiry == 0 || expiry > System.currentTimeMillis());
-    }
-
-    public boolean isPrimaryGroup(UUID uuid) {
-        return hasPlayer(uuid) && players.get(uuid).equals(true);
-    }
-
-    public void setPrimaryGroup(UUID uuid, boolean isPrimary) {
-        players.put(uuid, isPrimary);
     }
 
     @Override

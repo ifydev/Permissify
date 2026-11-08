@@ -9,26 +9,31 @@ import java.util.Map;
 
 final class CommandAccess {
 
-    static final Map<String, String> GROUP_COMMANDS = Map.of(
-            "create", PermissifyConstants.PERMISSIFY_GROUP_CREATE,
-            "inherit", PermissifyConstants.PERMISSIFY_GROUP_INHERIT,
-            "uninherit", PermissifyConstants.PERMISSIFY_GROUP_UNINHERIT,
-            "remove", PermissifyConstants.PERMISSIFY_GROUP_REMOVE,
-            "list", PermissifyConstants.PERMISSIFY_GROUP_LIST,
-            "addpermission", PermissifyConstants.PERMISSIFY_GROUP_PERMISSION_ADD,
-            "removepermission", PermissifyConstants.PERMISSIFY_GROUP_PERMISSION_REMOVE,
-            "listpermissions", PermissifyConstants.PERMISSIFY_GROUP_PERMISSION_LIST,
-            "default", PermissifyConstants.PERMISSIFY_GROUP_DEFAULT);
-    static final Map<String, String> PLAYER_COMMANDS = Map.of(
-            "promote", PermissifyConstants.PERMISSIFY_PLAYER_PROMOTE,
-            "demote", PermissifyConstants.PERMISSIFY_PLAYER_DEMOTE,
-            "addgroup", PermissifyConstants.PERMISSIFY_PLAYER_GROUP_ADD,
-            "removegroup", PermissifyConstants.PERMISSIFY_PLAYER_GROUP_REMOVE,
-            "listgroups", PermissifyConstants.PERMISSIFY_PLAYER_GROUP_LIST,
-            "primarygroup", PermissifyConstants.PERMISSIFY_PLAYER_SET_MAIN_GROUP,
-            "addpermission", PermissifyConstants.PERMISSIFY_PLAYER_PERMISSION_ADD,
-            "removepermission", PermissifyConstants.PERMISSIFY_PLAYER_PERMISSION_REMOVE,
-            "listpermissions", PermissifyConstants.PERMISSIFY_PLAYER_PERMISSION_LIST);
+    static final Map<String, String> GROUP_COMMANDS = Map.ofEntries(
+            Map.entry("create", PermissifyConstants.PERMISSIFY_GROUP_CREATE),
+            Map.entry("inherit", PermissifyConstants.PERMISSIFY_GROUP_INHERIT),
+            Map.entry("uninherit", PermissifyConstants.PERMISSIFY_GROUP_UNINHERIT),
+            Map.entry("remove", PermissifyConstants.PERMISSIFY_GROUP_REMOVE),
+            Map.entry("list", PermissifyConstants.PERMISSIFY_GROUP_LIST),
+            Map.entry("addpermission", PermissifyConstants.PERMISSIFY_GROUP_PERMISSION_ADD),
+            Map.entry("removepermission", PermissifyConstants.PERMISSIFY_GROUP_PERMISSION_REMOVE),
+            Map.entry("listpermissions", PermissifyConstants.PERMISSIFY_GROUP_PERMISSION_LIST),
+            Map.entry("default", PermissifyConstants.PERMISSIFY_GROUP_DEFAULT),
+            Map.entry("weight", PermissifyConstants.PERMISSIFY_GROUP_WEIGHT),
+            Map.entry("setpermission", PermissifyConstants.PERMISSIFY_GROUP_PERMISSION_SET),
+            Map.entry("unsetpermission", PermissifyConstants.PERMISSIFY_GROUP_PERMISSION_REMOVE));
+    static final Map<String, String> PLAYER_COMMANDS = Map.ofEntries(
+            Map.entry("promote", PermissifyConstants.PERMISSIFY_PLAYER_PROMOTE),
+            Map.entry("demote", PermissifyConstants.PERMISSIFY_PLAYER_DEMOTE),
+            Map.entry("addgroup", PermissifyConstants.PERMISSIFY_PLAYER_GROUP_ADD),
+            Map.entry("removegroup", PermissifyConstants.PERMISSIFY_PLAYER_GROUP_REMOVE),
+            Map.entry("listgroups", PermissifyConstants.PERMISSIFY_PLAYER_GROUP_LIST),
+            Map.entry("addpermission", PermissifyConstants.PERMISSIFY_PLAYER_PERMISSION_ADD),
+            Map.entry("removepermission", PermissifyConstants.PERMISSIFY_PLAYER_PERMISSION_REMOVE),
+            Map.entry("listpermissions", PermissifyConstants.PERMISSIFY_PLAYER_PERMISSION_LIST),
+            Map.entry("check", PermissifyConstants.PERMISSIFY_PLAYER_CHECK),
+            Map.entry("setpermission", PermissifyConstants.PERMISSIFY_PLAYER_PERMISSION_SET),
+            Map.entry("unsetpermission", PermissifyConstants.PERMISSIFY_PLAYER_PERMISSION_REMOVE));
     static final Map<String, String> TRACK_COMMANDS = Map.of(
             "create", PermissifyConstants.PERMISSIFY_TRACK_CREATE,
             "delete", PermissifyConstants.PERMISSIFY_TRACK_DELETE,
@@ -41,6 +46,7 @@ final class CommandAccess {
         if (!PermissionUtil.hasPermissionOrSuperAdmin(sender, PermissifyConstants.PERMISSIFY_BASIC)) return false;
         action = action.toLowerCase(Locale.ROOT);
         String permission = switch (category.toLowerCase(Locale.ROOT)) {
+            case "log" -> PermissifyConstants.PERMISSIFY_LOG;
             case "help" -> PermissifyConstants.PERMISSIFY_BASIC;
             case "cache" -> action.isEmpty() || action.equals("purge") ? PermissifyConstants.PERMISSIFY_CACHE : null;
             case "profile" -> action.equals("save") || action.equals("load") ? PermissifyConstants.PERMISSIFY_PROFILE : null;

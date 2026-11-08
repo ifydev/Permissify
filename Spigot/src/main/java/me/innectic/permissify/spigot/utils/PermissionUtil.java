@@ -71,27 +71,13 @@ public class PermissionUtil {
             if (handler.getDefaultGroup().isPresent() && handler.getGroups(player.getUniqueId()).isEmpty()) {
                 handler.addPlayerToGroup(player.getUniqueId(), handler.getDefaultGroup().get());
             }
-            if (handler.getPrimaryGroup(player.getUniqueId()).isEmpty() && !handler.getGroups(player.getUniqueId()).isEmpty()) {
-                handler.setPrimaryGroup(handler.getGroups(player.getUniqueId()).getFirst(), player.getUniqueId());
-            }
             handler.updateCache(player.getUniqueId());
-
-            // Add the player's group permissions
-            handler.getGroups(player.getUniqueId()).forEach(group -> {
-                PermissionAttachment attachment = player.addAttachment(plugin);
-
-                if (group.isPrimaryGroup(player.getUniqueId())) {
-                    // For a player's primary group, automatically add `group.<name>` permission node. This is handy for servers that restrict
-                    // areas by a permission node. This is mostly a convenience feature so that users don't have to manually add this node themselves
-                    attachment.setPermission("group." + group.getName(), true);
-                }
-
-                handler.getEffectivePermissions(group).forEach(permission -> attachment.setPermission(permission.getPermission(), permission.isGranted()));
-                plugin.getAttachmentManager().setAttachment(player.getUniqueId(), attachment, Optional.of(group.getName()));
-            });
-            // Add the player's "self" permissions
-            plugin.getAttachmentManager().getAttachment(player.getUniqueId(), Optional.empty()).ifPresent(self ->
-                    handler.getPermissions(player.getUniqueId()).forEach(permission -> self.setPermission(permission.getPermission(), permission.isGranted())));
+            PermissionAttachment attachment = plugin.getAttachmentManager()
+                    .getAttachment(player.getUniqueId(), Optional.empty()).orElseThrow();
+            handler.getMainGroup(player.getUniqueId()).ifPresent(group ->
+                    attachment.setPermission("group." + group.getName(), true));
+            handler.resolvePermissions(player.getUniqueId()).forEach((node, rule) ->
+                    attachment.setPermission(node, rule.granted()));
 
         });
         player.recalculatePermissions();

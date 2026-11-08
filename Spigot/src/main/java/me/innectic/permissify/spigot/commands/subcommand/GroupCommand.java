@@ -160,7 +160,7 @@ public class GroupCommand {
         Optional<PermissionGroup> group = plugin.getPermissifyAPI().getDatabaseHandler().get().getGroup(args[0]);
         if (group.isEmpty()) return language.getMessage("INVALID_GROUP").replace("<GROUP>", args[0]);
 
-        List<String> groupPermissions = plugin.getPermissifyAPI().getDatabaseHandler().get().getEffectivePermissions(group.get()).stream().map(Permission::getPermission).collect(Collectors.toList());
+        List<String> groupPermissions = plugin.getPermissifyAPI().getDatabaseHandler().get().getEffectivePermissions(group.get()).stream().map(rule -> (rule.isGranted() ? "" : "-") + rule.getPermission()).collect(Collectors.toList());
         return language.getMessage("GROUP_PERMISSIONS").replace("<GROUP>", group.get().getName())
                 .replace("<PERMISSIONS>", String.join(", ", groupPermissions));
     }

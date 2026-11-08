@@ -27,6 +27,8 @@ package me.innectic.permissify.api.database;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import me.innectic.permissify.api.permission.Permission;
+import me.innectic.permissify.api.permission.PermissionDecision;
+import me.innectic.permissify.api.audit.AuditEntry;
 import me.innectic.permissify.api.permission.PermissionGroup;
 import me.innectic.permissify.api.permission.GroupInheritance;
 import me.innectic.permissify.api.permission.RankTrack;
@@ -221,21 +223,34 @@ public abstract class DatabaseHandler {
      */
     public abstract List<PermissionGroup> getGroups(UUID uuid);
 
-    /**
-     * Set the primary group of the player
-     *
-     * @param group the group to set as the primary
-     * @param uuid  the uuid of the player to set the primary of
-     */
-    public abstract Tristate setPrimaryGroup(PermissionGroup group, UUID uuid);
+    public Optional<PermissionGroup> getMainGroup(UUID uuid) {
+        return getGroups(uuid).stream().sorted(Comparator.comparingInt(PermissionGroup::getWeight).reversed()
+                .thenComparing(PermissionGroup::getName, String.CASE_INSENSITIVE_ORDER)).findFirst();
+    }
 
-    /**
-     * Get the primary group of a player.
-     *
-     * @param uuid the uuid of the player to get
-     * @return the primary group of the player
-     */
-    public abstract Optional<PermissionGroup> getPrimaryGroup(UUID uuid);
+    public Map<String, PermissionDecision> resolvePermissions(UUID uuid) {
+        Map<String, PermissionDecision> result = new TreeMap<>();
+        getGroups(uuid).stream().sorted(Comparator.comparing(PermissionGroup::getName, String.CASE_INSENSITIVE_ORDER))
+                .forEach(group -> GroupInheritance.resolve(group, getGroups()).forEach((node, rule) -> {
+                    var candidate = new PermissionDecision(node, rule.granted(),
+                            group.getName(), rule.source(), rule.path(), group.getWeight(),
+                            group.getPlayerExpirations().getOrDefault(uuid, 0L));
+                    var current = result.get(node);
+                    if (current == null || GroupInheritance.wins(candidate, current)) result.put(node, candidate);
+                }));
+        getPermissions(uuid).forEach(rule -> result.put(rule.getPermission().toLowerCase(Locale.ROOT),
+                new PermissionDecision(rule.getPermission().toLowerCase(Locale.ROOT), rule.isGranted(),
+                        null, null, List.of(), 0, rule.getExpiresAt())));
+        return Collections.unmodifiableMap(result);
+    }
+
+    public abstract boolean setGroupWeight(String group, int weight);
+
+    public abstract boolean setGroupPermission(String group, String permission, boolean granted);
+
+    public abstract boolean setPermission(UUID uuid, String permission, boolean granted, long expiresAt);
+
+    public abstract List<AuditEntry> getAuditLog(String query, int page);
 
     /**
      * Update a player's cache.

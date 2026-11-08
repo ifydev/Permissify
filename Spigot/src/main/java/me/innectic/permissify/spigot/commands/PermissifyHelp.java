@@ -17,6 +17,13 @@ final class PermissifyHelp {
     private record HelpEntry(String category, String action, String key) {}
 
     private static final List<HelpEntry> ADDITIONS = List.of(
+            new HelpEntry("group", "weight", "HELP_GROUP_WEIGHT"),
+            new HelpEntry("group", "setpermission", "HELP_GROUP_SET_PERMISSION"),
+            new HelpEntry("group", "unsetpermission", "HELP_GROUP_UNSET_PERMISSION"),
+            new HelpEntry("player", "setpermission", "HELP_PLAYER_SET_PERMISSION"),
+            new HelpEntry("player", "unsetpermission", "HELP_PLAYER_UNSET_PERMISSION"),
+            new HelpEntry("player", "check", "HELP_PLAYER_CHECK"),
+            new HelpEntry("log", "", "HELP_LOG"),
             new HelpEntry("group", "inherit", "HELP_GROUP_INHERIT"),
             new HelpEntry("group", "uninherit", "HELP_GROUP_UNINHERIT"),
             new HelpEntry("player", "promote", "HELP_PLAYER_PROMOTE"),
@@ -32,7 +39,7 @@ final class PermissifyHelp {
         for (HelpEntry entry : ADDITIONS) {
             boolean exists = entries.stream().anyMatch(line -> {
                 var command = COMMAND.matcher(ChatColor.stripColor(ColorUtil.makeReadable(line)));
-                return command.find() && command.group(1).equalsIgnoreCase(entry.category()) && entry.action().equalsIgnoreCase(command.group(2));
+                return command.find() && command.group(1).equalsIgnoreCase(entry.category()) && (entry.category().equals("log") || entry.action().equalsIgnoreCase(command.group(2)));
             });
             if (!exists) entries.add(language.getMessage(entry.key()));
         }

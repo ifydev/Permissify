@@ -40,6 +40,9 @@ import org.bukkit.OfflinePlayer;
 import me.innectic.permissify.spigot.utils.PlayerUtil;
 
 import java.util.List;
+import me.innectic.permissify.api.audit.AuditContext;
+import me.innectic.permissify.spigot.commands.subcommand.PermissionCommand;
+import org.bukkit.entity.Player;
 
 /**
  * @author Innectic
@@ -51,7 +54,10 @@ public class PermissifyCommand implements CommandExecutor {
     public boolean onCommand(CommandSender sender, Command command, String s, String[] args) {
         PermissifyMain plugin = PermissifyMain.getInstance();
         Language language = LanguageUtil.getLanguage(plugin.getPermissifyAPI().getLanguageManager(), sender);
-        try {
+        String type = sender instanceof Player ? "PLAYER" : sender instanceof RemoteConsoleCommandSender ? "RCON"
+                : sender instanceof BlockCommandSender ? "BLOCK" : "CONSOLE";
+        try (AuditContext ignored = AuditContext.open(sender.getName(),
+                sender instanceof Player player ? player.getUniqueId().toString() : "", type, "/permissify " + String.join(" ", args))) {
             execute(sender, args, language);
         } catch (RuntimeException e) {
             plugin.getLogger().log(java.util.logging.Level.SEVERE, "Unable to run /permissify", e);
@@ -116,6 +122,10 @@ public class PermissifyCommand implements CommandExecutor {
         }
 
         if (args.length >= 1) {
+            if (args[0].equalsIgnoreCase("log")) {
+                sendResponse(new PermissionCommand(plugin).handleLog(sender, ArgumentUtil.getRemainingArgs(1, args), language), sender);
+                return;
+            }
             if (args[0].equalsIgnoreCase("help")) {
                 int page = 0;
                 if (args.length >= 2) {
@@ -146,7 +156,11 @@ public class PermissifyCommand implements CommandExecutor {
         }
         if (args[0].equalsIgnoreCase("group")) {
             String response;
-            if (args[1].equalsIgnoreCase("create") || args[1].equalsIgnoreCase("add"))
+            if (args[1].equalsIgnoreCase("weight"))
+                response = new PermissionCommand(plugin).handleWeight(sender, ArgumentUtil.getRemainingArgs(2, args), language);
+            else if (args[1].equalsIgnoreCase("setpermission"))
+                response = new PermissionCommand(plugin).handleSetPermission(sender, ArgumentUtil.getRemainingArgs(2, args), language, true);
+            else if (args[1].equalsIgnoreCase("create") || args[1].equalsIgnoreCase("add"))
                 response = plugin.getGroupCommand().handleAddGroup(sender, ArgumentUtil.getRemainingArgs(2, args), language);
             else if (args[1].equalsIgnoreCase("uninherit"))
                 response = plugin.getGroupCommand().handleUninherit(sender, ArgumentUtil.getRemainingArgs(2, args), language);
@@ -156,7 +170,7 @@ public class PermissifyCommand implements CommandExecutor {
                 response = plugin.getGroupCommand().handleDeleteGroup(sender, ArgumentUtil.getRemainingArgs(2, args), language);
             else if (args[1].equalsIgnoreCase("addpermission"))
                 response = plugin.getGroupCommand().handlePermissionAdd(sender, ArgumentUtil.getRemainingArgs(2, args), language);
-            else if (args[1].equalsIgnoreCase("removepermission"))
+            else if ((args[1].equalsIgnoreCase("removepermission") || args[1].equalsIgnoreCase("unsetpermission")))
                 response = plugin.getGroupCommand().handlePermissionRemove(sender, ArgumentUtil.getRemainingArgs(2, args), language);
             else if (args[1].equalsIgnoreCase("list"))
                 response = plugin.getGroupCommand().handleListGroups(sender, ArgumentUtil.getRemainingArgs(2, args), language);
@@ -171,11 +185,15 @@ public class PermissifyCommand implements CommandExecutor {
             sendResponse(response, sender);
         } else if (args[0].equalsIgnoreCase("player")) {
             String response;
-            if (args[1].equalsIgnoreCase("promote") || args[1].equalsIgnoreCase("demote"))
+            if (args[1].equalsIgnoreCase("check"))
+                response = new PermissionCommand(plugin).handleCheck(sender, ArgumentUtil.getRemainingArgs(2, args), language);
+            else if (args[1].equalsIgnoreCase("setpermission"))
+                response = new PermissionCommand(plugin).handleSetPermission(sender, ArgumentUtil.getRemainingArgs(2, args), language, false);
+            else if (args[1].equalsIgnoreCase("promote") || args[1].equalsIgnoreCase("demote"))
                 response = plugin.getPlayerCommand().handleRankMove(sender, ArgumentUtil.getRemainingArgs(2, args), language, args[1].equalsIgnoreCase("promote"));
             else if (args[1].equalsIgnoreCase("addpermission"))
                 response = plugin.getPlayerCommand().handleAddPermission(sender, ArgumentUtil.getRemainingArgs(2, args), language);
-            else if (args[1].equalsIgnoreCase("removepermission"))
+            else if ((args[1].equalsIgnoreCase("removepermission") || args[1].equalsIgnoreCase("unsetpermission")))
                 response = plugin.getPlayerCommand().handleRemovePermission(sender, ArgumentUtil.getRemainingArgs(2, args), language);
             else if (args[1].equalsIgnoreCase("addgroup"))
                 response = plugin.getPlayerCommand().handleAddPlayerToGroup(sender, ArgumentUtil.getRemainingArgs(2, args), language);
@@ -184,7 +202,6 @@ public class PermissifyCommand implements CommandExecutor {
             else if ((args[1].equalsIgnoreCase("listgroups") || args[1].equalsIgnoreCase("listgroup")))
                 response = plugin.getPlayerCommand().handleListGroups(sender, ArgumentUtil.getRemainingArgs(2, args), language);
             else if (args[1].equalsIgnoreCase("removegroup")) response = plugin.getPlayerCommand().handleRemovePlayerFromGroup(sender, ArgumentUtil.getRemainingArgs(2, args), language);
-            else if (args[1].equalsIgnoreCase("primarygroup")) response = plugin.getPlayerCommand().handleSetOrGetPrimaryGroup(sender, ArgumentUtil.getRemainingArgs(2, args), language);
             else {
                 sendHelp(sender, language);
                 return;

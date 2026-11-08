@@ -34,6 +34,12 @@ public class PermissifyConstants {
 
     public static final int PERMISSIFY_PROFILE_VERSION = 2;
 
+    public static final String PERMISSIFY_GROUP_WEIGHT = "permissify.group.weight";
+    public static final String PERMISSIFY_GROUP_PERMISSION_SET = "permissify.group.permission.set";
+    public static final String PERMISSIFY_PLAYER_PERMISSION_SET = "permissify.player.permission.set";
+    public static final String PERMISSIFY_PLAYER_CHECK = "permissify.player.check";
+    public static final String PERMISSIFY_LOG = "permissify.log";
+
     // Permissions
     public static final String PERMISSIFY_GROUP_UNINHERIT = "permissify.group.uninherit";
     public static final String PERMISSIFY_PLAYER_PROMOTE = "permissify.player.promote";
@@ -58,7 +64,6 @@ public class PermissifyConstants {
     public static final String PERMISSIFY_PLAYER_GROUP_ADD = "permissify.player.group.add";
     public static final String PERMISSIFY_PLAYER_GROUP_REMOVE = "permissify.player.group.remove";
     public static final String PERMISSIFY_PLAYER_GROUP_LIST = "permissify.player.group.list";
-    public static final String PERMISSIFY_PLAYER_SET_MAIN_GROUP = "permissify.player.group.primarygroup";
     public static final String PERMISSIFY_GROUP_DEFAULT = "permissify.group.default";
     public static final String PERMISSIFY_CACHE = "permissify.cache";
     public static final String PERMISSIFY_ADMIN = "permissify.admin";

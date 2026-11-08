@@ -24,10 +24,8 @@
  */
 package me.innectic.permissify.spigot.commands.subcommand;
 
-import me.innectic.permissify.api.PermissifyAPI;
 import me.innectic.permissify.api.PermissifyConstants;
 import me.innectic.permissify.api.language.Language;
-import me.innectic.permissify.api.database.ConnectionError;
 import me.innectic.permissify.api.permission.Permission;
 import me.innectic.permissify.api.permission.PermissionGroup;
 import me.innectic.permissify.api.util.Tristate;
@@ -39,7 +37,6 @@ import me.innectic.permissify.spigot.utils.PermissionUtil;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -119,42 +116,6 @@ public class PlayerCommand {
         if (targetPlayer.isOnline()) PermissionUtil.applyPermissions(targetPlayer.getPlayer());
         return language.getMessage("PLAYER_REMOVED_FROM_GROUP")
                 .replace("<PLAYER>", targetPlayer.getName()).replace("<GROUP>", group.get().getName());
-    }
-
-    public String handleSetOrGetPrimaryGroup(CommandSender sender, String[] args, Language language) {
-        PermissifyMain plugin = PermissifyMain.getInstance();
-        if (plugin.getPermissifyAPI().getDatabaseHandler().isEmpty())
-            return language.getMessage("UNABLE_TO_SET").replace("<REASON>", language.getMessage("NO_DATABASE_HANDLER_PERIOD"));
-
-        if (!PermissionUtil.hasPermissionOrSuperAdmin(sender, PermissifyConstants.PERMISSIFY_PLAYER_SET_MAIN_GROUP))
-            return language.getMessage("INSUFFICIENT_PERMISSIONS");
-
-        if (args.length < 1) return language.getMessage("NOT_ENOUGH_ARGUMENTS_SET_MAIN_GROUP");
-        OfflinePlayer player = PlayerUtil.findPlayer(args[0]);
-        if (player == null) return language.getMessage("INVALID_PLAYER");
-        if (args.length == 1) {
-            Optional<PermissionGroup> primary = plugin.getPermissifyAPI().getDatabaseHandler().get().getPrimaryGroup(player.getUniqueId());
-            return language.getMessage("PRIMARY_GROUP_TEMPLATE").replace("<GROUP>", primary.map(PermissionGroup::getName)
-                    .orElse(language.getMessage("EMPTY_DEFAULT_GROUP_NAME")));
-        }
-        Optional<PermissionGroup> group = plugin.getPermissifyAPI().getDatabaseHandler().get().getGroup(args[1]);
-
-        if (group.isEmpty()) return language.getMessage("INVALID_GROUP").replace("<GROUP>", args[1]);
-        if (!group.get().hasPlayer(player.getUniqueId()))
-            return language.getMessage("PLAYER_NOT_IN_GROUP").replace("<PLAYER>", player.getName()).replace("<GROUP>", group.get().getName());
-
-        Tristate groupSet = plugin.getPermissifyAPI().getDatabaseHandler().get().setPrimaryGroup(group.get(), player.getUniqueId());
-        plugin.getPermissifyAPI().getDatabaseHandler().get().updateCache(player.getUniqueId());
-
-        if (groupSet == Tristate.TRUE) {
-            if (player.isOnline()) PermissionUtil.applyPermissions(player.getPlayer());
-            return language.getMessage("MAIN_GROUP_SET").replace("<PLAYER>", player.getName()).replace("<GROUP>", group.get().getName());
-        }
-        else if (groupSet == Tristate.FALSE) {
-            PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.empty()));
-            return language.getMessage("UNABLE_TO_SET").replace("<REASON>", language.getMessage("DATABASE_UNAVAILABLE"));
-        }
-        return language.getMessage("ALREADY_MAIN_GROUP").replace("<GROUP>", group.get().getName());
     }
 
     public String handleAddPermission(CommandSender sender, String[] args, Language language) {
@@ -256,11 +217,8 @@ public class PlayerCommand {
         OfflinePlayer targetPlayer = PlayerUtil.findPlayer(args[0]);
         if (targetPlayer == null) return language.getMessage("INVALID_PLAYER");
 
-        List<PermissionGroup> groups = plugin.getPermissifyAPI().getDatabaseHandler().get().getGroups(targetPlayer.getUniqueId());
-        List<String> permissions = new ArrayList<>();
-        groups.forEach(group -> permissions.addAll(plugin.getPermissifyAPI().getDatabaseHandler().get().getEffectivePermissions(group).stream().map(Permission::getPermission).collect(Collectors.toList())));
-        permissions.addAll(plugin.getPermissifyAPI().getDatabaseHandler().get().getPermissions(targetPlayer.getUniqueId())
-                .stream().map(Permission::getPermission).collect(Collectors.toList()));
+        List<String> permissions = plugin.getPermissifyAPI().getDatabaseHandler().get().resolvePermissions(targetPlayer.getUniqueId())
+                .values().stream().map(rule -> (rule.granted() ? "" : "-") + rule.permission()).toList();
         return language.getMessage("GROUP_PERMISSIONS").replace("<GROUP>", targetPlayer.getName())
                 .replace("<PERMISSIONS>", String.join(", ", permissions.stream().distinct().toList()));
     }

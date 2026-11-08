@@ -93,9 +93,10 @@ public class ProfileSerializer {
                 GroupData saved = entry.getValue();
                 if (saved == null || !entry.getKey().equals(saved.name())) return Optional.empty();
                 PermissionGroup group = new PermissionGroup(saved.name(), saved.displayName(), saved.chatColor(), saved.prefix(), saved.suffix());
+                group.setWeight(saved.weight());
                 if (saved.parents() != null) group.getParents().addAll(saved.parents());
                 saved.permissions().forEach(permission -> group.getPermissions().add(permission.toPermission()));
-                saved.players().forEach((uuid, primary) -> group.addPlayer(java.util.Objects.requireNonNull(uuid), java.util.Objects.requireNonNull(primary),
+                saved.players().keySet().forEach(uuid -> group.addPlayer(java.util.Objects.requireNonNull(uuid),
                         saved.playerExpirations() == null ? 0 : saved.playerExpirations().getOrDefault(uuid, 0L)));
                 groups.put(entry.getKey(), group);
             }
@@ -129,7 +130,7 @@ public class ProfileSerializer {
     }
 
     private record GroupData(String name, String displayName, String chatColor, String prefix, String suffix,
-                             List<PermissionData> permissions, Map<UUID, Boolean> players, List<String> parents, Map<UUID, Long> playerExpirations) {}
+                             List<PermissionData> permissions, Map<UUID, Boolean> players, List<String> parents, Map<UUID, Long> playerExpirations, int weight) {}
 
     private record ProfileData(Map<String, GroupData> groups, Map<UUID, List<PermissionData>> playerPermissions,
                                GroupData defaultGroup, List<UUID> superAdmins, int version, Map<String, RankTrack> tracks) {}
