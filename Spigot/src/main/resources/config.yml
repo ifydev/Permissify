@@ -1,3 +1,4 @@
+language: en_US
 storage: sqlite
 allow-command-block: false
 connection:

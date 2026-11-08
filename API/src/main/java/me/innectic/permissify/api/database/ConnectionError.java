@@ -24,16 +24,10 @@
  */
 package me.innectic.permissify.api.database;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-
 /**
  * @author Innectic
  * @since 6/14/2017
  */
-@AllArgsConstructor
 public enum ConnectionError {
-    REJECTED("Connection to database rejected"), DATABASE_EXCEPTION("Exception in a database handler");
-
-    @Getter private final String display;
+    REJECTED, DATABASE_EXCEPTION
 }

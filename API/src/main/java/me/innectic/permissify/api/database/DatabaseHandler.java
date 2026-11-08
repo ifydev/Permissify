@@ -124,6 +124,10 @@ public abstract class DatabaseHandler {
      */
     public abstract List<Permission> getPermissions(UUID uuid);
 
+    public Map<UUID, List<Permission>> getAllPermissions() {
+        return new HashMap<>(cachedPermissions);
+    }
+
     /**
      * Create a new permission group.
      *

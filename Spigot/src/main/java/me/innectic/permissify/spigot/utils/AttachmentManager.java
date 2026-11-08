@@ -17,9 +17,7 @@ public class AttachmentManager {
     }
 
     public void setAttachment(UUID uuid, PermissionAttachment attachment, Optional<String> groupName) {
-        Map<String, PermissionAttachment> attachments = new HashMap<>();
-        attachments.put(groupName.orElse(""), attachment);
-        AttachmentManager.attachments.put(uuid, attachments);
+        attachments.computeIfAbsent(uuid, key -> new HashMap<>()).put(groupName.orElse(""), attachment);
     }
 
     public void removeAttachment(UUID uuid) {
@@ -27,11 +25,11 @@ public class AttachmentManager {
     }
 
     public Collection<PermissionAttachment> getAllAttachmentsForPlayer(UUID uuid) {
-        return attachments.get(uuid).values();
+        return List.copyOf(attachments.getOrDefault(uuid, Map.of()).values());
     }
 
     public void resetAllPermissibles(UUID uuid) {
-        attachments.get(uuid).values().forEach(attachment -> attachment.getPermissions().keySet().forEach(attachment::unsetPermission));
-        attachments.remove(uuid);
+        Map<String, PermissionAttachment> current = attachments.remove(uuid);
+        if (current != null) current.values().forEach(PermissionAttachment::remove);
     }
 }

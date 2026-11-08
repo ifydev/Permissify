@@ -8,5 +8,4 @@ main: me.innectic.permissify.spigot.PermissifyMain
 commands:
     permissify:
         description: Do things with permissions
-    perm:
-        description: Alias of permissify
+        aliases: [perm]

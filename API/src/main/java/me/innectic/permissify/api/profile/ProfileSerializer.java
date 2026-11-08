@@ -26,6 +26,14 @@ package me.innectic.permissify.api.profile;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import me.innectic.permissify.api.PermissifyConstants;
+import me.innectic.permissify.api.permission.Permission;
+import me.innectic.permissify.api.permission.PermissionGroup;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.nio.charset.StandardCharsets;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -43,7 +51,6 @@ public class ProfileSerializer {
 
     public ProfileSerializer() {
         GsonBuilder gsonBuilder = new GsonBuilder();
-//        gsonBuilder.registerTypeAdapter(AbstractLadder.class, new LadderAdapter());
         gson = gsonBuilder.create();
     }
 
@@ -56,17 +63,16 @@ public class ProfileSerializer {
      * @return              if the profile was successfully stored
      */
     public boolean serialize(PermissifyProfile profile, String baseDirectory, String profileName) {
-        String json = gson.toJson(profile);
-        Path file = Paths.get(baseDirectory + "/profiles/" + profileName + ".permissify");
         try {
-            Files.write(file, json.getBytes());
-        } catch (IOException e) {
+            Path file = profilePath(baseDirectory, profileName);
+            Files.createDirectories(file.getParent());
+            Files.writeString(file, gson.toJson(profile), StandardCharsets.UTF_8);
+            return true;
+        } catch (IOException | RuntimeException e) {
             e.printStackTrace();
             return false;
         }
-        return true;
     }
-
     /**
      * Deserialize a permissify profile file into a real permissify profile
      *
@@ -75,13 +81,48 @@ public class ProfileSerializer {
      * @return              the profile, fulfilled if done, empty otherwise.
      */
     public Optional<PermissifyProfile> deserialize(String profile, String baseDirectory) {
-        Optional<PermissifyProfile> deserialized = Optional.empty();
-        try {
-            Reader reader = new FileReader(baseDirectory + "/profiles/" + profile + ".permissify");
-            deserialized = Optional.ofNullable(gson.fromJson(reader, PermissifyProfile.class));
-        } catch (FileNotFoundException e) {
+        try (Reader reader = Files.newBufferedReader(profilePath(baseDirectory, profile), StandardCharsets.UTF_8)) {
+            ProfileData data = gson.fromJson(reader, ProfileData.class);
+            if (data == null || data.version() != PermissifyConstants.PERMISSIFY_PROFILE_VERSION
+                    || data.groups() == null || data.playerPermissions() == null || data.superAdmins() == null)
+                return Optional.empty();
+            Map<String, PermissionGroup> groups = new HashMap<>();
+            for (var entry : data.groups().entrySet()) {
+                GroupData saved = entry.getValue();
+                if (saved == null || !entry.getKey().equals(saved.name())) return Optional.empty();
+                PermissionGroup group = new PermissionGroup(saved.name(), saved.displayName(), saved.chatColor(), saved.prefix(), saved.suffix());
+                saved.permissions().forEach(permission -> group.getPermissions().add(permission.toPermission()));
+                saved.players().forEach((uuid, primary) -> group.addPlayer(java.util.Objects.requireNonNull(uuid), java.util.Objects.requireNonNull(primary)));
+                groups.put(entry.getKey(), group);
+            }
+            PermissionGroup defaultGroup = null;
+            if (data.defaultGroup() != null) {
+                defaultGroup = groups.get(data.defaultGroup().name());
+                if (defaultGroup == null) return Optional.empty();
+            }
+            Map<UUID, List<Permission>> permissions = new HashMap<>();
+            data.playerPermissions().forEach((uuid, entries) -> permissions.put(java.util.Objects.requireNonNull(uuid),
+                    entries.stream().map(PermissionData::toPermission).collect(java.util.stream.Collectors.toCollection(java.util.ArrayList::new))));
+            return Optional.of(new PermissifyProfile(groups, permissions, defaultGroup, List.copyOf(data.superAdmins()), data.version()));
+        } catch (IOException | RuntimeException e) {
             e.printStackTrace();
+            return Optional.empty();
         }
-        return deserialized;
+    }
+
+    private record PermissionData(String permission, boolean granted) {
+        Permission toPermission() {
+            return new Permission(java.util.Objects.requireNonNull(permission), granted);
+        }
+    }
+
+    private record GroupData(String name, String displayName, String chatColor, String prefix, String suffix,
+                             List<PermissionData> permissions, Map<UUID, Boolean> players) {}
+
+    private record ProfileData(Map<String, GroupData> groups, Map<UUID, List<PermissionData>> playerPermissions,
+                               GroupData defaultGroup, List<UUID> superAdmins, int version) {}
+    private Path profilePath(String baseDirectory, String name) {
+        if (!name.matches("[a-zA-Z0-9_-]+")) throw new IllegalArgumentException("Invalid profile name");
+        return Paths.get(baseDirectory).resolve("profiles").resolve(name + ".permissify");
     }
 }
