@@ -45,6 +45,7 @@ public class PermissionGroup {
     @Getter private final List<Permission> permissions = new ArrayList<>();
     @Getter private final Set<String> parents = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
     @Getter private final Map<UUID, Boolean> players = new HashMap<>();
+    @Getter private final Map<UUID, Long> playerExpirations = new HashMap<>();
 
     /**
      * Remove a permission from the group
@@ -71,19 +72,27 @@ public class PermissionGroup {
     }
 
     public void addPlayer(UUID uuid, boolean isPrimary) {
+        addPlayer(uuid, isPrimary, 0);
+    }
+
+    public void addPlayer(UUID uuid, boolean isPrimary, long expiresAt) {
+        if (expiresAt < 0) throw new IllegalArgumentException("Invalid membership expiry");
         players.put(uuid, isPrimary);
+        playerExpirations.put(uuid, expiresAt);
     }
 
     public void removePlayer(UUID uuid) {
         players.remove(uuid);
+        playerExpirations.remove(uuid);
     }
 
     public boolean hasPlayer(UUID uuid) {
-        return players.containsKey(uuid);
+        long expiry = playerExpirations.getOrDefault(uuid, 0L);
+        return players.containsKey(uuid) && (expiry == 0 || expiry > System.currentTimeMillis());
     }
 
     public boolean isPrimaryGroup(UUID uuid) {
-        return players.containsKey(uuid) && players.get(uuid).equals(true);
+        return hasPlayer(uuid) && players.get(uuid).equals(true);
     }
 
     public void setPrimaryGroup(UUID uuid, boolean isPrimary) {

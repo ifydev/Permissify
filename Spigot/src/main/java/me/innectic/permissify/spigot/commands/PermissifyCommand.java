@@ -130,6 +130,9 @@ public class PermissifyCommand implements CommandExecutor {
                 if (page < 0) page = 0;
                 sendHelp(sender, page, language);
                 return;
+            } else if (args[0].equalsIgnoreCase("track")) {
+                sendResponse(plugin.getTrackCommand().handleTrack(sender, ArgumentUtil.getRemainingArgs(1, args), language), sender);
+                return;
             } else if (args[0].equalsIgnoreCase("cache")) {
                 String response = plugin.getCacheCommand().handleCache(sender, ArgumentUtil.getRemainingArgs(1, args), language);
                 sendResponse(response, sender);
@@ -145,6 +148,8 @@ public class PermissifyCommand implements CommandExecutor {
             String response;
             if (args[1].equalsIgnoreCase("create") || args[1].equalsIgnoreCase("add"))
                 response = plugin.getGroupCommand().handleAddGroup(sender, ArgumentUtil.getRemainingArgs(2, args), language);
+            else if (args[1].equalsIgnoreCase("uninherit"))
+                response = plugin.getGroupCommand().handleUninherit(sender, ArgumentUtil.getRemainingArgs(2, args), language);
             else if (args[1].equalsIgnoreCase("inherit"))
                 response = plugin.getGroupCommand().handleInherit(sender, ArgumentUtil.getRemainingArgs(2, args), language);
             else if (args[1].equalsIgnoreCase("remove") || args[1].equalsIgnoreCase("delete"))
@@ -166,7 +171,9 @@ public class PermissifyCommand implements CommandExecutor {
             sendResponse(response, sender);
         } else if (args[0].equalsIgnoreCase("player")) {
             String response;
-            if (args[1].equalsIgnoreCase("addpermission"))
+            if (args[1].equalsIgnoreCase("promote") || args[1].equalsIgnoreCase("demote"))
+                response = plugin.getPlayerCommand().handleRankMove(sender, ArgumentUtil.getRemainingArgs(2, args), language, args[1].equalsIgnoreCase("promote"));
+            else if (args[1].equalsIgnoreCase("addpermission"))
                 response = plugin.getPlayerCommand().handleAddPermission(sender, ArgumentUtil.getRemainingArgs(2, args), language);
             else if (args[1].equalsIgnoreCase("removepermission"))
                 response = plugin.getPlayerCommand().handleRemovePermission(sender, ArgumentUtil.getRemainingArgs(2, args), language);

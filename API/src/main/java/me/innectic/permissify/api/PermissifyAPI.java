@@ -75,6 +75,7 @@ public class PermissifyAPI {
         if (databaseHandler.isEmpty()) throw new Exception("No data handler present.");
         databaseHandler.ifPresent(handler -> {
             handler.initialize();
+            handler.expireEntries(System.currentTimeMillis());
             handler.reload(new ArrayList<>());
         });
         logger.info("Registering modules...");

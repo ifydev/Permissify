@@ -55,6 +55,7 @@ public class PermissifyTabCompleter implements TabCompleter {
             if (CommandAccess.PLAYER_COMMANDS.values().stream().anyMatch(permission -> allowed(sender, permission))) commands.add("player");
             if (allowed(sender, PermissifyConstants.PERMISSIFY_CACHE)) commands.add("cache");
             if (allowed(sender, PermissifyConstants.PERMISSIFY_PROFILE)) commands.add("profile");
+            if (CommandAccess.TRACK_COMMANDS.values().stream().anyMatch(permission -> allowed(sender, permission))) commands.add("track");
             if (PermissionUtil.isConsole(sender)) commands.add("superadmin");
             return commands;
         }
@@ -69,6 +70,10 @@ public class PermissifyTabCompleter implements TabCompleter {
             if (action.equals("list")) return List.of();
             if (args.length == 3) return new ArrayList<>(handler.getGroups().keySet());
             if (handler.getGroup(args[2]).isEmpty()) return List.of();
+            if (action.equals("uninherit") && args.length == 4) {
+                String parent = handler.getGroup(args[2]).orElseThrow().getName();
+                return handler.getGroups().values().stream().filter(child -> child.getParents().contains(parent)).map(PermissionGroup::getName).toList();
+            }
             if (action.equals("inherit") && args.length == 4) {
                 PermissionGroup parent = handler.getGroup(args[2]).orElseThrow();
                 return handler.getGroups().values().stream()
@@ -84,6 +89,8 @@ public class PermissifyTabCompleter implements TabCompleter {
             if (action.equals("listgroup")) action = "listgroups";
             if (!CommandAccess.PLAYER_COMMANDS.containsKey(action) || !allowed(sender, CommandAccess.PLAYER_COMMANDS.get(action))) return List.of();
             if (args.length == 3) return playerNames(sender);
+            if ((action.equals("promote") || action.equals("demote")) && args.length == 4) return new ArrayList<>(handler.getTracks().keySet());
+            if (action.equals("addgroup") && args.length == 5) return List.of("60", "300", "3600");
             if (action.equals("addgroup") && args.length == 4) return new ArrayList<>(handler.getGroups().keySet());
             if ((action.equals("removegroup") || action.equals("primarygroup")) && args.length == 4) {
                 OfflinePlayer player = PlayerUtil.findPlayer(args[2]);
@@ -98,6 +105,15 @@ public class PermissifyTabCompleter implements TabCompleter {
                 return player == null ? List.of() : handler.getPermissions(player.getUniqueId())
                         .stream().map(Permission::getPermission).toList();
             }
+        } else if (category.equals("track")) {
+            if (args.length == 2) return actions(sender, CommandAccess.TRACK_COMMANDS);
+            if (!CommandAccess.TRACK_COMMANDS.containsKey(action) || !allowed(sender, CommandAccess.TRACK_COMMANDS.get(action))) return List.of();
+            if (action.equals("create") || action.equals("list")) return List.of();
+            if (args.length == 3) return new ArrayList<>(handler.getTracks().keySet());
+            var track = handler.getTrack(args[2]);
+            if (track.isEmpty() || args.length != 4) return List.of();
+            if (action.equals("append")) return handler.getGroups().keySet().stream().filter(group -> !track.get().groups().contains(group)).toList();
+            if (action.equals("remove")) return track.get().groups();
         } else if (category.equals("cache") && args.length == 2 && allowed(sender, PermissifyConstants.PERMISSIFY_CACHE)) {
             return List.of("purge");
         } else if (category.equals("profile") && allowed(sender, PermissifyConstants.PERMISSIFY_PROFILE)) {

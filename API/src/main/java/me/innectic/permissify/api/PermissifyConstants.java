@@ -35,6 +35,15 @@ public class PermissifyConstants {
     public static final int PERMISSIFY_PROFILE_VERSION = 2;
 
     // Permissions
+    public static final String PERMISSIFY_GROUP_UNINHERIT = "permissify.group.uninherit";
+    public static final String PERMISSIFY_PLAYER_PROMOTE = "permissify.player.promote";
+    public static final String PERMISSIFY_PLAYER_DEMOTE = "permissify.player.demote";
+    public static final String PERMISSIFY_TRACK_CREATE = "permissify.track.create";
+    public static final String PERMISSIFY_TRACK_DELETE = "permissify.track.delete";
+    public static final String PERMISSIFY_TRACK_APPEND = "permissify.track.append";
+    public static final String PERMISSIFY_TRACK_REMOVE = "permissify.track.remove";
+    public static final String PERMISSIFY_TRACK_INFO = "permissify.track.info";
+    public static final String PERMISSIFY_TRACK_LIST = "permissify.track.list";
     public static final String PERMISSIFY_BASIC = "permissify.basic";
     public static final String PERMISSIFY_GROUP_INHERIT = "permissify.group.inherit";
     public static final String PERMISSIFY_GROUP_CREATE = "permissify.group.create";

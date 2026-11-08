@@ -36,6 +36,15 @@ import lombok.Setter;
 public class Permission {
     @Getter private String permission;
     @Getter @Setter private boolean granted;
+    @Getter private long expiresAt;
+
+    public Permission(String permission, boolean granted) {
+        this(permission, granted, 0);
+    }
+
+    public boolean isExpired(long now) {
+        return expiresAt > 0 && expiresAt <= now;
+    }
 
     @Override
     public String toString() {

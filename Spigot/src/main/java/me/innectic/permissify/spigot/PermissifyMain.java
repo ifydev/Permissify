@@ -60,6 +60,7 @@ public class PermissifyMain extends JavaPlugin {
     @Getter private PlayerCommand playerCommand;
     @Getter private CacheCommand cacheCommand;
     @Getter private ProfileCommand profileCommand;
+    @Getter private TrackCommand trackCommand;
 
     @Getter private AttachmentManager attachmentManager;
 
@@ -92,6 +93,9 @@ public class PermissifyMain extends JavaPlugin {
         registerCommands();
         // Register listeners
         registerListeners();
+        Bukkit.getScheduler().runTaskTimer(this, () -> permissifyAPI.getDatabaseHandler().ifPresent(database ->
+                database.expireEntries(System.currentTimeMillis()).stream().map(Bukkit::getPlayer).filter(java.util.Objects::nonNull)
+                        .forEach(me.innectic.permissify.spigot.utils.PermissionUtil::applyPermissions)), 20L, 20L);
         long timeTaken = System.currentTimeMillis() - start;
 
         getLogger().info("Permissify initialized in " + ((double) timeTaken / 1000) + " seconds (" + timeTaken + " ms)!");
@@ -99,7 +103,6 @@ public class PermissifyMain extends JavaPlugin {
 
     @Override
     public void onDisable() {
-        if (playerCommand != null) playerCommand.cancelExpirations();
         if (permissifyAPI != null && permissifyAPI.getModuleProvider() != null) permissifyAPI.getModuleProvider().end(this);
 
         configVerifier = null;
@@ -159,6 +162,7 @@ public class PermissifyMain extends JavaPlugin {
         playerCommand = new PlayerCommand();
         cacheCommand = new CacheCommand();
         profileCommand = new ProfileCommand();
+        trackCommand = new TrackCommand();
 
         getCommand("permissify").setExecutor(new PermissifyCommand());
         getCommand("permissify").setTabCompleter(new PermissifyTabCompleter(this));

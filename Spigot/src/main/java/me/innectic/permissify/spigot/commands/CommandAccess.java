@@ -12,6 +12,7 @@ final class CommandAccess {
     static final Map<String, String> GROUP_COMMANDS = Map.of(
             "create", PermissifyConstants.PERMISSIFY_GROUP_CREATE,
             "inherit", PermissifyConstants.PERMISSIFY_GROUP_INHERIT,
+            "uninherit", PermissifyConstants.PERMISSIFY_GROUP_UNINHERIT,
             "remove", PermissifyConstants.PERMISSIFY_GROUP_REMOVE,
             "list", PermissifyConstants.PERMISSIFY_GROUP_LIST,
             "addpermission", PermissifyConstants.PERMISSIFY_GROUP_PERMISSION_ADD,
@@ -19,6 +20,8 @@ final class CommandAccess {
             "listpermissions", PermissifyConstants.PERMISSIFY_GROUP_PERMISSION_LIST,
             "default", PermissifyConstants.PERMISSIFY_GROUP_DEFAULT);
     static final Map<String, String> PLAYER_COMMANDS = Map.of(
+            "promote", PermissifyConstants.PERMISSIFY_PLAYER_PROMOTE,
+            "demote", PermissifyConstants.PERMISSIFY_PLAYER_DEMOTE,
             "addgroup", PermissifyConstants.PERMISSIFY_PLAYER_GROUP_ADD,
             "removegroup", PermissifyConstants.PERMISSIFY_PLAYER_GROUP_REMOVE,
             "listgroups", PermissifyConstants.PERMISSIFY_PLAYER_GROUP_LIST,
@@ -26,6 +29,14 @@ final class CommandAccess {
             "addpermission", PermissifyConstants.PERMISSIFY_PLAYER_PERMISSION_ADD,
             "removepermission", PermissifyConstants.PERMISSIFY_PLAYER_PERMISSION_REMOVE,
             "listpermissions", PermissifyConstants.PERMISSIFY_PLAYER_PERMISSION_LIST);
+    static final Map<String, String> TRACK_COMMANDS = Map.of(
+            "create", PermissifyConstants.PERMISSIFY_TRACK_CREATE,
+            "delete", PermissifyConstants.PERMISSIFY_TRACK_DELETE,
+            "append", PermissifyConstants.PERMISSIFY_TRACK_APPEND,
+            "remove", PermissifyConstants.PERMISSIFY_TRACK_REMOVE,
+            "info", PermissifyConstants.PERMISSIFY_TRACK_INFO,
+            "list", PermissifyConstants.PERMISSIFY_TRACK_LIST);
+
     static boolean canUse(CommandSender sender, String category, String action) {
         if (!PermissionUtil.hasPermissionOrSuperAdmin(sender, PermissifyConstants.PERMISSIFY_BASIC)) return false;
         action = action.toLowerCase(Locale.ROOT);
@@ -40,6 +51,7 @@ final class CommandAccess {
                 case "delete" -> "remove";
                 default -> action;
             });
+            case "track" -> TRACK_COMMANDS.get(action);
             case "player" -> PLAYER_COMMANDS.get(action.equals("listgroup") ? "listgroups" : action);
             default -> null;
         };

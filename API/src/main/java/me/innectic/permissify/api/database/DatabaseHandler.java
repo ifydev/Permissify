@@ -29,6 +29,8 @@ import lombok.RequiredArgsConstructor;
 import me.innectic.permissify.api.permission.Permission;
 import me.innectic.permissify.api.permission.PermissionGroup;
 import me.innectic.permissify.api.permission.GroupInheritance;
+import me.innectic.permissify.api.permission.RankTrack;
+import me.innectic.permissify.api.permission.RankChange;
 import me.innectic.permissify.api.profile.PermissifyProfile;
 import me.innectic.permissify.api.util.Tristate;
 
@@ -48,6 +50,7 @@ public abstract class DatabaseHandler {
     @Getter protected Optional<PermissionGroup> defaultGroup = Optional.empty();
     @Getter protected final ConnectionInformation connectionInformation;
     @Getter protected List<UUID> superAdmins = new ArrayList<>();
+    @Getter protected Map<String, RankTrack> tracks = new LinkedHashMap<>();
 
     /**
      * Initialize the database handler
@@ -160,6 +163,26 @@ public abstract class DatabaseHandler {
      * The child inherits the parent's permissions.
      */
     public abstract Tristate inheritGroup(PermissionGroup parent, PermissionGroup child);
+
+    public abstract Tristate uninheritGroup(PermissionGroup parent, PermissionGroup child);
+
+    public abstract Tristate addTemporaryPermission(UUID uuid, String permission, long expiresAt);
+
+    public abstract Tristate addPlayerToGroup(UUID uuid, PermissionGroup group, long expiresAt);
+
+    public abstract Set<UUID> expireEntries(long now);
+
+    public Optional<RankTrack> getTrack(String name) {
+        return tracks.values().stream().filter(track -> track.name().equalsIgnoreCase(name)).findFirst();
+    }
+
+    public abstract Tristate createTrack(String name);
+
+    public abstract Tristate deleteTrack(String name);
+
+    public abstract boolean setTrackGroups(String name, List<String> groups);
+
+    public abstract RankChange moveOnTrack(UUID uuid, String track, boolean promote);
 
     public List<Permission> getEffectivePermissions(PermissionGroup group) {
         return GroupInheritance.getPermissions(group, getGroups());

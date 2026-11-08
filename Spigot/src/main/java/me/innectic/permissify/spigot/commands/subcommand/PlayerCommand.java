@@ -33,11 +33,9 @@ import me.innectic.permissify.api.permission.PermissionGroup;
 import me.innectic.permissify.api.util.Tristate;
 import me.innectic.permissify.spigot.PermissifyMain;
 import me.innectic.permissify.spigot.utils.PlayerUtil;
-import org.bukkit.scheduler.BukkitTask;
-import java.util.HashMap;
-import java.util.UUID;
+import me.innectic.permissify.spigot.utils.DurationUtil;
+import me.innectic.permissify.api.permission.RankChange;
 import me.innectic.permissify.spigot.utils.PermissionUtil;
-import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 
@@ -53,8 +51,6 @@ import java.util.stream.Collectors;
  */
 public class PlayerCommand {
 
-    private final Map<UUID, Map<String, BukkitTask>> expirations = new HashMap<>();
-
     public String handleAddPlayerToGroup(CommandSender sender, String[] args, Language language) {
         PermissifyMain plugin = PermissifyMain.getInstance();
 
@@ -64,7 +60,7 @@ public class PlayerCommand {
         if (!PermissionUtil.hasPermissionOrSuperAdmin(sender, PermissifyConstants.PERMISSIFY_PLAYER_GROUP_ADD))
             return language.getMessage("INSUFFICIENT_PERMISSIONS");
 
-        if (args.length < 2) return language.getMessage("NOT_ENOUGH_ARGUMENTS_PLAYER_ADD_GROUP");
+        if (args.length < 2 || args.length > 3) return language.getMessage("NOT_ENOUGH_ARGUMENTS_PLAYER_ADD_GROUP");
 
         OfflinePlayer targetPlayer = PlayerUtil.findPlayer(args[0]);
         if (targetPlayer == null) return language.getMessage("INVALID_PLAYER");
@@ -72,7 +68,15 @@ public class PlayerCommand {
         Optional<PermissionGroup> group = plugin.getPermissifyAPI().getDatabaseHandler().get().getGroup(args[1]);
         if (group.isEmpty()) return language.getMessage("INVALID_GROUP").replace("<GROUP>", args[1]);
 
-        Tristate added = plugin.getPermissifyAPI().getDatabaseHandler().get().addPlayerToGroup(targetPlayer.getUniqueId(), group.get());
+        long expiry = 0;
+        if (args.length == 3) {
+            try {
+                expiry = DurationUtil.expiresAt(args[2]);
+            } catch (IllegalArgumentException | ArithmeticException e) {
+                return language.getMessage("INVALID_ARGUMENT").replace("<ARGUMENT>", args[2]);
+            }
+        }
+        Tristate added = plugin.getPermissifyAPI().getDatabaseHandler().get().addPlayerToGroup(targetPlayer.getUniqueId(), group.get(), expiry);
         if (added == Tristate.NONE)
             return language.getMessage("UNABLE_TO_ADD").replace("<REASON>", language.getMessage("PLAYER_ALREADY_IN_GROUP"));
         else if (added == Tristate.FALSE)
@@ -82,6 +86,8 @@ public class PlayerCommand {
 
         if (targetPlayer.isOnline()) PermissionUtil.applyPermissions(targetPlayer.getPlayer());
 
+        if (expiry > 0) return language.getMessage("PLAYER_ADDED_TO_GROUP_TIMED")
+                .replace("<PLAYER>", targetPlayer.getName()).replace("<GROUP>", group.get().getName()).replace("<SECONDS>", args[2]);
         return language.getMessage("PLAYER_ADDED_TO_GROUP")
                 .replace("<PLAYER>", targetPlayer.getName()).replace("<GROUP>", group.get().getName());
     }
@@ -134,7 +140,7 @@ public class PlayerCommand {
         Optional<PermissionGroup> group = plugin.getPermissifyAPI().getDatabaseHandler().get().getGroup(args[1]);
 
         if (group.isEmpty()) return language.getMessage("INVALID_GROUP").replace("<GROUP>", args[1]);
-        if (!group.get().getPlayers().containsKey(player.getUniqueId()))
+        if (!group.get().hasPlayer(player.getUniqueId()))
             return language.getMessage("PLAYER_NOT_IN_GROUP").replace("<PLAYER>", player.getName()).replace("<GROUP>", group.get().getName());
 
         Tristate groupSet = plugin.getPermissifyAPI().getDatabaseHandler().get().setPrimaryGroup(group.get(), player.getUniqueId());
@@ -159,7 +165,7 @@ public class PlayerCommand {
         if (!PermissionUtil.hasPermissionOrSuperAdmin(sender, PermissifyConstants.PERMISSIFY_PLAYER_PERMISSION_ADD))
             return language.getMessage("INSUFFICIENT_PERMISSIONS");
 
-        if (args.length < 2) return language.getMessage("NOT_ENOUGH_ARGUMENTS_PLAYER_ADD_PERMISSION");
+        if (args.length < 2 || args.length > 3) return language.getMessage("NOT_ENOUGH_ARGUMENTS_PLAYER_ADD_PERMISSION");
 
         OfflinePlayer targetPlayer = PlayerUtil.findPlayer(args[0]);
         if (targetPlayer == null) return language.getMessage("INVALID_PLAYER");
@@ -168,35 +174,24 @@ public class PlayerCommand {
             // Player already has this permission.
             return language.getMessage("PLAYER_ALREADY_HAS_PERMISSION").replace("<PLAYER>", targetPlayer.getName()).replace("<PERMISSION>", args[1]);
         }
-        long ticks = 0;
-        if (args.length >= 3) {
+        long expiry = 0;
+        if (args.length == 3) {
             try {
-                long seconds = Long.parseLong(args[2]);
-                if (seconds <= 0) throw new IllegalArgumentException();
-                ticks = Math.multiplyExact(seconds, 20L);
+                expiry = DurationUtil.expiresAt(args[2]);
             } catch (IllegalArgumentException | ArithmeticException e) {
                 return language.getMessage("INVALID_ARGUMENT").replace("<ARGUMENT>", args[2]);
             }
         }
         var handler = plugin.getPermissifyAPI().getDatabaseHandler().get();
-        handler.addPermission(targetPlayer.getUniqueId(), args[1]);
+        if (expiry > 0) {
+            if (handler.addTemporaryPermission(targetPlayer.getUniqueId(), args[1], expiry) != Tristate.TRUE)
+                return language.getMessage("UNABLE_TO_ADD").replace("<REASON>", language.getMessage("DATABASE_UNAVAILABLE"));
+        } else handler.addPermission(targetPlayer.getUniqueId(), args[1]);
         if (!handler.hasPermission(targetPlayer.getUniqueId(), args[1]))
             return language.getMessage("UNABLE_TO_ADD").replace("<REASON>", language.getMessage("DATABASE_UNAVAILABLE"));
-        handler.updateCache(targetPlayer.getUniqueId());
         if (targetPlayer.isOnline()) PermissionUtil.applyPermissions(targetPlayer.getPlayer());
-
-        cancelExpiration(targetPlayer.getUniqueId(), args[1]);
-        if (ticks > 0) {
-            BukkitTask task = Bukkit.getScheduler().runTaskLater(plugin, () -> {
-                cancelExpiration(targetPlayer.getUniqueId(), args[1]);
-                handler.removePermission(targetPlayer.getUniqueId(), args[1]);
-                handler.updateCache(targetPlayer.getUniqueId());
-                if (targetPlayer.isOnline()) PermissionUtil.applyPermissions(targetPlayer.getPlayer());
-            }, ticks);
-            expirations.computeIfAbsent(targetPlayer.getUniqueId(), uuid -> new HashMap<>()).put(args[1], task);
-            return language.getMessage("PERMISSION_ADDED_PLAYER_TIMED")
-                    .replace("<PLAYER>", targetPlayer.getName()).replace("<PERMISSION>", args[1]).replace("<SECONDS>", args[2]);
-        }
+        if (expiry > 0) return language.getMessage("PERMISSION_ADDED_PLAYER_TIMED")
+                .replace("<PLAYER>", targetPlayer.getName()).replace("<PERMISSION>", args[1]).replace("<SECONDS>", args[2]);
         return language.getMessage("PERMISSION_ADDED_PLAYER")
                 .replace("<PLAYER>", targetPlayer.getName()).replace("<PERMISSION>", args[1]);
     }
@@ -221,7 +216,6 @@ public class PlayerCommand {
         plugin.getPermissifyAPI().getDatabaseHandler().get().removePermission(targetPlayer.getUniqueId(), args[1]);
         if (plugin.getPermissifyAPI().getDatabaseHandler().get().hasPermission(targetPlayer.getUniqueId(), args[1]))
             return language.getMessage("UNABLE_TO_REMOVE").replace("<TYPE>", language.getMessage("TYPE_PERMISSION")).replace("<REASON>", language.getMessage("DATABASE_UNAVAILABLE"));
-        cancelExpiration(targetPlayer.getUniqueId(), args[1]);
         if (targetPlayer.isOnline()) PermissionUtil.applyPermissions(targetPlayer.getPlayer());
 
         plugin.getPermissifyAPI().getDatabaseHandler().get().updateCache(targetPlayer.getUniqueId());
@@ -270,16 +264,18 @@ public class PlayerCommand {
         return language.getMessage("GROUP_PERMISSIONS").replace("<GROUP>", targetPlayer.getName())
                 .replace("<PERMISSIONS>", String.join(", ", permissions.stream().distinct().toList()));
     }
-    private void cancelExpiration(UUID uuid, String permission) {
-        Map<String, BukkitTask> tasks = expirations.get(uuid);
-        if (tasks == null) return;
-        BukkitTask task = tasks.remove(permission);
-        if (task != null) task.cancel();
-        if (tasks.isEmpty()) expirations.remove(uuid);
-    }
-
-    public void cancelExpirations() {
-        expirations.values().forEach(tasks -> tasks.values().forEach(BukkitTask::cancel));
-        expirations.clear();
+    public String handleRankMove(CommandSender sender, String[] args, Language language, boolean promote) {
+        String permission = promote ? PermissifyConstants.PERMISSIFY_PLAYER_PROMOTE : PermissifyConstants.PERMISSIFY_PLAYER_DEMOTE;
+        if (!PermissionUtil.hasPermissionOrSuperAdmin(sender, permission)) return language.getMessage("INSUFFICIENT_PERMISSIONS");
+        if (args.length != 2) return language.getMessage(promote ? "USAGE_PLAYER_PROMOTE" : "USAGE_PLAYER_DEMOTE");
+        OfflinePlayer player = PlayerUtil.findPlayer(args[0]);
+        if (player == null) return language.getMessage("INVALID_PLAYER");
+        RankChange change = PermissifyMain.getInstance().getPermissifyAPI().getDatabaseHandler().orElseThrow()
+                .moveOnTrack(player.getUniqueId(), args[1], promote);
+        if (change.status() != RankChange.Status.SUCCESS)
+            return language.getMessage("TRACK_MOVE_" + change.status().name()).replace("<TRACK>", args[1]).replace("<PLAYER>", player.getName());
+        if (player.isOnline()) PermissionUtil.applyPermissions(player.getPlayer());
+        return language.getMessage("TRACK_MOVE_SUCCESS").replace("<PLAYER>", player.getName()).replace("<TRACK>", args[1])
+                .replace("<FROM>", change.from() == null ? language.getMessage("EMPTY_DEFAULT_GROUP_NAME") : change.from()).replace("<TO>", change.to());
     }
 }

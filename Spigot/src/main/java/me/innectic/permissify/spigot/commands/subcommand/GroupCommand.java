@@ -178,23 +178,31 @@ public class GroupCommand {
     }
 
     public String handleInherit(CommandSender sender, String[] args, Language language) {
-        if (!PermissionUtil.hasPermissionOrSuperAdmin(sender, PermissifyConstants.PERMISSIFY_GROUP_INHERIT))
-            return language.getMessage("INSUFFICIENT_PERMISSIONS");
-        if (args.length != 2) return language.getMessage("NOT_ENOUGH_ARGUMENTS_GROUP_INHERIT");
+        return changeInheritance(sender, args, language, false);
+    }
+
+    public String handleUninherit(CommandSender sender, String[] args, Language language) {
+        return changeInheritance(sender, args, language, true);
+    }
+
+    private String changeInheritance(CommandSender sender, String[] args, Language language, boolean remove) {
+        String permission = remove ? PermissifyConstants.PERMISSIFY_GROUP_UNINHERIT : PermissifyConstants.PERMISSIFY_GROUP_INHERIT;
+        if (!PermissionUtil.hasPermissionOrSuperAdmin(sender, permission)) return language.getMessage("INSUFFICIENT_PERMISSIONS");
+        if (args.length != 2) return language.getMessage(remove ? "USAGE_GROUP_UNINHERIT" : "NOT_ENOUGH_ARGUMENTS_GROUP_INHERIT");
         var handler = PermissifyMain.getInstance().getPermissifyAPI().getDatabaseHandler();
         if (handler.isEmpty()) return language.getMessage("UNABLE_TO_SET").replace("<REASON>", language.getMessage("NO_DATABASE_HANDLER"));
         Optional<PermissionGroup> parent = handler.get().getGroup(args[0]);
         if (parent.isEmpty()) return language.getMessage("INVALID_GROUP").replace("<GROUP>", args[0]);
         Optional<PermissionGroup> child = handler.get().getGroup(args[1]);
         if (child.isEmpty()) return language.getMessage("INVALID_GROUP").replace("<GROUP>", args[1]);
-        if (!GroupInheritance.canInherit(parent.get(), child.get(), handler.get().getGroups()))
+        if (!remove && !GroupInheritance.canInherit(parent.get(), child.get(), handler.get().getGroups()))
             return language.getMessage("GROUP_INHERITANCE_CYCLE");
-        Tristate inherited = handler.get().inheritGroup(parent.get(), child.get());
-        if (inherited == Tristate.NONE) return language.getMessage("GROUP_INHERITANCE_EXISTS")
-                .replace("<PARENT>", parent.get().getName()).replace("<GROUP>", child.get().getName());
-        if (inherited == Tristate.FALSE) return language.getMessage("UNABLE_TO_SET").replace("<REASON>", language.getMessage("DATABASE_UNAVAILABLE"));
-        Bukkit.getOnlinePlayers().forEach(PermissionUtil::applyPermissions);
-        return language.getMessage("GROUP_INHERITED").replace("<PARENT>", parent.get().getName()).replace("<GROUP>", child.get().getName());
+        Tristate result = remove ? handler.get().uninheritGroup(parent.get(), child.get()) : handler.get().inheritGroup(parent.get(), child.get());
+        if (result == Tristate.FALSE) return language.getMessage("UNABLE_TO_SET").replace("<REASON>", language.getMessage("DATABASE_UNAVAILABLE"));
+        String key = result == Tristate.NONE ? (remove ? "GROUP_INHERITANCE_MISSING" : "GROUP_INHERITANCE_EXISTS")
+                : (remove ? "GROUP_UNINHERITED" : "GROUP_INHERITED");
+        if (result == Tristate.TRUE) Bukkit.getOnlinePlayers().forEach(PermissionUtil::applyPermissions);
+        return language.getMessage(key).replace("<PARENT>", parent.get().getName()).replace("<GROUP>", child.get().getName());
     }
     public String handleSetDefault(CommandSender sender, String[] args, Language language) {
         PermissifyMain plugin = PermissifyMain.getInstance();

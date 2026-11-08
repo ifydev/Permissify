@@ -49,10 +49,72 @@ can span multiple levels and include multiple parents. Self-inheritance and
 cycles are rejected. A group's own permission values take precedence over
 inherited values; direct player permissions retain their existing precedence.
 
+Remove a direct inheritance link with `/permissify group uninherit A B`.
+This requires `permissify.group.uninherit`. B can still inherit A through
+another parent, if another path exists.
+
 Inheritance survives cache reloads, server restarts and profile save/load.
 Older profiles without inheritance still load. Deleting a parent removes its
 inheritance links. Group membership, primary group and formatting remain
 separate from inherited permissions.
+
+## Temporary access
+
+Both commands accept an optional positive duration in seconds:
+
+```
+/permissify player addpermission Innectic example.permission 3600
+/permissify player addgroup Innectic VIP 2592000
+```
+
+Deadlines are stored as absolute timestamps in the database. Time offline or
+with the server stopped still counts. Overdue entries are removed on startup;
+while running, the plugin checks expiry every second and refreshes affected
+players' permissions and command lists. Cache reloads and profiles preserve
+the original deadlines. Removing an entry and adding it permanently does not
+leave an old timer that can revoke the replacement.
+
+The database adds expiry columns automatically. Existing entries remain
+permanent because previous versions did not store their deadlines. Remove
+and re-add any old temporary grants that should now have a saved expiry.
+
+## Rank tracks
+
+Tracks define promotion order separately from group inheritance:
+
+```
+/permissify track create prison
+/permissify track append prison A
+/permissify track append prison B
+/permissify track append prison C
+/permissify track info prison
+/permissify track list
+/permissify player promote Innectic prison
+/permissify player demote Innectic prison
+```
+
+The first promotion adds a player to the first rank when they are not already
+on the track. Further promotions and demotions replace their current track
+membership with the adjacent rank. Unrelated memberships are preserved. The
+primary group follows the move when it was the old rank; an unrelated primary
+group is preserved. Temporary rank memberships keep their original expiry.
+
+Moving beyond either end is rejected. Players with multiple memberships on
+the same track must have the extra memberships removed before moving.
+
+```
+/permissify track remove prison B
+/permissify track delete prison
+```
+
+Editing or deleting a track does not remove player memberships. Deleting an
+actual group also removes it from tracks. Tracks persist through restarts and
+profile save/load; older profiles without tracks or expiry data still load.
+
+Track management uses `permissify.track.create`, `.append`, `.remove`, `.info`,
+`.list` and `.delete`. Movement uses `permissify.player.promote` and
+`permissify.player.demote`. Commands also require `permissify.basic` unless
+the sender has superadmin access. Help and completion use the same checks.
 
 ## Translations
 

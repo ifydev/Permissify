@@ -88,7 +88,6 @@ public class ProfileCommand {
             logger.log(java.util.logging.Level.SEVERE, "Unable to load profile", e);
             return language.getMessage("PROFILE_NOT_LOADED").replace("<PROFILE>", args[0]);
         }
-        PermissifyMain.getInstance().getPlayerCommand().cancelExpirations();
         org.bukkit.Bukkit.getOnlinePlayers().forEach(PermissionUtil::applyPermissions);
         end = System.currentTimeMillis();
         logger.info("Parsed profile in " + (end - start) + " ms.");
@@ -107,7 +106,7 @@ public class ProfileCommand {
         long start = System.currentTimeMillis();
         PermissifyProfile profile = new PermissifyProfile(handler.getGroups(), handler.getAllPermissions(),
                 handler.getDefaultGroup().isPresent() ? handler.getDefaultGroup().get() : null, handler.getSuperAdmins(),
-                PermissifyConstants.PERMISSIFY_PROFILE_VERSION);
+                PermissifyConstants.PERMISSIFY_PROFILE_VERSION, handler.getTracks());
         long end = System.currentTimeMillis();
         logger.info("Generated profile in " + (end - start) + " ms.");
 

@@ -31,6 +31,8 @@ import me.innectic.permissify.api.permission.Permission;
 import me.innectic.permissify.api.database.ConnectionInformation;
 import me.innectic.permissify.api.permission.PermissionGroup;
 import me.innectic.permissify.api.permission.GroupInheritance;
+import me.innectic.permissify.api.permission.RankTrack;
+import me.innectic.permissify.api.permission.RankChange;
 import me.innectic.permissify.api.profile.PermissifyProfile;
 import me.innectic.permissify.api.util.Tristate;
 
@@ -46,6 +48,7 @@ public class SQLHandler extends DatabaseHandler {
 
     private boolean isUsingSQLite = false;
     private final String baseConnectionUrl;
+    private long nextExpiry;
 
     public SQLHandler(ConnectionInformation connectionInformation) {
         super(connectionInformation);
@@ -103,6 +106,7 @@ public class SQLHandler extends DatabaseHandler {
                 PreparedStatement statement = connection.prepareStatement("CREATE DATABASE IF NOT EXISTS " + database);
                 statement.execute();
                 statement.close();
+                connection.setCatalog(database);
                 database += ".";
             } else database = "";
 
@@ -127,6 +131,12 @@ public class SQLHandler extends DatabaseHandler {
             PreparedStatement playerPermissionsStatement = connection.prepareStatement("CREATE TABLE IF NOT EXISTS " + database + "playerPermissions (uuid VARCHAR(767) NOT NULL, permission VARCHAR(767) NOT NULL, granted TINYINT NOT NULL)");
             playerPermissionsStatement.execute();
             playerPermissionsStatement.close();
+            ensureExpiryColumn(connection, "playerPermissions");
+            ensureExpiryColumn(connection, "groupMembers");
+            try (Statement schema = connection.createStatement()) {
+                schema.execute("CREATE TABLE IF NOT EXISTS " + database + "rankTracks (name VARCHAR(100) NOT NULL PRIMARY KEY)");
+                schema.execute("CREATE TABLE IF NOT EXISTS " + database + "rankTrackGroups (trackName VARCHAR(100) NOT NULL, groupName VARCHAR(100) NOT NULL, `position` INTEGER NOT NULL, PRIMARY KEY (trackName,`position`))");
+            }
 
             PreparedStatement superAdminStatement = connection.prepareStatement("CREATE TABLE IF NOT EXISTS " + database + "superAdmin (uuid VARCHAR(767) NOT NULL)");
             superAdminStatement.execute();
@@ -167,6 +177,7 @@ public class SQLHandler extends DatabaseHandler {
 
     @Override
     public void reload(List<UUID> onlinePlayers) {
+        nextExpiry = 0;
         cachedGroups = new HashMap<>();
         cachedPermissions = new HashMap<>();
         superAdmins = new ArrayList<>();
@@ -174,6 +185,7 @@ public class SQLHandler extends DatabaseHandler {
 
         loadSuperAdmins();
         loadGroups();
+        loadTracks();
 
         onlinePlayers.forEach(this::getPermissions);
     }
@@ -208,12 +220,12 @@ public class SQLHandler extends DatabaseHandler {
                 groupPermissionsResult.close();
                 groupPermissionsStatement.close();
 
-                PreparedStatement groupMembersStatement = connection.get().prepareStatement("SELECT uuid,`primary` FROM groupMembers WHERE `group`=?");
+                PreparedStatement groupMembersStatement = connection.get().prepareStatement("SELECT uuid,`primary`,expiresAt FROM groupMembers WHERE `group`=?");
                 groupMembersStatement.setString(1, group.getName());
 
                 ResultSet groupMembersResults = groupMembersStatement.executeQuery();
                 while (groupMembersResults.next()) {
-                    group.addPlayer(UUID.fromString(groupMembersResults.getString("uuid")), groupMembersResults.getBoolean("primary"));
+                    group.addPlayer(UUID.fromString(groupMembersResults.getString("uuid")), groupMembersResults.getBoolean("primary"), groupMembersResults.getLong("expiresAt"));
                 }
 
                 groupMembersResults.close();
@@ -276,6 +288,12 @@ public class SQLHandler extends DatabaseHandler {
             combined.getParents().addAll(group.getParents());
         });
         GroupInheritance.validate(merged);
+        for (RankTrack track : profile.getTracks().values()) {
+            Set<String> seen = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
+            for (String name : track.groups()) if (!merged.containsKey(name) || !seen.add(name))
+                throw new IllegalArgumentException("Invalid track group: " + name);
+        }
+        long now = System.currentTimeMillis();
         boolean saved = transaction(connection -> {
             for (PermissionGroup group : profile.getGroups().values()) {
                 String name = getGroup(group.getName()).map(PermissionGroup::getName).orElse(group.getName());
@@ -301,12 +319,21 @@ public class SQLHandler extends DatabaseHandler {
                     }
                 }
                 for (var member : group.getPlayers().entrySet()) {
-                    try (PreparedStatement statement = connection.prepareStatement("INSERT INTO groupMembers (uuid,`group`,`primary`,ladderPosition) SELECT ?,?,?,0 WHERE NOT EXISTS (SELECT 1 FROM groupMembers WHERE uuid=? AND `group`=?)")) {
+                    long expiry = group.getPlayerExpirations().getOrDefault(member.getKey(), 0L);
+                    if (expiry > 0 && expiry <= now) continue;
+                    try (PreparedStatement statement = connection.prepareStatement("INSERT INTO groupMembers (uuid,`group`,`primary`,ladderPosition,expiresAt) SELECT ?,?,?,0,? WHERE NOT EXISTS (SELECT 1 FROM groupMembers WHERE uuid=? AND `group`=?)")) {
                         statement.setString(1, member.getKey().toString());
                         statement.setString(2, name);
                         statement.setBoolean(3, false);
-                        statement.setString(4, member.getKey().toString());
-                        statement.setString(5, name);
+                        statement.setLong(4, expiry);
+                        statement.setString(5, member.getKey().toString());
+                        statement.setString(6, name);
+                        statement.executeUpdate();
+                    }
+                    try (PreparedStatement statement = connection.prepareStatement("UPDATE groupMembers SET expiresAt=? WHERE uuid=? AND `group`=?")) {
+                        statement.setLong(1, expiry);
+                        statement.setString(2, member.getKey().toString());
+                        statement.setString(3, name);
                         statement.executeUpdate();
                     }
                     if (member.getValue()) {
@@ -331,20 +358,32 @@ public class SQLHandler extends DatabaseHandler {
                     }
                 }
             }
+            for (RankTrack track : profile.getTracks().values()) {
+                String name = getTrack(track.name()).map(RankTrack::name).orElse(track.name());
+                try (PreparedStatement statement = connection.prepareStatement("INSERT INTO rankTracks (name) SELECT ? WHERE NOT EXISTS (SELECT 1 FROM rankTracks WHERE name=?)")) {
+                    statement.setString(1, name);
+                    statement.setString(2, name);
+                    statement.executeUpdate();
+                }
+                writeTrackGroups(connection, name, track.groups().stream().map(group -> merged.get(group).getName()).toList());
+            }
             for (var player : profile.getPlayerPermissions().entrySet()) {
                 for (Permission permission : player.getValue()) {
-                    try (PreparedStatement statement = connection.prepareStatement("INSERT INTO playerPermissions (uuid,permission,granted) SELECT ?,?,? WHERE NOT EXISTS (SELECT 1 FROM playerPermissions WHERE uuid=? AND permission=?)")) {
+                    if (permission.isExpired(now)) continue;
+                    try (PreparedStatement statement = connection.prepareStatement("INSERT INTO playerPermissions (uuid,permission,granted,expiresAt) SELECT ?,?,?,? WHERE NOT EXISTS (SELECT 1 FROM playerPermissions WHERE uuid=? AND permission=?)")) {
                         statement.setString(1, player.getKey().toString());
                         statement.setString(2, permission.getPermission());
                         statement.setBoolean(3, permission.isGranted());
-                        statement.setString(4, player.getKey().toString());
-                        statement.setString(5, permission.getPermission());
+                        statement.setLong(4, permission.getExpiresAt());
+                        statement.setString(5, player.getKey().toString());
+                        statement.setString(6, permission.getPermission());
                         statement.executeUpdate();
                     }
-                    try (PreparedStatement statement = connection.prepareStatement("UPDATE playerPermissions SET granted=? WHERE uuid=? AND permission=?")) {
+                    try (PreparedStatement statement = connection.prepareStatement("UPDATE playerPermissions SET granted=?,expiresAt=? WHERE uuid=? AND permission=?")) {
                         statement.setBoolean(1, permission.isGranted());
-                        statement.setString(2, player.getKey().toString());
-                        statement.setString(3, permission.getPermission());
+                        statement.setLong(2, permission.getExpiresAt());
+                        statement.setString(3, player.getKey().toString());
+                        statement.setString(4, permission.getPermission());
                         statement.executeUpdate();
                     }
                 }
@@ -368,7 +407,8 @@ public class SQLHandler extends DatabaseHandler {
         List<String> added = Arrays.stream(permissions).distinct()
                 .filter(permission -> current.stream().noneMatch(existing -> existing.getPermission().equals(permission))).toList();
         boolean saved = transaction(connection -> {
-            try (PreparedStatement statement = connection.prepareStatement("INSERT INTO playerPermissions (uuid,permission,granted) VALUES (?,?,?)")) {
+            clearExpired(connection, "playerPermissions", uuid, System.currentTimeMillis());
+            try (PreparedStatement statement = connection.prepareStatement("INSERT INTO playerPermissions (uuid,permission,granted,expiresAt) VALUES (?,?,?,0)")) {
                 for (String permission : added) {
                     statement.setString(1, uuid.toString());
                     statement.setString(2, permission);
@@ -412,33 +452,24 @@ public class SQLHandler extends DatabaseHandler {
 
     @Override
     public List<Permission> getPermissions(UUID uuid) {
-        if (cachedPermissions.containsKey(uuid)) return cachedPermissions.get(uuid);
-        Optional<Connection> connection = getConnection();
-        List<Permission> permissions = new ArrayList<>();
-
-        if (connection.isEmpty()) {
-            PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.empty()));
-            return permissions;
-        }
-        try {
-            PreparedStatement statement = connection.get().prepareStatement("SELECT permission,granted FROM playerPermissions WHERE uuid=?");
-            statement.setString(1, uuid.toString());
-            ResultSet results = statement.executeQuery();
-
-            while (results.next()) {
-                permissions.add(new Permission(results.getString("permission"), results.getBoolean("granted")));
+        if (!cachedPermissions.containsKey(uuid)) {
+            Optional<Connection> found = getConnection();
+            if (found.isEmpty()) return new ArrayList<>();
+            List<Permission> permissions = new ArrayList<>();
+            try (Connection connection = found.get();
+                 PreparedStatement statement = connection.prepareStatement("SELECT permission,granted,expiresAt FROM playerPermissions WHERE uuid=?")) {
+                statement.setString(1, uuid.toString());
+                try (ResultSet results = statement.executeQuery()) {
+                    while (results.next()) permissions.add(new Permission(results.getString("permission"), results.getBoolean("granted"), results.getLong("expiresAt")));
+                }
+                cachedPermissions.put(uuid, permissions);
+            } catch (SQLException e) {
+                PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.DATABASE_EXCEPTION, Optional.of(e)));
+                return new ArrayList<>();
             }
-            // Cleanup
-            results.close();
-            statement.close();
-            connection.get().close();
-            cachedPermissions.put(uuid, permissions);
-            return permissions;
-        } catch (SQLException e) {
-            PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.DATABASE_EXCEPTION, Optional.of(e)));
-            e.printStackTrace();
         }
-        return new ArrayList<>();
+        long now = System.currentTimeMillis();
+        return cachedPermissions.get(uuid).stream().filter(permission -> !permission.isExpired(now)).collect(Collectors.toCollection(ArrayList::new));
     }
 
     @Override
@@ -468,7 +499,7 @@ public class SQLHandler extends DatabaseHandler {
         boolean saved = transaction(connection -> {
             for (String query : List.of("DELETE FROM groupMembers WHERE `group`=?",
                     "DELETE FROM groupPermissions WHERE groupName=?", "DELETE FROM groupInheritance WHERE childGroup=?",
-                    "DELETE FROM groupInheritance WHERE parentGroup=?", "DELETE FROM groups WHERE name=?")) {
+                    "DELETE FROM groupInheritance WHERE parentGroup=?", "DELETE FROM rankTrackGroups WHERE groupName=?", "DELETE FROM groups WHERE name=?")) {
                 try (PreparedStatement statement = connection.prepareStatement(query)) {
                     statement.setString(1, canonical);
                     statement.executeUpdate();
@@ -477,6 +508,7 @@ public class SQLHandler extends DatabaseHandler {
         });
         if (!saved) return Tristate.FALSE;
         cachedGroups.remove(canonical);
+        tracks.replaceAll((key, track) -> new RankTrack(track.name(), track.groups().stream().filter(groupName -> !groupName.equalsIgnoreCase(canonical)).toList()));
         cachedGroups.values().forEach(current -> current.getParents().remove(canonical));
         if (defaultGroup.map(current -> current.getName().equalsIgnoreCase(canonical)).orElse(false)) defaultGroup = Optional.empty();
         return Tristate.TRUE;
@@ -489,18 +521,27 @@ public class SQLHandler extends DatabaseHandler {
 
     @Override
     public Tristate addPlayerToGroup(UUID uuid, PermissionGroup group) {
+        return addPlayerToGroup(uuid, group, 0);
+    }
+
+    @Override
+    public Tristate addPlayerToGroup(UUID uuid, PermissionGroup group, long expiresAt) {
+        if (expiresAt < 0 || (expiresAt > 0 && expiresAt <= System.currentTimeMillis())) return Tristate.FALSE;
         if (group.hasPlayer(uuid)) return Tristate.NONE;
         boolean saved = transaction(connection -> {
-            try (PreparedStatement statement = connection.prepareStatement("INSERT INTO groupMembers (uuid,`group`,`primary`,ladderPosition) VALUES (?,?,?,?)")) {
+            clearExpired(connection, "groupMembers", uuid, System.currentTimeMillis());
+            try (PreparedStatement statement = connection.prepareStatement("INSERT INTO groupMembers (uuid,`group`,`primary`,ladderPosition,expiresAt) VALUES (?,?,?,?,?)")) {
                 statement.setString(1, uuid.toString());
                 statement.setString(2, group.getName());
                 statement.setBoolean(3, false);
                 statement.setInt(4, 0);
+                statement.setLong(5, expiresAt);
                 statement.executeUpdate();
             }
         });
         if (!saved) return Tristate.FALSE;
-        group.addPlayer(uuid, false);
+        group.addPlayer(uuid, false, expiresAt);
+        if (expiresAt > 0) nextExpiry = Math.min(nextExpiry, expiresAt);
         cachedGroups.put(group.getName(), group);
         return Tristate.TRUE;
     }
@@ -581,12 +622,12 @@ public class SQLHandler extends DatabaseHandler {
                             groupResults.getString("suffix"));
                     groupResults.close();
                     groupStatement.close();
-                    PreparedStatement groupPlayersStatement = connection.get().prepareStatement("SELECT uuid,`primary` FROM groupMembers WHERE `group`=?");
+                    PreparedStatement groupPlayersStatement = connection.get().prepareStatement("SELECT uuid,`primary`,expiresAt FROM groupMembers WHERE `group`=?");
                     groupPlayersStatement.setString(1, groupName);
                     ResultSet groupPlayersResult = groupPlayersStatement.executeQuery();
                     while (groupPlayersResult.next()) {
                         permissionGroup.addPlayer(UUID.fromString(groupPlayersResult.getString("uuid")),
-                                groupPlayersResult.getBoolean("primary"));
+                                groupPlayersResult.getBoolean("primary"), groupPlayersResult.getLong("expiresAt"));
                     }
                     cachedGroups.put(groupName, permissionGroup);
                 }
@@ -668,15 +709,18 @@ public class SQLHandler extends DatabaseHandler {
         if (found.isEmpty()) throw new IllegalStateException("Unable to export permissions");
         Map<UUID, List<Permission>> permissions = new HashMap<>();
         try (Connection connection = found.get();
-             PreparedStatement statement = connection.prepareStatement("SELECT uuid,permission,granted FROM playerPermissions");
-             ResultSet results = statement.executeQuery()) {
-            while (results.next()) permissions.computeIfAbsent(UUID.fromString(results.getString("uuid")), uuid -> new ArrayList<>())
-                    .add(new Permission(results.getString("permission"), results.getBoolean("granted")));
+             PreparedStatement statement = connection.prepareStatement("SELECT uuid,permission,granted,expiresAt FROM playerPermissions WHERE expiresAt=0 OR expiresAt>?")) {
+            statement.setLong(1, System.currentTimeMillis());
+            try (ResultSet results = statement.executeQuery()) {
+                while (results.next()) permissions.computeIfAbsent(UUID.fromString(results.getString("uuid")), uuid -> new ArrayList<>())
+                        .add(new Permission(results.getString("permission"), results.getBoolean("granted"), results.getLong("expiresAt")));
+            }
             return permissions;
         } catch (SQLException e) {
             throw new IllegalStateException("Unable to export permissions", e);
         }
     }
+
     @Override
     public Tristate inheritGroup(PermissionGroup parent, PermissionGroup child) {
         if (parent == null || child == null) return Tristate.FALSE;
@@ -721,6 +765,237 @@ public class SQLHandler extends DatabaseHandler {
         return saved;
     }
 
+    private void ensureExpiryColumn(Connection connection, String table) throws SQLException {
+        try (ResultSet columns = connection.getMetaData().getColumns(connection.getCatalog(), null, table, null)) {
+            while (columns.next()) if (columns.getString("COLUMN_NAME").equalsIgnoreCase("expiresAt")) return;
+        }
+        try (Statement statement = connection.createStatement()) {
+            statement.executeUpdate("ALTER TABLE " + table + " ADD COLUMN expiresAt BIGINT NOT NULL DEFAULT 0");
+        }
+    }
+
+    private void clearExpired(Connection connection, String table, UUID uuid, long now) throws SQLException {
+        try (PreparedStatement statement = connection.prepareStatement("DELETE FROM " + table + " WHERE uuid=? AND expiresAt>0 AND expiresAt<=?")) {
+            statement.setString(1, uuid.toString());
+            statement.setLong(2, now);
+            statement.executeUpdate();
+        }
+    }
+
+    @Override
+    public Tristate addTemporaryPermission(UUID uuid, String permission, long expiresAt) {
+        if (expiresAt <= System.currentTimeMillis()) return Tristate.FALSE;
+        if (hasPermission(uuid, permission)) return Tristate.NONE;
+        boolean saved = transaction(connection -> {
+            clearExpired(connection, "playerPermissions", uuid, System.currentTimeMillis());
+            try (PreparedStatement statement = connection.prepareStatement("INSERT INTO playerPermissions (uuid,permission,granted,expiresAt) VALUES (?,?,?,?)")) {
+                statement.setString(1, uuid.toString());
+                statement.setString(2, permission);
+                statement.setBoolean(3, true);
+                statement.setLong(4, expiresAt);
+                statement.executeUpdate();
+            }
+        });
+        if (!saved) return Tristate.FALSE;
+        cachedPermissions.computeIfAbsent(uuid, key -> new ArrayList<>()).add(new Permission(permission, true, expiresAt));
+        nextExpiry = Math.min(nextExpiry, expiresAt);
+        return Tristate.TRUE;
+    }
+
+    @Override
+    public Set<UUID> expireEntries(long now) {
+        if (now < nextExpiry) return Set.of();
+        long[] upcoming = {Long.MAX_VALUE};
+        Set<UUID> affected = new HashSet<>();
+        cachedPermissions.forEach((uuid, permissions) -> {
+            if (permissions.stream().anyMatch(permission -> permission.isExpired(now))) affected.add(uuid);
+        });
+        cachedGroups.values().forEach(group -> group.getPlayerExpirations().forEach((uuid, expiry) -> {
+            if (expiry > 0 && expiry <= now) affected.add(uuid);
+        }));
+        boolean saved = transaction(connection -> {
+            for (String table : List.of("playerPermissions", "groupMembers")) {
+                try (PreparedStatement select = connection.prepareStatement("SELECT uuid FROM " + table + " WHERE expiresAt>0 AND expiresAt<=?");
+                     PreparedStatement remove = connection.prepareStatement("DELETE FROM " + table + " WHERE expiresAt>0 AND expiresAt<=?")) {
+                    select.setLong(1, now);
+                    try (ResultSet results = select.executeQuery()) {
+                        while (results.next()) affected.add(UUID.fromString(results.getString("uuid")));
+                    }
+                    remove.setLong(1, now);
+                    remove.executeUpdate();
+                }
+                try (PreparedStatement next = connection.prepareStatement("SELECT MIN(expiresAt) FROM " + table + " WHERE expiresAt>0");
+                     ResultSet results = next.executeQuery()) {
+                    if (results.next()) {
+                        long value = results.getLong(1);
+                        if (!results.wasNull()) upcoming[0] = Math.min(upcoming[0], value);
+                    }
+                }
+            }
+        });
+        if (saved) {
+            nextExpiry = upcoming[0];
+            cachedPermissions.values().forEach(permissions -> permissions.removeIf(permission -> permission.isExpired(now)));
+            cachedGroups.values().forEach(group -> {
+                List<UUID> expired = group.getPlayerExpirations().entrySet().stream()
+                        .filter(entry -> entry.getValue() > 0 && entry.getValue() <= now).map(Map.Entry::getKey).toList();
+                expired.forEach(group::removePlayer);
+            });
+        }
+        return affected;
+    }
+
+    @Override
+    public Tristate uninheritGroup(PermissionGroup parent, PermissionGroup child) {
+        if (parent == null || child == null) return Tristate.FALSE;
+        PermissionGroup source = getGroup(parent.getName()).orElse(null);
+        PermissionGroup target = getGroup(child.getName()).orElse(null);
+        if (source == null || target == null) return Tristate.FALSE;
+        if (!target.getParents().contains(source.getName())) return Tristate.NONE;
+        boolean saved = transaction(connection -> {
+            try (PreparedStatement statement = connection.prepareStatement("DELETE FROM groupInheritance WHERE childGroup=? AND parentGroup=?")) {
+                statement.setString(1, target.getName());
+                statement.setString(2, source.getName());
+                statement.executeUpdate();
+            }
+        });
+        if (!saved) return Tristate.FALSE;
+        target.getParents().remove(source.getName());
+        return Tristate.TRUE;
+    }
+    private void loadTracks() {
+        tracks = new LinkedHashMap<>();
+        Optional<Connection> found = getConnection();
+        if (found.isEmpty()) return;
+        try (Connection connection = found.get();
+             PreparedStatement names = connection.prepareStatement("SELECT name FROM rankTracks ORDER BY name");
+             ResultSet results = names.executeQuery()) {
+            while (results.next()) {
+                String name = results.getString("name");
+                List<String> groups = new ArrayList<>();
+                try (PreparedStatement members = connection.prepareStatement("SELECT groupName FROM rankTrackGroups WHERE trackName=? ORDER BY `position`")) {
+                    members.setString(1, name);
+                    try (ResultSet entries = members.executeQuery()) {
+                        while (entries.next()) if (getGroup(entries.getString("groupName")).isPresent()) groups.add(entries.getString("groupName"));
+                    }
+                }
+                tracks.put(name, new RankTrack(name, groups));
+            }
+        } catch (SQLException e) {
+            PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.DATABASE_EXCEPTION, Optional.of(e)));
+        }
+    }
+
+    @Override
+    public Tristate createTrack(String name) {
+        if (!name.matches("[a-zA-Z0-9_-]{1,100}")) return Tristate.FALSE;
+        if (getTrack(name).isPresent()) return Tristate.NONE;
+        boolean saved = transaction(connection -> {
+            try (PreparedStatement statement = connection.prepareStatement("INSERT INTO rankTracks (name) VALUES (?)")) {
+                statement.setString(1, name);
+                statement.executeUpdate();
+            }
+        });
+        if (!saved) return Tristate.FALSE;
+        tracks.put(name, new RankTrack(name, List.of()));
+        return Tristate.TRUE;
+    }
+
+    @Override
+    public Tristate deleteTrack(String name) {
+        Optional<RankTrack> track = getTrack(name);
+        if (track.isEmpty()) return Tristate.NONE;
+        boolean saved = transaction(connection -> {
+            for (String query : List.of("DELETE FROM rankTrackGroups WHERE trackName=?", "DELETE FROM rankTracks WHERE name=?")) {
+                try (PreparedStatement statement = connection.prepareStatement(query)) {
+                    statement.setString(1, track.get().name());
+                    statement.executeUpdate();
+                }
+            }
+        });
+        if (!saved) return Tristate.FALSE;
+        tracks.remove(track.get().name());
+        return Tristate.TRUE;
+    }
+
+    @Override
+    public boolean setTrackGroups(String name, List<String> groupNames) {
+        Optional<RankTrack> track = getTrack(name);
+        if (track.isEmpty()) return false;
+        List<String> canonical = new ArrayList<>();
+        Set<String> seen = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
+        for (String groupName : groupNames) {
+            Optional<PermissionGroup> group = getGroup(groupName);
+            if (group.isEmpty() || !seen.add(group.get().getName())) return false;
+            canonical.add(group.get().getName());
+        }
+        boolean saved = transaction(connection -> writeTrackGroups(connection, track.get().name(), canonical));
+        if (saved) tracks.put(track.get().name(), new RankTrack(track.get().name(), canonical));
+        return saved;
+    }
+
+    private void writeTrackGroups(Connection connection, String track, List<String> groups) throws SQLException {
+        try (PreparedStatement remove = connection.prepareStatement("DELETE FROM rankTrackGroups WHERE trackName=?");
+             PreparedStatement insert = connection.prepareStatement("INSERT INTO rankTrackGroups (trackName,groupName,`position`) VALUES (?,?,?)")) {
+            remove.setString(1, track);
+            remove.executeUpdate();
+            for (int position = 0; position < groups.size(); position++) {
+                insert.setString(1, track);
+                insert.setString(2, groups.get(position));
+                insert.setInt(3, position);
+                insert.addBatch();
+            }
+            insert.executeBatch();
+        }
+    }
+
+    @Override
+    public RankChange moveOnTrack(UUID uuid, String name, boolean promote) {
+        Optional<RankTrack> found = getTrack(name);
+        if (found.isEmpty()) return new RankChange(RankChange.Status.NOT_FOUND, null, null);
+        RankTrack track = found.get();
+        if (track.groups().isEmpty()) return new RankChange(RankChange.Status.EMPTY, null, null);
+        List<PermissionGroup> current = getGroups(uuid).stream()
+                .filter(group -> track.groups().contains(group.getName())).toList();
+        if (current.size() > 1) return new RankChange(RankChange.Status.AMBIGUOUS, null, null);
+        if (current.isEmpty() && !promote) return new RankChange(RankChange.Status.NOT_ON_TRACK, null, null);
+        PermissionGroup previous = current.isEmpty() ? null : current.getFirst();
+        int index = previous == null ? -1 : track.groups().indexOf(previous.getName());
+        int next = index + (promote ? 1 : -1);
+        if (next < 0 || next >= track.groups().size()) return new RankChange(RankChange.Status.END, previous == null ? null : previous.getName(), null);
+        PermissionGroup destination = getGroup(track.groups().get(next)).orElse(null);
+        if (destination == null) return new RankChange(RankChange.Status.NOT_FOUND, null, null);
+        long expiry = previous == null ? 0 : previous.getPlayerExpirations().getOrDefault(uuid, 0L);
+        boolean primary = getPrimaryGroup(uuid).isEmpty() || (previous != null && previous.isPrimaryGroup(uuid));
+        boolean saved = transaction(connection -> {
+            clearExpired(connection, "groupMembers", uuid, System.currentTimeMillis());
+            if (previous != null) {
+                try (PreparedStatement remove = connection.prepareStatement("DELETE FROM groupMembers WHERE uuid=? AND `group`=?")) {
+                    remove.setString(1, uuid.toString());
+                    remove.setString(2, previous.getName());
+                    remove.executeUpdate();
+                }
+            }
+            if (primary) {
+                try (PreparedStatement clear = connection.prepareStatement("UPDATE groupMembers SET `primary`=0 WHERE uuid=?")) {
+                    clear.setString(1, uuid.toString());
+                    clear.executeUpdate();
+                }
+            }
+            try (PreparedStatement insert = connection.prepareStatement("INSERT INTO groupMembers (uuid,`group`,`primary`,ladderPosition,expiresAt) VALUES (?,?,?,0,?)")) {
+                insert.setString(1, uuid.toString());
+                insert.setString(2, destination.getName());
+                insert.setBoolean(3, primary);
+                insert.setLong(4, expiry);
+                insert.executeUpdate();
+            }
+        });
+        if (!saved) return new RankChange(RankChange.Status.DATABASE_ERROR, null, null);
+        if (previous != null) previous.removePlayer(uuid);
+        if (primary) getGroups(uuid).forEach(group -> group.setPrimaryGroup(uuid, false));
+        destination.addPlayer(uuid, primary, expiry);
+        return new RankChange(RankChange.Status.SUCCESS, previous == null ? null : previous.getName(), destination.getName());
+    }
     private boolean transaction(SQLAction action) {
         Optional<Connection> found = getConnection();
         if (found.isEmpty()) return false;

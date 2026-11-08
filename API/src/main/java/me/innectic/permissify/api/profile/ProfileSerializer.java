@@ -30,6 +30,7 @@ import me.innectic.permissify.api.PermissifyConstants;
 import me.innectic.permissify.api.permission.Permission;
 import me.innectic.permissify.api.permission.PermissionGroup;
 import me.innectic.permissify.api.permission.GroupInheritance;
+import me.innectic.permissify.api.permission.RankTrack;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -94,7 +95,8 @@ public class ProfileSerializer {
                 PermissionGroup group = new PermissionGroup(saved.name(), saved.displayName(), saved.chatColor(), saved.prefix(), saved.suffix());
                 if (saved.parents() != null) group.getParents().addAll(saved.parents());
                 saved.permissions().forEach(permission -> group.getPermissions().add(permission.toPermission()));
-                saved.players().forEach((uuid, primary) -> group.addPlayer(java.util.Objects.requireNonNull(uuid), java.util.Objects.requireNonNull(primary)));
+                saved.players().forEach((uuid, primary) -> group.addPlayer(java.util.Objects.requireNonNull(uuid), java.util.Objects.requireNonNull(primary),
+                        saved.playerExpirations() == null ? 0 : saved.playerExpirations().getOrDefault(uuid, 0L)));
                 groups.put(entry.getKey(), group);
             }
             GroupInheritance.validate(groups);
@@ -106,23 +108,31 @@ public class ProfileSerializer {
             Map<UUID, List<Permission>> permissions = new HashMap<>();
             data.playerPermissions().forEach((uuid, entries) -> permissions.put(java.util.Objects.requireNonNull(uuid),
                     entries.stream().map(PermissionData::toPermission).collect(java.util.stream.Collectors.toCollection(java.util.ArrayList::new))));
-            return Optional.of(new PermissifyProfile(groups, permissions, defaultGroup, List.copyOf(data.superAdmins()), data.version()));
+            Map<String, RankTrack> tracks = data.tracks() == null ? Map.of() : data.tracks();
+            for (var entry : tracks.entrySet()) {
+                RankTrack track = entry.getValue();
+                if (track == null || !entry.getKey().equals(track.name()) || !track.name().matches("[a-zA-Z0-9_-]{1,100}")) return Optional.empty();
+                java.util.Set<String> seen = new java.util.TreeSet<>(String.CASE_INSENSITIVE_ORDER);
+                for (String group : track.groups()) if (!groups.containsKey(group) || !seen.add(group)) return Optional.empty();
+            }
+            return Optional.of(new PermissifyProfile(groups, permissions, defaultGroup, List.copyOf(data.superAdmins()), data.version(), tracks));
         } catch (IOException | RuntimeException e) {
             return Optional.empty();
         }
     }
 
-    private record PermissionData(String permission, boolean granted) {
+    private record PermissionData(String permission, boolean granted, long expiresAt) {
         Permission toPermission() {
-            return new Permission(java.util.Objects.requireNonNull(permission), granted);
+            if (expiresAt < 0) throw new IllegalArgumentException("Invalid permission expiry");
+            return new Permission(java.util.Objects.requireNonNull(permission), granted, expiresAt);
         }
     }
 
     private record GroupData(String name, String displayName, String chatColor, String prefix, String suffix,
-                             List<PermissionData> permissions, Map<UUID, Boolean> players, List<String> parents) {}
+                             List<PermissionData> permissions, Map<UUID, Boolean> players, List<String> parents, Map<UUID, Long> playerExpirations) {}
 
     private record ProfileData(Map<String, GroupData> groups, Map<UUID, List<PermissionData>> playerPermissions,
-                               GroupData defaultGroup, List<UUID> superAdmins, int version) {}
+                               GroupData defaultGroup, List<UUID> superAdmins, int version, Map<String, RankTrack> tracks) {}
     private Path profilePath(String baseDirectory, String name) {
         if (!name.matches("[a-zA-Z0-9_-]+")) throw new IllegalArgumentException("Invalid profile name");
         return Paths.get(baseDirectory).resolve("profiles").resolve(name + ".permissify");
