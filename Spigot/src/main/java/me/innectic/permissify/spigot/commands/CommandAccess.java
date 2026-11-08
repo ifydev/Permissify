@@ -11,6 +11,7 @@ final class CommandAccess {
 
     static final Map<String, String> GROUP_COMMANDS = Map.of(
             "create", PermissifyConstants.PERMISSIFY_GROUP_CREATE,
+            "inherit", PermissifyConstants.PERMISSIFY_GROUP_INHERIT,
             "remove", PermissifyConstants.PERMISSIFY_GROUP_REMOVE,
             "list", PermissifyConstants.PERMISSIFY_GROUP_LIST,
             "addpermission", PermissifyConstants.PERMISSIFY_GROUP_PERMISSION_ADD,

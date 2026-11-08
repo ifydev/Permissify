@@ -43,6 +43,7 @@ public class PermissionGroup {
     @Getter @NonNull private String suffix;
 
     @Getter private final List<Permission> permissions = new ArrayList<>();
+    @Getter private final Set<String> parents = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
     @Getter private final Map<UUID, Boolean> players = new HashMap<>();
 
     /**

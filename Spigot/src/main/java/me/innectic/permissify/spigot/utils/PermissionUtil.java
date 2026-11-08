@@ -86,7 +86,7 @@ public class PermissionUtil {
                     attachment.setPermission("group." + group.getName(), true);
                 }
 
-                group.getPermissions().forEach(permission -> attachment.setPermission(permission.getPermission(), permission.isGranted()));
+                handler.getEffectivePermissions(group).forEach(permission -> attachment.setPermission(permission.getPermission(), permission.isGranted()));
                 plugin.getAttachmentManager().setAttachment(player.getUniqueId(), attachment, Optional.of(group.getName()));
             });
             // Add the player's "self" permissions

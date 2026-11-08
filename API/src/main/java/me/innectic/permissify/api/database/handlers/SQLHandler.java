@@ -30,6 +30,7 @@ import me.innectic.permissify.api.database.DatabaseHandler;
 import me.innectic.permissify.api.permission.Permission;
 import me.innectic.permissify.api.database.ConnectionInformation;
 import me.innectic.permissify.api.permission.PermissionGroup;
+import me.innectic.permissify.api.permission.GroupInheritance;
 import me.innectic.permissify.api.profile.PermissifyProfile;
 import me.innectic.permissify.api.util.Tristate;
 
@@ -113,6 +114,10 @@ public class SQLHandler extends DatabaseHandler {
             PreparedStatement groupPermissionsStatement = connection.prepareStatement("CREATE TABLE IF NOT EXISTS " + database +"groupPermissions (groupName VARCHAR(767) NOT NULL, permission VARCHAR(767) NOT NULL)");
             groupPermissionsStatement.execute();
             groupPermissionsStatement.close();
+            try (PreparedStatement inheritance = connection.prepareStatement("CREATE TABLE IF NOT EXISTS " + database +
+                    "groupInheritance (childGroup VARCHAR(100) NOT NULL, parentGroup VARCHAR(100) NOT NULL, PRIMARY KEY (childGroup,parentGroup))")) {
+                inheritance.execute();
+            }
 
             PreparedStatement groupsStatement = connection.prepareStatement("CREATE TABLE IF NOT EXISTS " + database +
                     "groups (name VARCHAR(100) NOT NULL UNIQUE, displayName VARCHAR(100) NOT NULL, prefix VARCHAR(100) NOT NULL, suffix VARCHAR(100) NOT NULL, chatcolor VARCHAR(4) NOT NULL, defaultGroup TINYINT NOT NULL, ladder VARCHAR(767))");
@@ -213,6 +218,12 @@ public class SQLHandler extends DatabaseHandler {
 
                 groupMembersResults.close();
                 groupMembersStatement.close();
+                try (PreparedStatement inheritance = connection.get().prepareStatement("SELECT parentGroup FROM groupInheritance WHERE childGroup=?")) {
+                    inheritance.setString(1, group.getName());
+                    try (ResultSet parents = inheritance.executeQuery()) {
+                        while (parents.next()) group.getParents().add(parents.getString("parentGroup"));
+                    }
+                }
                 cachedGroups.put(groupName, group);
 
                 if (groupResults.getBoolean("defaultGroup")) defaultGroup = Optional.of(group);
@@ -258,6 +269,13 @@ public class SQLHandler extends DatabaseHandler {
 
     @Override
     public void loadProfile(PermissifyProfile profile) {
+        Map<String, PermissionGroup> merged = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+        java.util.stream.Stream.concat(cachedGroups.values().stream(), profile.getGroups().values().stream()).forEach(group -> {
+            PermissionGroup combined = merged.computeIfAbsent(group.getName(), name -> new PermissionGroup(
+                    group.getName(), group.getDisplayName(), group.getChatColor(), group.getPrefix(), group.getSuffix()));
+            combined.getParents().addAll(group.getParents());
+        });
+        GroupInheritance.validate(merged);
         boolean saved = transaction(connection -> {
             for (PermissionGroup group : profile.getGroups().values()) {
                 String name = getGroup(group.getName()).map(PermissionGroup::getName).orElse(group.getName());
@@ -297,6 +315,19 @@ public class SQLHandler extends DatabaseHandler {
                             statement.setString(2, member.getKey().toString());
                             statement.executeUpdate();
                         }
+                    }
+                }
+            }
+            for (PermissionGroup group : profile.getGroups().values()) {
+                for (String parentName : group.getParents()) {
+                    try (PreparedStatement statement = connection.prepareStatement("INSERT INTO groupInheritance (childGroup,parentGroup) SELECT ?,? WHERE NOT EXISTS (SELECT 1 FROM groupInheritance WHERE childGroup=? AND parentGroup=?)")) {
+                        String child = merged.get(group.getName()).getName();
+                        String parent = merged.get(parentName).getName();
+                        statement.setString(1, child);
+                        statement.setString(2, parent);
+                        statement.setString(3, child);
+                        statement.setString(4, parent);
+                        statement.executeUpdate();
                     }
                 }
             }
@@ -436,7 +467,8 @@ public class SQLHandler extends DatabaseHandler {
         String canonical = group.get().getName();
         boolean saved = transaction(connection -> {
             for (String query : List.of("DELETE FROM groupMembers WHERE `group`=?",
-                    "DELETE FROM groupPermissions WHERE groupName=?", "DELETE FROM groups WHERE name=?")) {
+                    "DELETE FROM groupPermissions WHERE groupName=?", "DELETE FROM groupInheritance WHERE childGroup=?",
+                    "DELETE FROM groupInheritance WHERE parentGroup=?", "DELETE FROM groups WHERE name=?")) {
                 try (PreparedStatement statement = connection.prepareStatement(query)) {
                     statement.setString(1, canonical);
                     statement.executeUpdate();
@@ -445,6 +477,7 @@ public class SQLHandler extends DatabaseHandler {
         });
         if (!saved) return Tristate.FALSE;
         cachedGroups.remove(canonical);
+        cachedGroups.values().forEach(current -> current.getParents().remove(canonical));
         if (defaultGroup.map(current -> current.getName().equalsIgnoreCase(canonical)).orElse(false)) defaultGroup = Optional.empty();
         return Tristate.TRUE;
     }
@@ -579,9 +612,8 @@ public class SQLHandler extends DatabaseHandler {
 
     @Override
     public boolean hasGroupPermission(String group, String permission) {
-        Optional<PermissionGroup> permissionGroup = getGroups().entrySet().stream().map(Map.Entry::getValue)
-                .filter(perm -> perm.getName().equalsIgnoreCase(group)).findFirst();
-        return permissionGroup.map(groupPermission -> groupPermission.hasPermission(permission)).orElse(false);
+        return getGroup(group).map(found -> getEffectivePermissions(found).stream()
+                .anyMatch(entry -> entry.getPermission().equals(permission))).orElse(false);
     }
 
     @Override
@@ -644,6 +676,25 @@ public class SQLHandler extends DatabaseHandler {
         } catch (SQLException e) {
             throw new IllegalStateException("Unable to export permissions", e);
         }
+    }
+    @Override
+    public Tristate inheritGroup(PermissionGroup parent, PermissionGroup child) {
+        if (parent == null || child == null) return Tristate.FALSE;
+        PermissionGroup parentGroup = getGroup(parent.getName()).orElse(null);
+        PermissionGroup childGroup = getGroup(child.getName()).orElse(null);
+        if (parentGroup == null || childGroup == null) return Tristate.FALSE;
+        if (GroupInheritance.inheritsFrom(childGroup, parentGroup, cachedGroups)) return Tristate.NONE;
+        if (!GroupInheritance.canInherit(parentGroup, childGroup, cachedGroups)) return Tristate.FALSE;
+        boolean saved = transaction(connection -> {
+            try (PreparedStatement statement = connection.prepareStatement("INSERT INTO groupInheritance (childGroup,parentGroup) VALUES (?,?)")) {
+                statement.setString(1, childGroup.getName());
+                statement.setString(2, parentGroup.getName());
+                statement.executeUpdate();
+            }
+        });
+        if (!saved) return Tristate.FALSE;
+        childGroup.getParents().add(parentGroup.getName());
+        return Tristate.TRUE;
     }
     private boolean changeGroupPermissions(String name, boolean add, String... permissions) {
         Optional<PermissionGroup> found = getGroup(name);

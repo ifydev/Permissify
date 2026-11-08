@@ -30,6 +30,30 @@ server can be targeted. /perm is an alias for /permissify.
 Profile loads merge the saved groups, memberships and permissions into the
 current database. They preserve unrelated records and save a backup first.
 
+## Group inheritance
+
+`/permissify group inherit A B` makes B inherit A's permissions. Both groups
+must already exist. The command requires `permissify.basic` and
+`permissify.group.inherit` (or superadmin access).
+
+```
+/permissify group addpermission A mine.a.access
+/permissify group addpermission B mine.b.access
+/permissify group inherit A B
+/permissify group listpermissions B
+```
+
+B now grants `mine.a.access` and `mine.b.access`. Changes to A apply to B and
+its descendants immediately, including the client command list. Inheritance
+can span multiple levels and include multiple parents. Self-inheritance and
+cycles are rejected. A group's own permission values take precedence over
+inherited values; direct player permissions retain their existing precedence.
+
+Inheritance survives cache reloads, server restarts and profile save/load.
+Older profiles without inheritance still load. Deleting a parent removes its
+inheritance links. Group membership, primary group and formatting remain
+separate from inherited permissions.
+
 ## Translations
 
 Players receive messages using `Player#getLocale()`. Language files are loaded

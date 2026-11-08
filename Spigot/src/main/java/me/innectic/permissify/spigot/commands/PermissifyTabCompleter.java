@@ -4,6 +4,7 @@ import me.innectic.permissify.api.PermissifyConstants;
 import me.innectic.permissify.api.database.DatabaseHandler;
 import me.innectic.permissify.api.permission.Permission;
 import me.innectic.permissify.api.permission.PermissionGroup;
+import me.innectic.permissify.api.permission.GroupInheritance;
 import me.innectic.permissify.spigot.PermissifyMain;
 import me.innectic.permissify.spigot.utils.LanguageUtil;
 import me.innectic.permissify.spigot.utils.PermissionUtil;
@@ -68,6 +69,13 @@ public class PermissifyTabCompleter implements TabCompleter {
             if (action.equals("list")) return List.of();
             if (args.length == 3) return new ArrayList<>(handler.getGroups().keySet());
             if (handler.getGroup(args[2]).isEmpty()) return List.of();
+            if (action.equals("inherit") && args.length == 4) {
+                PermissionGroup parent = handler.getGroup(args[2]).orElseThrow();
+                return handler.getGroups().values().stream()
+                        .filter(child -> GroupInheritance.canInherit(parent, child, handler.getGroups()))
+                        .filter(child -> !GroupInheritance.inheritsFrom(child, parent, handler.getGroups()))
+                        .map(PermissionGroup::getName).toList();
+            }
             if (action.equals("addpermission")) return registeredPermissions(args, 3);
             if (action.equals("removepermission")) return handler.getGroup(args[2])
                     .map(group -> unused(group.getPermissions().stream().map(Permission::getPermission).toList(), args, 3)).orElse(List.of());

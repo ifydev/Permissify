@@ -145,6 +145,8 @@ public class PermissifyCommand implements CommandExecutor {
             String response;
             if (args[1].equalsIgnoreCase("create") || args[1].equalsIgnoreCase("add"))
                 response = plugin.getGroupCommand().handleAddGroup(sender, ArgumentUtil.getRemainingArgs(2, args), language);
+            else if (args[1].equalsIgnoreCase("inherit"))
+                response = plugin.getGroupCommand().handleInherit(sender, ArgumentUtil.getRemainingArgs(2, args), language);
             else if (args[1].equalsIgnoreCase("remove") || args[1].equalsIgnoreCase("delete"))
                 response = plugin.getGroupCommand().handleDeleteGroup(sender, ArgumentUtil.getRemainingArgs(2, args), language);
             else if (args[1].equalsIgnoreCase("addpermission"))

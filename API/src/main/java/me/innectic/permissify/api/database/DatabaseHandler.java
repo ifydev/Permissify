@@ -28,6 +28,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import me.innectic.permissify.api.permission.Permission;
 import me.innectic.permissify.api.permission.PermissionGroup;
+import me.innectic.permissify.api.permission.GroupInheritance;
 import me.innectic.permissify.api.profile.PermissifyProfile;
 import me.innectic.permissify.api.util.Tristate;
 
@@ -154,6 +155,15 @@ public abstract class DatabaseHandler {
      * @return fulfilled if exists, empty otherwise
      */
     public abstract Optional<PermissionGroup> getGroup(String name);
+
+    /**
+     * The child inherits the parent's permissions.
+     */
+    public abstract Tristate inheritGroup(PermissionGroup parent, PermissionGroup child);
+
+    public List<Permission> getEffectivePermissions(PermissionGroup group) {
+        return GroupInheritance.getPermissions(group, getGroups());
+    }
 
     /**
      * Add a player to a permission group, and grant permissions.

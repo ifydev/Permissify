@@ -29,6 +29,7 @@ import com.google.gson.GsonBuilder;
 import me.innectic.permissify.api.PermissifyConstants;
 import me.innectic.permissify.api.permission.Permission;
 import me.innectic.permissify.api.permission.PermissionGroup;
+import me.innectic.permissify.api.permission.GroupInheritance;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -91,10 +92,12 @@ public class ProfileSerializer {
                 GroupData saved = entry.getValue();
                 if (saved == null || !entry.getKey().equals(saved.name())) return Optional.empty();
                 PermissionGroup group = new PermissionGroup(saved.name(), saved.displayName(), saved.chatColor(), saved.prefix(), saved.suffix());
+                if (saved.parents() != null) group.getParents().addAll(saved.parents());
                 saved.permissions().forEach(permission -> group.getPermissions().add(permission.toPermission()));
                 saved.players().forEach((uuid, primary) -> group.addPlayer(java.util.Objects.requireNonNull(uuid), java.util.Objects.requireNonNull(primary)));
                 groups.put(entry.getKey(), group);
             }
+            GroupInheritance.validate(groups);
             PermissionGroup defaultGroup = null;
             if (data.defaultGroup() != null) {
                 defaultGroup = groups.get(data.defaultGroup().name());
@@ -116,7 +119,7 @@ public class ProfileSerializer {
     }
 
     private record GroupData(String name, String displayName, String chatColor, String prefix, String suffix,
-                             List<PermissionData> permissions, Map<UUID, Boolean> players) {}
+                             List<PermissionData> permissions, Map<UUID, Boolean> players, List<String> parents) {}
 
     private record ProfileData(Map<String, GroupData> groups, Map<UUID, List<PermissionData>> playerPermissions,
                                GroupData defaultGroup, List<UUID> superAdmins, int version) {}

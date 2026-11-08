@@ -36,6 +36,7 @@ public class PermissifyConstants {
 
     // Permissions
     public static final String PERMISSIFY_BASIC = "permissify.basic";
+    public static final String PERMISSIFY_GROUP_INHERIT = "permissify.group.inherit";
     public static final String PERMISSIFY_GROUP_CREATE = "permissify.group.create";
     public static final String PERMISSIFY_GROUP_REMOVE = "permissify.group.remove";
     public static final String PERMISSIFY_GROUP_LIST = "permissify.group.list";

@@ -15,8 +15,13 @@ final class PermissifyHelp {
     private static final Pattern COMMAND = Pattern.compile("/(?:permissify|perm)\\s+(\\S+)(?:\\s+(\\S+))?", Pattern.CASE_INSENSITIVE);
 
     static List<List<String>> getPages(CommandSender sender, Language language) {
-        List<String> lines = language.getPages("PERMISSIFY_HELP_PAGES").stream().flatMap(List::stream)
-                .filter(line -> canShow(sender, line)).toList();
+        List<String> entries = new ArrayList<>(language.getPages("PERMISSIFY_HELP_PAGES").stream().flatMap(List::stream).toList());
+        boolean hasInheritance = entries.stream().anyMatch(line -> {
+            var command = COMMAND.matcher(ChatColor.stripColor(ColorUtil.makeReadable(line)));
+            return command.find() && command.group(1).equalsIgnoreCase("group") && "inherit".equalsIgnoreCase(command.group(2));
+        });
+        if (!hasInheritance) entries.add(language.getMessage("HELP_GROUP_INHERIT"));
+        List<String> lines = entries.stream().filter(line -> canShow(sender, line)).toList();
         if (lines.isEmpty()) return List.of(List.of(language.getMessage("HELP_NO_COMMANDS")));
         List<List<String>> pages = new ArrayList<>();
         for (int start = 0; start < lines.size(); start += LINES_PER_PAGE)

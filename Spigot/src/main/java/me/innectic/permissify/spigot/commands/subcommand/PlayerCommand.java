@@ -264,7 +264,7 @@ public class PlayerCommand {
 
         List<PermissionGroup> groups = plugin.getPermissifyAPI().getDatabaseHandler().get().getGroups(targetPlayer.getUniqueId());
         List<String> permissions = new ArrayList<>();
-        groups.forEach(group -> permissions.addAll(group.getPermissions().stream().map(Permission::getPermission).collect(Collectors.toList())));
+        groups.forEach(group -> permissions.addAll(plugin.getPermissifyAPI().getDatabaseHandler().get().getEffectivePermissions(group).stream().map(Permission::getPermission).collect(Collectors.toList())));
         permissions.addAll(plugin.getPermissifyAPI().getDatabaseHandler().get().getPermissions(targetPlayer.getUniqueId())
                 .stream().map(Permission::getPermission).collect(Collectors.toList()));
         return language.getMessage("GROUP_PERMISSIONS").replace("<GROUP>", targetPlayer.getName())

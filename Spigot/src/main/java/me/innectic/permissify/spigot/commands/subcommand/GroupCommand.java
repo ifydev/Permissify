@@ -31,6 +31,7 @@ import me.innectic.permissify.api.PermissifyConstants;
 import me.innectic.permissify.api.language.Language;
 import me.innectic.permissify.api.permission.Permission;
 import me.innectic.permissify.api.permission.PermissionGroup;
+import me.innectic.permissify.api.permission.GroupInheritance;
 import me.innectic.permissify.api.util.ArgumentUtil;
 import me.innectic.permissify.spigot.utils.ColorUtil;
 import me.innectic.permissify.spigot.utils.PermissionUtil;
@@ -94,10 +95,9 @@ public class GroupCommand {
         Optional<PermissionGroup> group = plugin.getPermissifyAPI().getDatabaseHandler().get().getGroup(args[0]);
         if (group.isEmpty()) return language.getMessage("INVALID_GROUP").replace("<GROUP>", args[0]);
 
-        List<UUID> playersInGroup = group.get().getPlayers().keySet().stream().collect(Collectors.toList());
         Tristate removed = plugin.getPermissifyAPI().getDatabaseHandler().get().deleteGroup(args[0]);
         if (removed == Tristate.TRUE) {
-            playersInGroup.stream().map(Bukkit::getPlayer).filter(Objects::nonNull).forEach(PermissionUtil::applyPermissions);
+            Bukkit.getOnlinePlayers().forEach(PermissionUtil::applyPermissions);
             return language.getMessage("GROUP_REMOVED").replace("<GROUP>", args[0]);
         } else if (removed == Tristate.NONE) return language.getMessage("INVALID_GROUP").replace("<GROUP>", args[0]);
         return language.getMessage("UNABLE_TO_REMOVE").replace("<TYPE>", language.getMessage("TYPE_GROUP")).replace("<REASON>", language.getMessage("DATABASE_UNAVAILABLE"));
@@ -119,7 +119,7 @@ public class GroupCommand {
         boolean added = plugin.getPermissifyAPI().getDatabaseHandler().get().addGroupPermission(args[0], ArgumentUtil.getRemainingArgs(1, args));
         if (!added) return language.getMessage("UNABLE_TO_ADD").replace("<REASON>", language.getMessage("DATABASE_UNAVAILABLE"));
 
-        group.get().getPlayers().keySet().stream().map(Bukkit::getPlayer).filter(Objects::nonNull).forEach(PermissionUtil::applyPermissions);
+        Bukkit.getOnlinePlayers().forEach(PermissionUtil::applyPermissions);
         return language.getMessage("PERMISSION_ADDED_GROUP").replace("<PERMISSION>",
                 String.join(", ", ArgumentUtil.getRemainingArgs(1, args))).replace("<GROUP>", args[0]);
     }
@@ -141,7 +141,7 @@ public class GroupCommand {
         boolean added = plugin.getPermissifyAPI().getDatabaseHandler().get().removeGroupPermission(args[0], remaining);
         if (!added) return language.getMessage("UNABLE_TO_REMOVE").replace("<TYPE>", language.getMessage("TYPE_PERMISSION")).replace("<REASON>", language.getMessage("DATABASE_UNAVAILABLE"));
 
-        group.get().getPlayers().keySet().stream().map(Bukkit::getPlayer).filter(Objects::nonNull).forEach(PermissionUtil::applyPermissions);
+        Bukkit.getOnlinePlayers().forEach(PermissionUtil::applyPermissions);
 
         return language.getMessage("PERMISSION_REMOVED_GROUP").replace("<PERMISSION>",
                 String.join(", ", remaining)).replace("<GROUP>", args[0]);
@@ -160,7 +160,7 @@ public class GroupCommand {
         Optional<PermissionGroup> group = plugin.getPermissifyAPI().getDatabaseHandler().get().getGroup(args[0]);
         if (group.isEmpty()) return language.getMessage("INVALID_GROUP").replace("<GROUP>", args[0]);
 
-        List<String> groupPermissions = group.get().getPermissions().stream().map(Permission::getPermission).collect(Collectors.toList());
+        List<String> groupPermissions = plugin.getPermissifyAPI().getDatabaseHandler().get().getEffectivePermissions(group.get()).stream().map(Permission::getPermission).collect(Collectors.toList());
         return language.getMessage("GROUP_PERMISSIONS").replace("<GROUP>", group.get().getName())
                 .replace("<PERMISSIONS>", String.join(", ", groupPermissions));
     }
@@ -177,6 +177,25 @@ public class GroupCommand {
         return language.getMessage("GROUP_LIST").replace("<GROUPS>", String.join(", ", groups.keySet()));
     }
 
+    public String handleInherit(CommandSender sender, String[] args, Language language) {
+        if (!PermissionUtil.hasPermissionOrSuperAdmin(sender, PermissifyConstants.PERMISSIFY_GROUP_INHERIT))
+            return language.getMessage("INSUFFICIENT_PERMISSIONS");
+        if (args.length != 2) return language.getMessage("NOT_ENOUGH_ARGUMENTS_GROUP_INHERIT");
+        var handler = PermissifyMain.getInstance().getPermissifyAPI().getDatabaseHandler();
+        if (handler.isEmpty()) return language.getMessage("UNABLE_TO_SET").replace("<REASON>", language.getMessage("NO_DATABASE_HANDLER"));
+        Optional<PermissionGroup> parent = handler.get().getGroup(args[0]);
+        if (parent.isEmpty()) return language.getMessage("INVALID_GROUP").replace("<GROUP>", args[0]);
+        Optional<PermissionGroup> child = handler.get().getGroup(args[1]);
+        if (child.isEmpty()) return language.getMessage("INVALID_GROUP").replace("<GROUP>", args[1]);
+        if (!GroupInheritance.canInherit(parent.get(), child.get(), handler.get().getGroups()))
+            return language.getMessage("GROUP_INHERITANCE_CYCLE");
+        Tristate inherited = handler.get().inheritGroup(parent.get(), child.get());
+        if (inherited == Tristate.NONE) return language.getMessage("GROUP_INHERITANCE_EXISTS")
+                .replace("<PARENT>", parent.get().getName()).replace("<GROUP>", child.get().getName());
+        if (inherited == Tristate.FALSE) return language.getMessage("UNABLE_TO_SET").replace("<REASON>", language.getMessage("DATABASE_UNAVAILABLE"));
+        Bukkit.getOnlinePlayers().forEach(PermissionUtil::applyPermissions);
+        return language.getMessage("GROUP_INHERITED").replace("<PARENT>", parent.get().getName()).replace("<GROUP>", child.get().getName());
+    }
     public String handleSetDefault(CommandSender sender, String[] args, Language language) {
         PermissifyMain plugin = PermissifyMain.getInstance();
         if (!PermissionUtil.hasPermissionOrSuperAdmin(sender, PermissifyConstants.PERMISSIFY_GROUP_DEFAULT))
