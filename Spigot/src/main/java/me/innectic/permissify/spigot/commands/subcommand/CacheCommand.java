@@ -25,9 +25,9 @@
 package me.innectic.permissify.spigot.commands.subcommand;
 
 import me.innectic.permissify.api.PermissifyConstants;
+import me.innectic.permissify.api.language.Language;
 import me.innectic.permissify.api.database.DatabaseHandler;
 import me.innectic.permissify.api.permission.PermissionGroup;
-import me.innectic.permissify.api.util.ArgumentUtil;
 import me.innectic.permissify.spigot.PermissifyMain;
 import me.innectic.permissify.spigot.utils.PermissionUtil;
 import org.bukkit.Bukkit;
@@ -42,27 +42,30 @@ import java.util.stream.Collectors;
  */
 public class CacheCommand {
 
-    public String handleCache(CommandSender sender, String[] args) {
+    public String handleCache(CommandSender sender, String[] args, Language language) {
         if (!PermissionUtil.hasPermissionOrSuperAdmin(sender, PermissifyConstants.PERMISSIFY_CACHE))
-            return PermissifyConstants.INSUFFICIENT_PERMISSIONS;
+            return language.getMessage("INSUFFICIENT_PERMISSIONS");
 
-        if (args.length >= 1 && args[0].equalsIgnoreCase("purge")) return handleCachePurge(sender, ArgumentUtil.getRemainingArgs(1, args));
+        if (args.length >= 1) {
+            if (args[0].equalsIgnoreCase("purge")) return handleCachePurge(language);
+            return language.getMessage("INVALID_ARGUMENT").replace("<ARGUMENT>", args[0]);
+        }
         if (PermissifyMain.getInstance().getPermissifyAPI().getDatabaseHandler().isEmpty())
-            return PermissifyConstants.UNABLE_OTHER.replace("<REASON>", "No database handler");
+            return language.getMessage("UNABLE_OTHER").replace("<REASON>", language.getMessage("NO_DATABASE_HANDLER"));
 
         // Show information about the current cache
         DatabaseHandler handler = PermissifyMain.getInstance().getPermissifyAPI().getDatabaseHandler().get();
-        return PermissifyConstants.CACHE_INFORMATION.replace("<GROUPS>", Integer.toString(handler.getCachedGroups().size()))
+        return language.getMessage("CACHE_INFORMATION").replace("<GROUPS>", Integer.toString(handler.getCachedGroups().size()))
                 .replace("<PERMISSIONS>", Integer.toString(handler.getCachedPermissions().size()))
-                .replace("<DEFAULT>", handler.getDefaultGroup().map(PermissionGroup::getName).orElse(PermissifyConstants.EMPTY_DEFAULT_GROUP_NAME));
+                .replace("<DEFAULT>", handler.getDefaultGroup().map(PermissionGroup::getName).orElse(language.getMessage("EMPTY_DEFAULT_GROUP_NAME")));
     }
 
-    private String handleCachePurge(CommandSender sender, String[] args) {
+    private String handleCachePurge(Language language) {
         if (PermissifyMain.getInstance().getPermissifyAPI().getDatabaseHandler().isEmpty())
-            return PermissifyConstants.UNABLE_OTHER.replace("<REASON>", "No database handler");
+            return language.getMessage("UNABLE_OTHER").replace("<REASON>", language.getMessage("NO_DATABASE_HANDLER"));
 
         PermissifyMain.getInstance().getPermissifyAPI().getDatabaseHandler().get().reload(Bukkit.getOnlinePlayers().stream().map(Player::getUniqueId).collect(Collectors.toList()));
-        Bukkit.getScheduler().runTaskAsynchronously(PermissifyMain.getInstance(), () -> Bukkit.getOnlinePlayers().forEach(PermissionUtil::applyPermissions));
-        return PermissifyConstants.CACHE_PURGED;
+        Bukkit.getOnlinePlayers().forEach(PermissionUtil::applyPermissions);
+        return language.getMessage("CACHE_PURGED");
     }
 }

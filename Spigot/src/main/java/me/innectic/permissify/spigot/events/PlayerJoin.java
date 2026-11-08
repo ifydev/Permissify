@@ -24,15 +24,10 @@
  */
 package me.innectic.permissify.spigot.events;
 
-import me.innectic.permissify.spigot.PermissifyMain;
 import me.innectic.permissify.spigot.utils.PermissionUtil;
-import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
-
-import java.util.Optional;
 
 /**
  * @author Innectic
@@ -42,13 +37,6 @@ public class PlayerJoin implements Listener {
 
     @EventHandler
     public void onPlayerJoinEvent(PlayerJoinEvent e) {
-        PermissifyMain plugin = PermissifyMain.getInstance();
-
-        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
-            Player player = e.getPlayer();
-
-            plugin.getAttachmentManager().setAttachment(player.getUniqueId(), player.addAttachment(plugin), Optional.empty());
-            PermissionUtil.applyPermissions(player);
-        });
+        PermissionUtil.applyPermissions(e.getPlayer());
     }
 }

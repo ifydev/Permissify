@@ -25,6 +25,7 @@
 package me.innectic.permissify.api;
 
 import lombok.Getter;
+import me.innectic.permissify.api.language.LanguageManager;
 import me.innectic.permissify.api.database.ConnectionInformation;
 import me.innectic.permissify.api.database.DatabaseHandler;
 import me.innectic.permissify.api.database.handlers.HandlerType;
@@ -48,6 +49,7 @@ public class PermissifyAPI {
 
     @Getter private Optional<DatabaseHandler> databaseHandler;
     @Getter private DisplayUtil displayUtil;
+    @Getter private final LanguageManager languageManager = new LanguageManager();
     @Getter private ProfileSerializer profileSerializer;
     @Getter private Logger logger;
 

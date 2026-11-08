@@ -25,7 +25,7 @@
 package me.innectic.permissify.spigot;
 
 import lombok.Getter;
-import lombok.Setter;
+
 import me.innectic.permissify.spigot.commands.PermissifyCommand;
 import me.innectic.permissify.spigot.commands.subcommand.*;
 import me.innectic.permissify.spigot.events.PlayerJoin;
@@ -41,6 +41,8 @@ import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Optional;
 import java.util.logging.Level;
 
@@ -60,13 +62,12 @@ public class PermissifyMain extends JavaPlugin {
 
     @Getter private AttachmentManager attachmentManager;
 
-    @Getter @Setter private boolean handleChat = false;
-
     @Override
     public void onEnable() {
         long start = System.currentTimeMillis();
         permissifyAPI = new PermissifyAPI();
         createConfig();
+        loadLanguage();
         // Verify the config
         configVerifier = new ConfigVerifier();
         if (!configVerifier.verifyBasicInformation()) {
@@ -79,7 +80,6 @@ public class PermissifyMain extends JavaPlugin {
             getLogger().log(Level.SEVERE, ChatColor.RED + "Internal Permissify Error: No handler / type present!");
             return;
         }
-        handleChat = getConfig().getBoolean("handleChat");
         try {
             permissifyAPI.initialize(handler.get().getHandlerType().get(), handler.get().getConnectionInformation(), new DisplayUtil(), getLogger(), getDataFolder().getAbsolutePath() + "/modules", this);
         } catch (Exception e) {
@@ -98,10 +98,37 @@ public class PermissifyMain extends JavaPlugin {
 
     @Override
     public void onDisable() {
-        permissifyAPI.getModuleProvider().end(this);
+        if (playerCommand != null) playerCommand.cancelExpirations();
+        if (permissifyAPI != null && permissifyAPI.getModuleProvider() != null) permissifyAPI.getModuleProvider().end(this);
 
         configVerifier = null;
         permissifyAPI = null;
+    }
+
+    private void loadLanguage() {
+        var language = permissifyAPI.getLanguageManager();
+        Path directory = getDataFolder().toPath().resolve("languages");
+        try {
+            Files.createDirectories(directory);
+            Path english = directory.resolve("en_US.json");
+            if (!Files.exists(english)) language.saveDefault(english);
+            try (var files = Files.list(directory)) {
+                for (Path file : files.filter(path -> path.getFileName().toString().endsWith(".json")).sorted().toList()) {
+                    String name = file.getFileName().toString();
+                    try {
+                        language.load(name.substring(0, name.length() - 5), file);
+                    } catch (Exception e) {
+                        getLogger().log(Level.WARNING, "Unable to load language " + name, e);
+                    }
+                }
+            }
+            String name = getConfig().getString("language", "en_US");
+            if (!name.matches("[a-zA-Z0-9_-]+")) throw new IllegalArgumentException("Invalid language name: " + name);
+            language.load(directory.resolve(name + ".json"));
+        } catch (Exception e) {
+            language.useEnglish();
+            getLogger().log(Level.WARNING, "Unable to load default language, using English", e);
+        }
     }
 
     private void createConfig() {
